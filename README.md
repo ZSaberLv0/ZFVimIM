@@ -92,6 +92,7 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     ```
     let g:ZFVimIM_cloudAsync_outputTo = {
                 \   'outputType' : 'statusline',
+                \   'outputId' : 'ZFVimIM_cloud_async',
                 \ }
     ```
 

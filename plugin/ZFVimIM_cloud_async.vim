@@ -11,6 +11,7 @@ endif
 if !exists('g:ZFVimIM_cloudAsync_outputTo')
     let g:ZFVimIM_cloudAsync_outputTo = {
                 \   'outputType' : 'statusline',
+                \   'outputId' : 'ZFVimIM_cloud_async',
                 \ }
 endif
 
@@ -138,7 +139,7 @@ let g:ZFVimIM_cloudAsync_log = []
 function! s:cloudAsyncLog(groupJobStatus, msg)
     call add(g:ZFVimIM_cloudAsync_log, a:msg)
     if !empty(a:groupJobStatus)
-        call ZFJobOutput('ZFVimIM_cloud_async', a:groupJobStatus, a:msg)
+        call ZFJobOutput(a:groupJobStatus, a:msg)
     endif
 endfunction
 
@@ -229,7 +230,7 @@ function! s:uploadAsync(cloudOption, mode)
                 \   'jobList' : [],
                 \   'onExit' : ZFJobFunc(function('s:UA_onExit'), [dbIndex]),
                 \   'jobTimeout' : g:ZFVimIM_cloudAsync_timeout,
-                \   'outputTo' : deepcopy(g:ZFVimIM_cloudAsync_outputTo),
+                \   'outputTo' : g:ZFVimIM_cloudAsync_outputTo,
                 \ }
     if !initOnly
         call add(groupJobOption['jobList'], [{
@@ -420,6 +421,6 @@ function! s:UA_onExit(dbIndex, groupJobStatus, exitCode)
         break
     endwhile
 
-    call ZFJobOutputCleanup('ZFVimIM_cloud_async', a:groupJobStatus)
+    call ZFJobOutputCleanup(a:groupJobStatus)
 endfunction
 
