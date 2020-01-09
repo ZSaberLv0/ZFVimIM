@@ -64,8 +64,6 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     automatically push to github,
     see `cloud input` below for more info
 
-1. for cloud input (download and upload db files), see below
-
 
 # cloud input
 
@@ -90,6 +88,17 @@ if it's hard to support async mode, you may also:
 of course, you must have push permission for db repo,
 feel free to fork the default repo (`ZSaberLv0/ZFVimIM_pinyin`),
 or supply your own db repo
+
+**NOTE:**
+
+your db repo may contain many commits after long time usage,
+which may cause a huge `.git` dir,
+it's recommended to clean up it occasionally, by:
+
+* delete and re-create the repo
+* if you have `push --force` permission,
+    use [ZSaberLv0/ZFVimGitUtil](https://github.com/ZSaberLv0/ZFVimGitUtil)'s
+    `:ZFGitHardRemoveAllHistory` to remove all history commits
 
 
 # configs
