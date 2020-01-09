@@ -14,11 +14,13 @@ augroup END
 function! s:coc_enable()
     if get(g:, 'ZFVimIM_autoDisable_coc', 1) && exists(':CocEnable')
         call coc#config('suggest.autoTrigger', 'always')
+        CocEnable
     endif
 endfunction
 function! s:coc_disable()
     if get(g:, 'ZFVimIM_autoDisable_coc', 1) && exists(':CocEnable')
         call coc#config('suggest.autoTrigger', 'none')
+        CocDisable
     endif
 endfunction
 call add(s:callback, ['s:coc_enable', 's:coc_disable'])

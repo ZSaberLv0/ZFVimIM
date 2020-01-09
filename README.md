@@ -28,7 +28,7 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     ```
     Plugin 'ZSaberLv0/ZFVimJob' " optional, for async db update
     Plugin 'ZSaberLv0/ZFVimIM'
-    Plugin 'ZSaberLv0/ZFVimIM_pinyin'
+    Plugin 'ZSaberLv0/ZFVimIM_pinyin' " repo that contain db files
     ```
 
 1. use `;;` to toggle input method
@@ -64,6 +64,33 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     automatically push to github,
     see `cloud input` below for more info
 
+1. for cloud input (download and upload db files), see below
+
+
+# cloud input
+
+once configured properly, your db changes would be pushed to Github automatically
+
+requirement:
+
+* register and supply your db repo and git info
+    (see [ZSaberLv0/ZFVimIM_pinyin](https://github.com/ZSaberLv0/ZFVimIM_pinyin) for how to implement)
+* (optional) have [ZSaberLv0/ZFVimJob](https://github.com/ZSaberLv0/ZFVimJob) installed and `ZFJobAvailable()`,
+    for async pull and push
+* (optional) have `has('python')` or `has('python3')` support for better save/load performance
+
+
+if it's hard to support async mode, you may also:
+
+* pull and push manually by `:call ZFVimIM_download()` and `:call ZFVimIM_upload()`
+* automatically ask you to input git info to push before exit vim,
+    by `let g:ZFVimIM_cloudSync_enable=1`
+
+
+of course, you must have push permission for db repo,
+feel free to fork the default repo (`ZSaberLv0/ZFVimIM_pinyin`),
+or supply your own db repo
+
 
 # configs
 
@@ -95,31 +122,6 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
                 \   'outputId' : 'ZFVimIM_cloud_async',
                 \ }
     ```
-
-
-# cloud input
-
-once configured properly, your input history would be pushed to Github automatically
-
-requirement:
-
-* register and supply git info
-    (see [ZSaberLv0/ZFVimIM_pinyin](https://github.com/ZSaberLv0/ZFVimIM_pinyin) for how to implement)
-* (optional) have [ZSaberLv0/ZFVimJob](https://github.com/ZSaberLv0/ZFVimJob) installed and `ZFJobAvailable()`,
-    for async pull and push
-* (optional) have `has('python')` or `has('python3')` support for better save/load performance
-
-
-if it's hard to support async mode, you may also:
-
-* pull and push manually by `:call ZFVimIM_download()` and `:call ZFVimIM_upload()`
-* automatically ask you to input git info to push before exit vim,
-    by `let g:ZFVimIM_cloudSync_enable=1`
-
-
-of course, you should have push permission for db repo,
-feel free to fork the default repo (`ZSaberLv0/ZFVimIM_pinyin`),
-or supply your own db repo
 
 
 # functions
