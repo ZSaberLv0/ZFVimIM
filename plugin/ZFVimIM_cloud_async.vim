@@ -218,8 +218,8 @@ function! s:uploadAsync(cloudOption, mode)
                 \   'initOnly' : initOnly,
                 \   'downloadOnly' : downloadOnly,
                 \   'jobId' : -1,
-                \   'dbLoadJsonFile' : tempname(),
-                \   'dbSaveJsonFile' : tempname(),
+                \   'dbLoadJsonFile' : s:tempname(),
+                \   'dbSaveJsonFile' : s:tempname(),
                 \   'dbNew' : {},
                 \ }
     let s:UA_taskMap[dbIndex] = task
@@ -274,6 +274,15 @@ function! s:uploadAsync(cloudOption, mode)
     endif
 
     call s:cloudAsyncLog(ZFGroupJobStatus(task['jobId']), ZFVimIM_cloud_logInfo(a:cloudOption) . 'updating...')
+endfunction
+
+function! s:tempname()
+    " cygwin's path may not work for some external command
+    if has("win32unix") && executable('cygpath')
+        return system('cygpath -m "' . tempname() . '"')
+    else
+        return tempname()
+    endif
 endfunction
 
 function! s:UA_dbDownloadOnOutput(dbIndex, jobStatus, text, type)
