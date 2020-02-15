@@ -98,7 +98,8 @@ it's recommended to clean up it occasionally, by:
 * delete and re-create the repo
 * if you have `push --force` permission,
     use [ZSaberLv0/ZFVimGitUtil](https://github.com/ZSaberLv0/ZFVimGitUtil)'s
-    `:ZFGitHardRemoveAllHistory` to remove all history commits
+    `:ZFGitHardRemoveAllHistory` to remove all history commits,
+    or use `g:ZFVimIM_cloudAsync_autoCleanup` for short
 
 
 # configs
@@ -131,6 +132,16 @@ it's recommended to clean up it occasionally, by:
                 \   'outputId' : 'ZFVimIM_cloud_async',
                 \ }
     ```
+
+* `let g:ZFVimIM_cloudAsync_autoCleanup=30`
+
+    for async cloud input only,
+    if greater than 0,
+    and your `git rev-list --count HEAD` exceeds this value,
+    we would try to remove all history commits by
+    [ZSaberLv0/ZFVimGitUtil](https://github.com/ZSaberLv0/ZFVimGitUtil)'s
+    `:ZFGitHardRemoveAllHistory`,
+    to keep the db repo clean
 
 
 # functions

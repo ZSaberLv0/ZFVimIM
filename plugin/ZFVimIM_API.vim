@@ -7,6 +7,10 @@ if !exists('g:ZFVimIM_predictLimit')
     let g:ZFVimIM_predictLimit = 10
 endif
 
+if !exists('g:ZFVimIM_cachePath')
+    let g:ZFVimIM_cachePath = get(g:, 'zf_vim_cache_path', $HOME . '/.vim_cache')
+endif
+
 " db : [
 "   { // name,dbMap,dbKeyMap,dbEdit
 "     'name' : 'name of the db',

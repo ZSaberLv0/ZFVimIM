@@ -22,7 +22,9 @@ function! ZFVimIM_cloudRegister(cloudOption, ...)
         call ZFVimIM_initSync(a:cloudOption)
     endif
 endfunction
-let g:ZFVimIM_cloudOption = []
+if !exists('g:ZFVimIM_cloudOption')
+    let g:ZFVimIM_cloudOption = []
+endif
 
 
 " ============================================================
@@ -113,6 +115,38 @@ function! ZFVimIM_cloud_dbUploadCmd(cloudOption)
                     \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
                     \ . ' "' . a:cloudOption['gitUserToken'] . '"'
+    endif
+endfunction
+function! ZFVimIM_cloud_dbCleanupCmd(cloudOption)
+    if has('unix')
+        let path = split(globpath(&rtp, '/misc/git_hard_remove_all_history.sh'), '\n')
+        if empty(path)
+            return ''
+        endif
+        let path = substitute(path[0], '[\r\n]', '', 'g')
+        let path = fnamemodify(fnamemodify(path, ':.'), ':p')
+        return 'sh'
+                    \ . ' "' . s:scriptPath . 'dbCleanup.sh' . '"'
+                    \ . ' "' . a:cloudOption['repoPath'] . '"'
+                    \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
+                    \ . ' "' . a:cloudOption['gitUserName'] . '"'
+                    \ . ' "' . a:cloudOption['gitUserToken'] . '"'
+                    \ . ' "' . path . '"'
+                    \ . ' "' . g:ZFVimIM_cachePath . '"'
+    else
+        let path = split(globpath(&rtp, '/misc/git_hard_remove_all_history.bat'), '\n')
+        if empty(path)
+            return ''
+        endif
+        let path = substitute(path[0], '[\r\n]', '', 'g')
+        let path = fnamemodify(fnamemodify(path, ':.'), ':p')
+        return '"' . s:scriptPath . 'dbCleanup.bat' . '"'
+                    \ . ' "' . a:cloudOption['repoPath'] . '"'
+                    \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
+                    \ . ' "' . a:cloudOption['gitUserName'] . '"'
+                    \ . ' "' . a:cloudOption['gitUserToken'] . '"'
+                    \ . ' "' . substitute(path, '/', '\\', 'g') . '"'
+                    \ . ' "' . substitute(g:ZFVimIM_cachePath, '/', '\\', 'g') . '"'
     endif
 endfunction
 

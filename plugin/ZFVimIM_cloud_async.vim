@@ -8,6 +8,9 @@ endif
 if !exists('g:ZFVimIM_cloudAsync_timeout')
     let g:ZFVimIM_cloudAsync_timeout=20000
 endif
+if !exists('g:ZFVimIM_cloudAsync_autoCleanup')
+    let g:ZFVimIM_cloudAsync_autoCleanup=30
+endif
 if !exists('g:ZFVimIM_cloudAsync_outputTo')
     let g:ZFVimIM_cloudAsync_outputTo = {
                 \   'outputType' : 'statusline',
@@ -265,6 +268,22 @@ function! s:uploadAsync(cloudOption, mode)
                     \   'jobCmd' : ZFVimIM_cloud_dbUploadCmd(a:cloudOption),
                     \   'onOutput' : ZFJobFunc(function('s:UA_dbUploadOnOutput'), [dbIndex]),
                     \ }])
+
+        if g:ZFVimIM_cloudAsync_autoCleanup > 0 && ZFVimIM_cloud_gitInfoSupplied(a:cloudOption)
+            let dbCleanupCmd = ZFVimIM_cloud_dbCleanupCmd(a:cloudOption)
+            if !empty(dbCleanupCmd)
+                let history = system('cd "' . a:cloudOption['repoPath'] . '" && git rev-list --count HEAD')
+                let history = substitute(history, '[\r\n]', '', 'g')
+                let history = str2nr(history)
+                if history >= g:ZFVimIM_cloudAsync_autoCleanup
+                    call add(groupJobOption['jobList'], [{
+                                \   'jobCmd' : dbCleanupCmd,
+                                \   'onOutput' : ZFJobFunc(function('s:UA_dbCleanupOnOutput'), [dbIndex]),
+                                \ }])
+                    let groupJobOption['jobTimeout'] += g:ZFVimIM_cloudAsync_timeout
+                endif
+            endif
+        endif
     endif
 
     let task['jobId'] = ZFGroupJobStart(groupJobOption)
@@ -396,6 +415,14 @@ function! s:UA_dbUploadOnOutput(dbIndex, jobStatus, text, type)
         return
     endif
     call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'pushing : ' . a:text)
+endfunction
+
+function! s:UA_dbCleanupOnOutput(dbIndex, jobStatus, text, type)
+    let task = get(s:UA_taskMap, a:dbIndex, {})
+    if empty(task)
+        return
+    endif
+    call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'cleaning : ' . a:text)
 endfunction
 
 function! s:UA_onExit(dbIndex, groupJobStatus, exitCode)
