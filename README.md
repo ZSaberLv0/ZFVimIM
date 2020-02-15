@@ -67,6 +67,20 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 
 # cloud input
 
+## cloud input (minimal recommend config)
+
+1. fork [ZSaberLv0/ZFVimIM_pinyin](https://github.com/ZSaberLv0/ZFVimIM_pinyin)
+    and use `Plugin 'YourUserName/ZFVimIM_pinyin'`
+1. supply your git info (make sure it has `git push --force` permission)
+
+    ```
+    let g:ZFVimIM_pinyin_gitUserEmail='YourEmail'
+    let g:ZFVimIM_pinyin_gitUserName='YourUserName'
+    let g:ZFVimIM_pinyin_gitUserToken='YourGithubAccessToken'
+    ```
+
+## cloud input (detail config)
+
 once configured properly, your db changes would be pushed to Github automatically
 
 requirement:
