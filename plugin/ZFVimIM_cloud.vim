@@ -92,7 +92,7 @@ endfunction
 
 function! s:realPath(path)
     if has("win32unix") && executable('cygpath')
-        return substitute(system('cygpath -w "' . a:path . '"'), '[\r\n]', '', 'g')
+        return substitute(system('cygpath -m "' . a:path . '"'), '[\r\n]', '', 'g')
     elseif has('win32')
         return substitute(a:path, '/', '\\', 'g')
     else
