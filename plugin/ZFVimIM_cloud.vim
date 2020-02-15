@@ -90,28 +90,38 @@ function! ZFVimIM_cloud_file(cloudOption, key)
     endif
 endfunction
 
-let s:scriptPath = expand('<sfile>:p:h:h') . '/misc/'
+function! s:realPath(path)
+    if has("win32unix") && executable('cygpath')
+        return substitute(system('cygpath -w "' . a:path . '"'), '[\r\n]', '', 'g')
+    elseif has('win32')
+        return substitute(a:path, '/', '\\', 'g')
+    else
+        return a:path
+    endif
+endfunction
+let s:scriptPath = s:realPath(expand('<sfile>:p:h:h') . '/misc/')
+
 function! ZFVimIM_cloud_dbDownloadCmd(cloudOption)
     if has('unix')
         return 'sh'
                     \ . ' "' . s:scriptPath . 'dbDownload.sh' . '"'
-                    \ . ' "' . a:cloudOption['repoPath'] . '"'
+                    \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
     else
         return '"' . s:scriptPath . 'dbDownload.bat' . '"'
-                    \ . ' "' . a:cloudOption['repoPath'] . '"'
+                    \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
     endif
 endfunction
 function! ZFVimIM_cloud_dbUploadCmd(cloudOption)
     if has('unix')
         return 'sh'
                     \ . ' "' . s:scriptPath . 'dbUpload.sh' . '"'
-                    \ . ' "' . a:cloudOption['repoPath'] . '"'
+                    \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
                     \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
                     \ . ' "' . a:cloudOption['gitUserToken'] . '"'
     else
         return '"' . s:scriptPath . 'dbUpload.bat' . '"'
-                    \ . ' "' . a:cloudOption['repoPath'] . '"'
+                    \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
                     \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
                     \ . ' "' . a:cloudOption['gitUserToken'] . '"'
@@ -127,12 +137,12 @@ function! ZFVimIM_cloud_dbCleanupCmd(cloudOption)
         let path = fnamemodify(fnamemodify(path, ':.'), ':p')
         return 'sh'
                     \ . ' "' . s:scriptPath . 'dbCleanup.sh' . '"'
-                    \ . ' "' . a:cloudOption['repoPath'] . '"'
+                    \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
                     \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
                     \ . ' "' . a:cloudOption['gitUserToken'] . '"'
-                    \ . ' "' . path . '"'
-                    \ . ' "' . g:ZFVimIM_cachePath . '"'
+                    \ . ' "' . s:realPath(path) . '"'
+                    \ . ' "' . s:realPath(g:ZFVimIM_cachePath) . '"'
     else
         let path = split(globpath(&rtp, '/misc/git_hard_remove_all_history.bat'), '\n')
         if empty(path)
@@ -141,12 +151,12 @@ function! ZFVimIM_cloud_dbCleanupCmd(cloudOption)
         let path = substitute(path[0], '[\r\n]', '', 'g')
         let path = fnamemodify(fnamemodify(path, ':.'), ':p')
         return '"' . s:scriptPath . 'dbCleanup.bat' . '"'
-                    \ . ' "' . a:cloudOption['repoPath'] . '"'
+                    \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
                     \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
                     \ . ' "' . a:cloudOption['gitUserToken'] . '"'
-                    \ . ' "' . substitute(path, '/', '\\', 'g') . '"'
-                    \ . ' "' . substitute(g:ZFVimIM_cachePath, '/', '\\', 'g') . '"'
+                    \ . ' "' . s:realPath(path) . '"'
+                    \ . ' "' . s:realPath(g:ZFVimIM_cachePath) . '"'
     endif
 endfunction
 
@@ -156,9 +166,9 @@ function! ZFVimIM_cloud_dbLoadCmd(cloudOption, dbJsonFile)
     endif
     return s:py
                 \ . ' "' . s:scriptPath . 'dbLoad.py' . '"'
-                \ . ' "' . a:dbJsonFile . '"'
-                \ . ' "' . ZFVimIM_cloud_file(a:cloudOption, 'dbFile') . '"'
-                \ . ' "' . ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile') . '"'
+                \ . ' "' . s:realPath(a:dbJsonFile) . '"'
+                \ . ' "' . s:realPath(ZFVimIM_cloud_file(a:cloudOption, 'dbFile')) . '"'
+                \ . ' "' . s:realPath(ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile')) . '"'
 endfunction
 function! ZFVimIM_cloud_dbSaveCmd(cloudOption, dbJsonFile)
     if empty(s:py)
@@ -166,9 +176,9 @@ function! ZFVimIM_cloud_dbSaveCmd(cloudOption, dbJsonFile)
     endif
     return s:py
                 \ . ' "' . s:scriptPath . 'dbSave.py' . '"'
-                \ . ' "' . a:dbJsonFile . '"'
-                \ . ' "' . ZFVimIM_cloud_file(a:cloudOption, 'dbFile') . '"'
-                \ . ' "' . ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile') . '"'
+                \ . ' "' . s:realPath(a:dbJsonFile) . '"'
+                \ . ' "' . s:realPath(ZFVimIM_cloud_file(a:cloudOption, 'dbFile')) . '"'
+                \ . ' "' . s:realPath(ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile')) . '"'
 endfunction
 
 function! ZFVimIM_cloud_fixOutputEncoding(msg)
