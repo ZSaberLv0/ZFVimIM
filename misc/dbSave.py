@@ -29,9 +29,11 @@ if len(DB_COUNT_FILE) > 0 and (not os.access(DB_COUNT_FILE, os.F_OK) or os.acces
     for key in db['dbMap']:
         line = key
         for word in db['dbMap'][key]:
-            line += ' ' + str(word['count'])
-        line += '\n'
-        lines.append(line)
+            if word['count'] > 0:
+                line += ' ' + str(word['count'])
+        if line != key:
+            line += '\n'
+            lines.append(line)
     lines.sort()
     with codecs.open(DB_COUNT_FILE, 'w', 'utf-8') as file:
         file.writelines(lines)

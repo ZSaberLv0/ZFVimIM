@@ -48,7 +48,7 @@ if len(DB_COUNT_FILE) > 0 and os.access(DB_COUNT_FILE, os.F_OK) and os.access(DB
         for i in range(len(countList)):
             if i >= wordListLen:
                 break
-            wordList[i]['count'] = countList[i]
+            wordList[i]['count'] = int(countList[i])
         wordList.sort(key = lambda e:e['count'], reverse = True)
 
 

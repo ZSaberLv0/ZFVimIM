@@ -427,11 +427,15 @@ function! s:dbSave(db, dbFile, ...)
                 let line .= ' '
                 let line .= substitute(word['word'], ' ', '\\ ', 'g')
 
-                let countLine .= ' '
-                let countLine .= word['count']
+                if word['count'] > 0
+                    let countLine .= ' '
+                    let countLine .= word['count']
+                endif
             endfor
             call add(lines, line)
-            call add(countLines, countLine)
+            if countLine != key
+                call add(countLines, countLine)
+            endif
         endfor
         call writefile(lines, a:dbFile)
         call writefile(countLines, dbCountFile)
