@@ -1,8 +1,22 @@
-# ZFVimIM
+
+<!-- vim-markdown-toc GFM -->
+
+* [introduction](#introduction)
+* [how to use](#how-to-use)
+* [cloud input](#cloud-input)
+    * [cloud input (minimal recommend config)](#cloud-input-minimal-recommend-config)
+    * [cloud input (detail config)](#cloud-input-detail-config)
+* [configs](#configs)
+* [functions](#functions)
+* [known issue](#known-issue)
+
+<!-- vim-markdown-toc -->
+
+# introduction
 
 Input Method by pure vim script, inspired by [VimIM](https://github.com/vim-scripts/VimIM)
 
-Outstanding features:
+Outstanding features / why another remake:
 
 * more friendly long sentence match and sentence predict
 * auto create user word during input
@@ -26,9 +40,11 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 1. use [Vundle](https://github.com/VundleVim/Vundle.vim) or any other plugin manager you like to install
 
     ```
-    Plugin 'ZSaberLv0/ZFVimJob' " optional, for async db update
     Plugin 'ZSaberLv0/ZFVimIM'
     Plugin 'ZSaberLv0/ZFVimIM_pinyin' " repo that contain db files
+
+    Plugin 'ZSaberLv0/ZFVimJob' " optional, for async db update
+    Plugin 'ZSaberLv0/ZFVimGitUtil' " optional, see `g:ZFVimIM_cloudAsync_autoCleanup`
     ```
 
 1. use `;;` to toggle input method
@@ -71,7 +87,15 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 
 1. fork [ZSaberLv0/ZFVimIM_pinyin](https://github.com/ZSaberLv0/ZFVimIM_pinyin)
     and use `Plugin 'YourUserName/ZFVimIM_pinyin'`
-1. supply your git info (make sure it has `git push --force` permission)
+
+    ```
+    Plugin 'ZSaberLv0/ZFVimIM'
+    Plugin 'YourUserName/ZFVimIM_pinyin'
+    Plugin 'ZSaberLv0/ZFVimJob'
+    Plugin 'ZSaberLv0/ZFVimGitUtil'
+    ```
+
+1. supply your git info (make sure it has `git push` permission)
 
     ```
     let g:ZFVimIM_pinyin_gitUserEmail='YourEmail'
@@ -150,12 +174,18 @@ it's recommended to clean up it occasionally, by:
 * `let g:ZFVimIM_cloudAsync_autoCleanup=30`
 
     for async cloud input only,
-    if greater than 0,
-    and your `git rev-list --count HEAD` exceeds this value,
-    we would try to remove all history commits by
-    [ZSaberLv0/ZFVimGitUtil](https://github.com/ZSaberLv0/ZFVimGitUtil)'s
-    `:ZFGitHardRemoveAllHistory`,
-    to keep the db repo clean
+    we would try to remove all history commits if:
+
+    * `g:ZFVimIM_cloudAsync_autoCleanup` greater than 0
+    * your `git rev-list --count HEAD` exceeds `g:ZFVimIM_cloudAsync_autoCleanup`
+    * have [ZSaberLv0/ZFVimGitUtil](https://github.com/ZSaberLv0/ZFVimGitUtil) installed
+
+    NOTE:
+
+    * this require you have `git push --force` permission,
+        if not, please disable this feature,
+        otherwise your commits may lost occasionally
+        (each time when commits exceeds `g:ZFVimIM_cloudAsync_autoCleanup`)
 
 
 # functions
@@ -175,5 +205,19 @@ it's recommended to clean up it occasionally, by:
 
 * `:IMReorder word [key]` or `ZFVimIM_wordReorder(word [, key])`
 
-    manually reorder word priority
+    manually reorder word priority,
+    by reducing it's input history count to a proper value
+
+# known issue
+
+* when used with complete engines (such as `coc.nvim`)
+    while switching buffers or toggle ZFVimIM,
+    some weird state may occur,
+    you have to quit vim to reset this issue
+
+    it's possibly caused by `:lmap`,
+    but I have no idea how to solve this
+
+    please consider create [PR](https://github.com/ZSaberLv0/ZFVimIM/compare)
+    if you know how to solve it
 
