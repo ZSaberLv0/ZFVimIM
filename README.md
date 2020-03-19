@@ -142,7 +142,8 @@ it's recommended to clean up it occasionally, by:
 **NOTE:**
 
 the default db (which I personally used) is not huge and complete,
-because huge db may cause huge loading time (especially when you have no `python` support)
+because huge db may cause huge loading time (especially when you have no `python` support),
+and huge memory consume
 
 if you prefer huge db, here's one: [ZSaberLv0/ZFVimIM_pinyin_huge](https://github.com/ZSaberLv0/ZFVimIM_pinyin_huge)
 
