@@ -31,8 +31,12 @@ for line in codecs.open(DB_FILE, 'r', 'utf-8'):
             'word' : word.replace('_ZFVimIM_space_', ' '),
             'count' : 0,
         })
-    db['dbMap'][key] = wordList
-    dbKeyMapPrepare(db['dbKeyMap'], key, 0, len(key) - 1)
+    if len(wordList) > 0:
+        if key in db['dbMap']:
+            db['dbMap'][key].extend(wordList)
+        else:
+            db['dbMap'][key] = wordList
+        dbKeyMapPrepare(db['dbKeyMap'], key, 0, len(key) - 1)
 
 
 if len(DB_COUNT_FILE) > 0 and os.access(DB_COUNT_FILE, os.F_OK) and os.access(DB_COUNT_FILE, os.R_OK):

@@ -333,14 +333,10 @@ function! s:dbLoad(db, dbFile, ...)
         return
     endif
     for line in lines
-        let separatorPos = match(line, ' ')
-        if separatorPos <= 0
-            continue
-        endif
         if match(line, '\\ ') >= 0
             let wordList = split(substitute(line, '\\ ', '_ZFVimIM_space_', 'g'))
             if !empty(wordList)
-                call remove(wordList, 0)
+                let key = remove(wordList, 0)
             endif
 
             let list = []
@@ -354,7 +350,7 @@ function! s:dbLoad(db, dbFile, ...)
             let list = []
             let wordList = split(line)
             if !empty(wordList)
-                call remove(wordList, 0)
+                let key = remove(wordList, 0)
                 for word in wordList
                     call add(list, {
                                 \   'word' : word,
@@ -364,8 +360,11 @@ function! s:dbLoad(db, dbFile, ...)
             endif
         endif
         if !empty(list)
-            let key = strpart(line, 0, separatorPos)
-            let a:db['dbMap'][key] = list
+            if exists("a:db['dbMap'][key]")
+                call extend(a:db['dbMap'][key], list)
+            else
+                let a:db['dbMap'][key] = list
+            endif
             call s:dbKeyMapAdd(a:db['dbMap'], a:db['dbKeyMap'], key)
         endif
     endfor

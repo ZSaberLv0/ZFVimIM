@@ -52,7 +52,7 @@ function! ZFVimIM_uploadAsync(cloudOption)
 endfunction
 function! ZFVimIM_uploadAllAsync()
     for cloudOption in g:ZFVimIM_cloudOption
-        call s:uploadAsync(a:cloudOption, 'askIfNoGitInfo')
+        call s:uploadAsync(cloudOption, 'askIfNoGitInfo')
     endfor
 endfunction
 function! ZFVimIM_uploadAllAsyncCancel()
