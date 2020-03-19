@@ -41,7 +41,7 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 
     ```
     Plugin 'ZSaberLv0/ZFVimIM'
-    Plugin 'ZSaberLv0/ZFVimIM_pinyin' " repo that contain db files
+    Plugin 'ZSaberLv0/ZFVimIM_pinyin' " repo that contain db files, see `cloud input (minimal recommend config)`
 
     Plugin 'ZSaberLv0/ZFVimJob' " optional, for async db update
     Plugin 'ZSaberLv0/ZFVimGitUtil' " optional, see `g:ZFVimIM_cloudAsync_autoCleanup`
@@ -138,6 +138,13 @@ it's recommended to clean up it occasionally, by:
     use [ZSaberLv0/ZFVimGitUtil](https://github.com/ZSaberLv0/ZFVimGitUtil)'s
     `:ZFGitHardRemoveAllHistory` to remove all history commits,
     or use `g:ZFVimIM_cloudAsync_autoCleanup` for short
+
+**NOTE:**
+
+the default db (which I personally used) is not huge and complete,
+because huge db may cause huge loading time (especially when you have no `python` support)
+
+if you prefer huge db, supply your own according to [ZSaberLv0/ZFVimIM_pinyin](https://github.com/ZSaberLv0/ZFVimIM_pinyin)
 
 
 # configs

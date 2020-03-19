@@ -244,6 +244,6 @@ function! s:uploadSync(cloudOption, mode)
     endif
 
     redraw!
-    call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'sync success')
+    call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'update success')
 endfunction
 

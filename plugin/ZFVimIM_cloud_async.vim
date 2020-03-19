@@ -424,7 +424,7 @@ function! s:UA_onExit(dbIndex, groupJobStatus, exitCode)
         endif
         unlet s:UA_taskMap[a:dbIndex]
         if a:exitCode == '0'
-            call s:cloudAsyncLog(a:groupJobStatus, ZFVimIM_cloud_logInfo(task['cloudOption']) . 'sync success')
+            call s:cloudAsyncLog(a:groupJobStatus, ZFVimIM_cloud_logInfo(task['cloudOption']) . 'update success')
             let s:autoUploadAsyncRetryTimeInc = 1
             if !empty(g:ZFVimIM_db[a:dbIndex]['dbEdit'])
                 call s:autoUploadAsync()
@@ -438,11 +438,11 @@ function! s:UA_onExit(dbIndex, groupJobStatus, exitCode)
             call extend(db['dbEdit'], dbNew['dbEdit'], 0)
         endif
 
-        call s:cloudAsyncLog(a:groupJobStatus, ZFVimIM_cloud_logInfo(task['cloudOption']) . 'sync failed, exitCode: ' . a:exitCode . ', detailed log:')
+        call s:cloudAsyncLog(a:groupJobStatus, ZFVimIM_cloud_logInfo(task['cloudOption']) . 'update failed, exitCode: ' . a:exitCode . ', detailed log:')
         for output in a:groupJobStatus['jobOutput']
             call s:cloudAsyncLog(a:groupJobStatus, '    ' . output)
         endfor
-        call s:cloudAsyncLog(a:groupJobStatus, ZFVimIM_cloud_logInfo(task['cloudOption']) . 'sync failed, exitCode: ' . a:exitCode)
+        call s:cloudAsyncLog(a:groupJobStatus, ZFVimIM_cloud_logInfo(task['cloudOption']) . 'update failed, exitCode: ' . a:exitCode)
         let s:autoUploadAsyncRetryTimeInc = s:autoUploadAsyncRetryTimeInc * 2
         call s:autoUploadAsync()
         break
