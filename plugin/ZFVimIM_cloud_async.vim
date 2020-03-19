@@ -6,7 +6,7 @@ if !exists('g:ZFVimIM_cloudAsync_enable')
     let g:ZFVimIM_cloudAsync_enable=5000
 endif
 if !exists('g:ZFVimIM_cloudAsync_timeout')
-    let g:ZFVimIM_cloudAsync_timeout=20000
+    let g:ZFVimIM_cloudAsync_timeout=30000
 endif
 if !exists('g:ZFVimIM_cloudAsync_autoCleanup')
     let g:ZFVimIM_cloudAsync_autoCleanup=30

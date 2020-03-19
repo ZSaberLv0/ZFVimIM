@@ -15,38 +15,16 @@ endif
 "   { // name,dbMap,dbKeyMap,dbEdit
 "     'name' : 'name of the db',
 "     'dbMap' : {
-"       'a' : [
-"         {
-"           'word' : '啊',
-"           'count' : 123,
-"         },
-"         {
-"           'word' : '阿',
-"           'count' : 0,
-"         },
-"       ],
-"       'ai' : [
-"         {
-"           'word' : '爱',
-"           'count' : 123,
-"         },
-"         {
-"           'word' : '哀',
-"           'count' : 0,
-"         },
-"       ],
-"       'ceshi' : [
-"         {
-"           'word' : '测试',
-"           'count' : 123,
-"         },
-"       ],
+"       // use plain string to save memory
+"       'a' : '啊\n阿\r123\n0',
+"       'ai' : '爱\n哀\r123\n0',
+"       'ceshi' : '测试\r123',
 "     },
 "     'dbKeyMap' : {
 "       'a' : {
-"         g:ZFVimIM_dbHasWord : '', <= an empty item to mark this node has word
+"         g:ZFVimIM_KEY_HAS_WORD : '', <= an empty item to mark this node has word
 "         'i' : {
-"           g:ZFVimIM_dbHasWord : '',
+"           g:ZFVimIM_KEY_HAS_WORD : '',
 "         },
 "       },
 "       'c' : {
@@ -54,7 +32,7 @@ endif
 "           's' : {
 "             'h' : {
 "               'i' : {
-"                 g:ZFVimIM_dbHasWord : '',
+"                 g:ZFVimIM_KEY_HAS_WORD : '',
 "               },
 "             },
 "           },
@@ -72,11 +50,12 @@ endif
 "   },
 "   ...
 " ]
-let g:ZFVimIM_dbHasWord = '@@'
 if !exists('g:ZFVimIM_db')
     let g:ZFVimIM_db = []
 endif
 let g:ZFVimIM_dbIndex = 0
+
+let g:ZFVimIM_KEY_HAS_WORD = '@@'
 
 " ============================================================
 augroup ZFVimIM_event_OnUpdateDb_augroup
@@ -125,20 +104,42 @@ function! ZFVimIM_wordReorder(word, ...)
 endfunction
 command! -nargs=+ IMReorder :call ZFVimIM_wordReorder(<f-args>)
 
-function! ZFVimIM_wordIndex(wordList, word)
-    for i in range(len(a:wordList))
-        if a:wordList[i]['word'] == a:word
-            return i
-        endif
+function! s:dbMapItemReorderFunc(item1, item2)
+    return (a:item2['count'] - a:item1['count'])
+endfunction
+function! ZFVimIM_dbMapItemReorder(dbMapItem)
+    let tmp = []
+    for i in range(len(a:dbMapItem['wordList']))
+        call add(tmp, {
+                    \   'word' : a:dbMapItem['wordList'][i],
+                    \   'count' : a:dbMapItem['countList'][i],
+                    \ })
     endfor
-    return -1
+    call sort(tmp, function('s:dbMapItemReorderFunc'))
+    let a:dbMapItem['wordList'] = []
+    let a:dbMapItem['countList'] = []
+    for item in tmp
+        call add(a:dbMapItem['wordList'], item['word'])
+        call add(a:dbMapItem['countList'], item['count'])
+    endfor
 endfunction
 
-function! s:wordListUpdate(word1, word2)
-    return (a:word2['count'] - a:word1['count'])
+" encoded:
+"   '啊\n阿\r123\n0'
+" decoded:
+"   {
+"     'wordList' : [],
+"     'countList' : [],
+"   }
+function! ZFVimIM_dbMapItemDecode(dbMapItem)
+    let data = split(a:dbMapItem, "\r")
+    return {
+                \   'wordList' : split(data[0], "\n"),
+                \   'countList' : split(data[1], "\n"),
+                \ }
 endfunction
-function! ZFVimIM_wordListUpdate(wordList)
-    call sort(a:wordList, function('s:wordListUpdate'))
+function! ZFVimIM_dbMapItemEncode(dbMapItem)
+    return join([join(a:dbMapItem['wordList'], "\n"), join(a:dbMapItem['countList'], "\n")], "\r")
 endfunction
 
 " return : [
@@ -219,11 +220,11 @@ function! s:complete(key)
     let i = len(matchKeyList) - 1
     while i >= 0
         let k = matchKeyList[i]
-        for w in dbMap[k]
+        for w in ZFVimIM_dbMapItemDecode(dbMap[k])['wordList']
             call add(matchRet, {
                         \   'len' : len(k),
                         \   'key' : k,
-                        \   'word' : w['word'],
+                        \   'word' : w,
                         \   'type' : 'match',
                         \ })
         endfor
@@ -278,11 +279,14 @@ function! s:sentence(match, dbMap, key, keyLen)
     while i > 0
         let sub = strpart(a:key, 0, i)
         if exists('a:dbMap[sub]')
-            let word = a:dbMap[sub][0]
+            let word = ZFVimIM_dbMapItemDecode(a:dbMap[sub])['wordList'][0]
             let a:match['len'] += i
             let a:match['key'] .= sub
-            let a:match['word'] .= word['word']
-            call add(a:match['sentenceList'], extend({'key' : sub}, word))
+            let a:match['word'] .= word
+            call add(a:match['sentenceList'], {
+                        \   'key' : sub,
+                        \   'word' : word,
+                        \ })
             return s:sentence(a:match, a:dbMap, strpart(a:key, i), a:keyLen - i) + 1
         endif
         let i -= 1
@@ -292,19 +296,19 @@ endfunction
 
 function! s:predict(ret, retInitLen, dbMap, prefixLen, predictPrefix, predictDb)
     for c in keys(a:predictDb)
-        if c != g:ZFVimIM_dbHasWord
+        if c != g:ZFVimIM_KEY_HAS_WORD
             call s:predict(a:ret, a:retInitLen, a:dbMap, a:prefixLen, a:predictPrefix . c, a:predictDb[c])
             if g:ZFVimIM_predictLimit > 0 && len(a:ret) - a:retInitLen >= g:ZFVimIM_predictLimit
                 return
             endif
         endif
 
-        if c == g:ZFVimIM_dbHasWord
-            for w in a:dbMap[a:predictPrefix]
+        if c == g:ZFVimIM_KEY_HAS_WORD
+            for word in ZFVimIM_dbMapItemDecode(a:dbMap[a:predictPrefix])['wordList']
                 call add(a:ret, {
                             \   'len' : a:prefixLen,
                             \   'key' : a:predictPrefix,
-                            \   'word' : w['word'],
+                            \   'word' : word,
                             \   'type' : 'predict',
                             \ })
                 if g:ZFVimIM_predictLimit > 0 && len(a:ret) - a:retInitLen >= g:ZFVimIM_predictLimit
@@ -334,37 +338,35 @@ function! s:dbLoad(db, dbFile, ...)
     endif
     for line in lines
         if match(line, '\\ ') >= 0
-            let wordList = split(substitute(line, '\\ ', '_ZFVimIM_space_', 'g'))
-            if !empty(wordList)
-                let key = remove(wordList, 0)
+            let wordListTmp = split(substitute(line, '\\ ', '_ZFVimIM_space_', 'g'))
+            if !empty(wordListTmp)
+                let key = remove(wordListTmp, 0)
             endif
 
-            let list = []
-            for word in wordList
-                call add(list, {
-                            \   'word' : substitute(word, '_ZFVimIM_space_', ' ', 'g'),
-                            \   'count' : 0,
-                            \ })
+            let wordList = []
+            for word in wordListTmp
+                call add(wordList, substitute(word, '_ZFVimIM_space_', ' ', 'g'))
             endfor
         else
-            let list = []
             let wordList = split(line)
             if !empty(wordList)
                 let key = remove(wordList, 0)
-                for word in wordList
-                    call add(list, {
-                                \   'word' : word,
-                                \   'count' : 0,
-                                \ })
-                endfor
             endif
         endif
-        if !empty(list)
+        if !empty(wordList)
             if exists("a:db['dbMap'][key]")
-                call extend(a:db['dbMap'][key], list)
+                let dbMapItem = ZFVimIM_dbMapItemDecode(a:db['dbMap'][key])
+                call extend(dbMapItem['wordList'], wordList)
             else
-                let a:db['dbMap'][key] = list
+                let dbMapItem = {
+                            \   'wordList' : wordList,
+                            \   'countList' : [],
+                            \ }
             endif
+            for i in range(len(wordList))
+                call add(dbMapItem['countList'], 0)
+            endfor
+            let a:db['dbMap'][key] = ZFVimIM_dbMapItemEncode(dbMapItem)
             call s:dbKeyMapAdd(a:db['dbMap'], a:db['dbKeyMap'], key)
         endif
     endfor
@@ -382,15 +384,16 @@ function! s:dbLoad(db, dbFile, ...)
             if !exists("a:db['dbMap'][key]")
                 continue
             endif
-            let wordList = a:db['dbMap'][key]
-            let wordListLen = len(wordList)
+            let dbMapItem = ZFVimIM_dbMapItemDecode(a:db['dbMap'][key])
+            let wordListLen = len(dbMapItem['wordList'])
             for i in range(len(countList) - 1)
                 if i >= wordListLen
                     break
                 endif
-                let wordList[i]['count'] = countList[i + 1]
+                let dbMapItem['countList'][i] = countList[i + 1]
             endfor
-            call ZFVimIM_wordListUpdate(wordList)
+            call ZFVimIM_dbMapItemReorder(dbMapItem)
+            let a:db['dbMap'][key] = ZFVimIM_dbMapItemEncode(dbMapItem)
         endfor
     endif
 endfunction
@@ -407,9 +410,9 @@ function! s:dbSave(db, dbFile, ...)
         let lines = []
         for key in keys
             let line = key
-            for word in dbMap[key]
+            for word in ZFVimIM_dbMapItemDecode(dbMap[key])['wordList']
                 let line .= ' '
-                let line .= substitute(word['word'], ' ', '\\ ', 'g')
+                let line .= substitute(word, ' ', '\\ ', 'g')
             endfor
             call add(lines, line)
         endfor
@@ -422,13 +425,14 @@ function! s:dbSave(db, dbFile, ...)
         for key in keys
             let line = key
             let countLine = key
-            for word in dbMap[key]
+            let dbMapItem = ZFVimIM_dbMapItemDecode(dbMap[key])
+            for i in range(len(dbMapItem['wordList']))
                 let line .= ' '
-                let line .= substitute(word['word'], ' ', '\\ ', 'g')
+                let line .= substitute(dbMapItem['wordList'][i], ' ', '\\ ', 'g')
 
-                if word['count'] > 0
+                if dbMapItem['countList'][i] > 0
                     let countLine .= ' '
-                    let countLine .= word['count']
+                    let countLine .= dbMapItem['countList'][i]
                 endif
             endfor
             call add(lines, line)
@@ -464,7 +468,7 @@ function! s:dbEditWildKey(action, word, key)
     let db = g:ZFVimIM_db[g:ZFVimIM_dbIndex]
     let dbMap = db['dbMap']
     for k in keys(dbMap)
-        if ZFVimIM_wordIndex(dbMap[k], a:word) >= 0
+        if index(ZFVimIM_dbMapItemDecode(dbMap[k])['wordList'], a:word) >= 0
             call add(keyToApply, k)
         endif
     endfor
@@ -504,52 +508,55 @@ function! s:dbEditMap(dbMap, dbEdit)
         let word = e['word']
         if e['action'] == 'add'
             if exists('dbMap[key]')
-                let wordList = dbMap[key]
-                let index = ZFVimIM_wordIndex(wordList, word)
+                let dbMapItem = ZFVimIM_dbMapItemDecode(dbMap[key])
+                let index = index(dbMapItem['wordList'], word)
                 if index >= 0
-                    let wordList[index]['count'] += 1
+                    let dbMapItem['countList'][index] += 1
                 else
-                    call add(wordList, {
-                                \   'word' : word,
-                                \   'count' : 1,
-                                \ })
+                    call add(dbMapItem['wordList'], word)
+                    call add(dbMapItem['countList'], 1)
                 endif
+                call ZFVimIM_dbMapItemReorder(dbMapItem)
+                let dbMap[key] = ZFVimIM_dbMapItemEncode(dbMapItem)
             else
-                let dbMap[key] = [{
-                            \   'word' : word,
-                            \   'count' : 1,
-                            \ }]
+                let dbMap[key] = ZFVimIM_dbMapItemEncode({
+                            \   'wordList' : [word],
+                            \   'countList' : [1],
+                            \ })
             endif
-            call ZFVimIM_wordListUpdate(dbMap[key])
         elseif e['action'] == 'remove'
             if !exists('dbMap[key]')
                 continue
             endif
-            let wordList = dbMap[key]
-            let index = ZFVimIM_wordIndex(wordList, word)
+            let dbMapItem = ZFVimIM_dbMapItemDecode(dbMap[key])
+            let index = index(dbMapItem['wordList'], word)
             if index < 0
                 continue
             endif
-            call remove(wordList, index)
-            if empty(wordList)
+            call remove(dbMapItem['wordList'], index)
+            call remove(dbMapItem['countList'], index)
+            if empty(dbMapItem['wordList'])
                 call remove(dbMap, key)
+            else
+                let dbMap[key] = ZFVimIM_dbMapItemEncode(dbMapItem)
             endif
         elseif e['action'] == 'reorder'
             if !exists('dbMap[key]')
                 continue
             endif
-            let wordList = dbMap[key]
-            let index = ZFVimIM_wordIndex(wordList, word)
+            let dbMapItem = ZFVimIM_dbMapItemDecode(dbMap[key])
+            let index = index(dbMapItem['wordList'], word)
             if index < 0
                 continue
             endif
-            let wordList[index]['count'] = 0
+            let dbMapItem['countList'][index] = 0
             let sum = 0
-            for wordData in wordList
-                let sum += wordData['count']
+            for count in dbMapItem['countList']
+                let sum += count
             endfor
-            let wordList[index]['count'] = float2nr(wordList[index]['count'] / 2)
-            call ZFVimIM_wordListUpdate(dbMap[key])
+            let dbMapItem['countList'][index] = float2nr(dbMapItem['countList'][index] / 2)
+            call ZFVimIM_dbMapItemReorder(dbMapItem)
+            let dbMap[key] = ZFVimIM_dbMapItemEncode(dbMapItem)
         endif
     endfor
 endfunction
@@ -582,7 +589,7 @@ function! s:dbKeyMapAdd(dbMap, dbKeyMap, key)
             let dbKeyMap = dbKeyMap[c]
         endif
     endfor
-    let dbKeyMap[g:ZFVimIM_dbHasWord] = ''
+    let dbKeyMap[g:ZFVimIM_KEY_HAS_WORD] = ''
 endfunction
 
 function! s:dbKeyMapRemove(dbMap, dbKeyMap, key)
@@ -607,8 +614,8 @@ function! s:dbKeyMapRemove(dbMap, dbKeyMap, key)
     endwhile
     if i == keyLen
         if !exists('a:dbMap[a:key]')
-            if exists('dbKeyMap[g:ZFVimIM_dbHasWord]')
-                unlet dbKeyMap[g:ZFVimIM_dbHasWord]
+            if exists('dbKeyMap[g:ZFVimIM_KEY_HAS_WORD]')
+                unlet dbKeyMap[g:ZFVimIM_KEY_HAS_WORD]
             endif
         endif
     endif
@@ -627,38 +634,15 @@ if 0 " test db
     let g:ZFVimIM_db = [{
                 \   'name' : 'test',
                 \   'dbMap' : {
-                \     'a' : [
-                \       {
-                \         'word' : '啊',
-                \         'count' : 123,
-                \       },
-                \       {
-                \         'word' : '阿',
-                \         'count' : 0,
-                \       },
-                \     ],
-                \     'ai' : [
-                \       {
-                \         'word' : '爱',
-                \         'count' : 123,
-                \       },
-                \       {
-                \         'word' : '哀',
-                \         'count' : 0,
-                \       },
-                \     ],
-                \     'ceshi' : [
-                \       {
-                \         'word' : '测试',
-                \         'count' : 123,
-                \       },
-                \     ],
+                \     'a' : "啊\n阿\r123\n0",
+                \     'ai' : "爱\n哀\r123\n0",
+                \     'ceshi' : "测试\r123",
                 \   },
                 \   'dbKeyMap' : {
                 \     'a' : {
-                \       g:ZFVimIM_dbHasWord : '',
+                \       g:ZFVimIM_KEY_HAS_WORD : '',
                 \       'i' : {
-                \         'g:ZFVimIM_dbHasWord' : '',
+                \         'g:ZFVimIM_KEY_HAS_WORD' : '',
                 \       },
                 \     },
                 \     'c' : {
@@ -666,7 +650,7 @@ if 0 " test db
                 \         's' : {
                 \           'h' : {
                 \             'i' : {
-                \               g:ZFVimIM_dbHasWord : '',
+                \               g:ZFVimIM_KEY_HAS_WORD : '',
                 \             },
                 \           },
                 \         },
