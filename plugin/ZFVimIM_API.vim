@@ -76,17 +76,23 @@ function! ZFVimIM_dbInit(option)
 endfunction
 
 function! ZFVimIM_dbLoad(db, dbFile, ...)
+    call ZFVimIM_DEBUG_profileStart('dbLoad')
     call s:dbLoad(a:db, a:dbFile, get(a:, 1, ''))
+    call ZFVimIM_DEBUG_profileStop()
 endfunction
 function! ZFVimIM_dbSave(db, dbFile, ...)
+    call ZFVimIM_DEBUG_profileStart('dbSave')
     call s:dbSave(a:db, a:dbFile, get(a:, 1, ''))
+    call ZFVimIM_DEBUG_profileStop()
 endfunction
 function! ZFVimIM_dbClear(db)
     call s:dbClear(a:db)
 endfunction
 
 function! ZFVimIM_dbEditApply(db, dbEdit)
+    call ZFVimIM_DEBUG_profileStart('dbEditApply')
     call s:dbEditApply(a:db, a:dbEdit)
+    call ZFVimIM_DEBUG_profileStop()
 endfunction
 
 function! ZFVimIM_wordAdd(word, key)
@@ -108,6 +114,7 @@ function! s:dbMapItemReorderFunc(item1, item2)
     return (a:item2['count'] - a:item1['count'])
 endfunction
 function! ZFVimIM_dbMapItemReorder(dbMapItem)
+    call ZFVimIM_DEBUG_profileStart('ItemReorder')
     let tmp = []
     for i in range(len(a:dbMapItem['wordList']))
         call add(tmp, {
@@ -122,6 +129,7 @@ function! ZFVimIM_dbMapItemReorder(dbMapItem)
         call add(a:dbMapItem['wordList'], item['word'])
         call add(a:dbMapItem['countList'], item['count'])
     endfor
+    call ZFVimIM_DEBUG_profileStop()
 endfunction
 
 " encoded:
@@ -332,7 +340,9 @@ function! s:dbLoad(db, dbFile, ...)
         let a:db['dbEdit'] = []
     endif
 
+    call ZFVimIM_DEBUG_profileStart('dbLoadFile')
     let lines = readfile(a:dbFile)
+    call ZFVimIM_DEBUG_profileStop()
     if empty(lines)
         return
     endif
@@ -373,7 +383,9 @@ function! s:dbLoad(db, dbFile, ...)
 
     let dbCountFile = get(a:, 1, '')
     if filereadable(dbCountFile)
+        call ZFVimIM_DEBUG_profileStart('dbLoadCountFile')
         let lines = readfile(dbCountFile)
+        call ZFVimIM_DEBUG_profileStop()
         let countMap = {}
         for line in lines
             let countList = split(line)
@@ -416,7 +428,9 @@ function! s:dbSave(db, dbFile, ...)
             endfor
             call add(lines, line)
         endfor
+        call ZFVimIM_DEBUG_profileStart('dbSaveFile')
         call writefile(lines, a:dbFile)
+        call ZFVimIM_DEBUG_profileStop()
     else
         let dbMap = a:db['dbMap']
         let keys = sort(keys(dbMap))
@@ -440,8 +454,12 @@ function! s:dbSave(db, dbFile, ...)
                 call add(countLines, countLine)
             endif
         endfor
+        call ZFVimIM_DEBUG_profileStart('dbSaveFile')
         call writefile(lines, a:dbFile)
+        call ZFVimIM_DEBUG_profileStop()
+        call ZFVimIM_DEBUG_profileStart('dbSaveCountFile')
         call writefile(countLines, dbCountFile)
+        call ZFVimIM_DEBUG_profileStop()
     endif
 endfunction
 
@@ -565,9 +583,13 @@ function! s:dbEditKeyMap(dbMap, dbKeyMap, dbEdit)
     for e in a:dbEdit
         let key = e['key']
         if e['action'] == 'add'
+            call ZFVimIM_DEBUG_profileStart('dbKeyMapAdd')
             call s:dbKeyMapAdd(a:dbMap, a:dbKeyMap, key)
+            call ZFVimIM_DEBUG_profileStop()
         elseif e['action'] == 'remove'
+            call ZFVimIM_DEBUG_profileStart('dbKeyMapRemove')
             call s:dbKeyMapRemove(a:dbMap, a:dbKeyMap, key)
+            call ZFVimIM_DEBUG_profileStop()
         elseif e['action'] == 'reorder'
             " nothing to do
         endif

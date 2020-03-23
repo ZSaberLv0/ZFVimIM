@@ -229,3 +229,20 @@ if you prefer huge db, here's one: [ZSaberLv0/ZFVimIM_pinyin_huge](https://githu
     please consider create [PR](https://github.com/ZSaberLv0/ZFVimIM/compare)
     if you know how to solve it
 
+* too slow
+
+    if your db file is very large,
+    it's slow to save and load db even if `has('python')`,
+    because db data are passed as json format between vim and python,
+    it's slow to perform `json_encode`
+
+    this plugin is designed lightweight that can fallback to pure vimscript,
+    so, there's no plan to completely move db data to python side
+    (further more, async mode would break `:lmap` logic, and require features like LSP plugins)
+
+    if you want to benchmark:
+
+    1. `let g:ZFVimIM_DEBUG_profile = 1`
+    1. input freely
+    1. `call ZFVimIM_DEBUG_profileInfo()` to check which step consumed most time
+

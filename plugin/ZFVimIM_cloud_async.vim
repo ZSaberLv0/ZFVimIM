@@ -272,7 +272,9 @@ function! s:uploadAsync(cloudOption, mode)
         if g:ZFVimIM_cloudAsync_autoCleanup > 0 && ZFVimIM_cloud_gitInfoSupplied(a:cloudOption)
             let dbCleanupCmd = ZFVimIM_cloud_dbCleanupCmd(a:cloudOption)
             if !empty(dbCleanupCmd)
+                call ZFVimIM_DEBUG_profileStart('dbCleanupCheck')
                 let history = system('cd "' . a:cloudOption['repoPath'] . '" && git rev-list --count HEAD')
+                call ZFVimIM_DEBUG_profileStop()
                 let history = substitute(history, '[\r\n]', '', 'g')
                 let history = str2nr(history)
                 if history >= g:ZFVimIM_cloudAsync_autoCleanup
@@ -359,7 +361,12 @@ function! s:UA_dbLoadOnExit(dbIndex, jobStatus, exitCode)
     if empty(task)
         return
     endif
-    let dbNew = json_decode(join(readfile(task['dbLoadJsonFile'])))
+    call ZFVimIM_DEBUG_profileStart('dbLoadJsonFile')
+    let dbLoadJsonFileContent = readfile(task['dbLoadJsonFile'])[0]
+    call ZFVimIM_DEBUG_profileStop()
+    call ZFVimIM_DEBUG_profileStart('dbLoadJson')
+    let dbNew = json_decode(dbLoadJsonFileContent)
+    call ZFVimIM_DEBUG_profileStop()
     let db = g:ZFVimIM_db[a:dbIndex]
     if task['initOnly']
         let db['dbMap'] = dbNew['dbMap']
@@ -369,7 +376,12 @@ function! s:UA_dbLoadOnExit(dbIndex, jobStatus, exitCode)
         let dbNew['dbEdit'] = db['dbEdit']
         let db['dbEdit'] = []
         let task['dbNew'] = dbNew
-        call writefile([json_encode(dbNew)], task['dbSaveJsonFile'])
+        call ZFVimIM_DEBUG_profileStart('dbSaveJson')
+        let dbSaveJsonFileContent = [json_encode(dbNew)]
+        call ZFVimIM_DEBUG_profileStop()
+        call ZFVimIM_DEBUG_profileStart('dbSaveJsonFile')
+        call writefile(dbSaveJsonFileContent, task['dbSaveJsonFile'])
+        call ZFVimIM_DEBUG_profileStop()
 
         if !empty(dbNew['dbEdit'])
             let logHead = ZFVimIM_cloud_logInfo(task['cloudOption'])
