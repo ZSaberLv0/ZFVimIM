@@ -11,6 +11,9 @@ endif
 if !exists('g:ZFVimIM_cloudAsync_autoCleanup')
     let g:ZFVimIM_cloudAsync_autoCleanup=30
 endif
+if !exists('g:ZFVimIM_cloudAsync_autoInit')
+    let g:ZFVimIM_cloudAsync_autoInit=(g:ZFVimIM_cloudAsync_enable > 0)
+endif
 if !exists('g:ZFVimIM_cloudAsync_outputTo')
     let g:ZFVimIM_cloudAsync_outputTo = {
                 \   'outputType' : 'statusline',
@@ -67,6 +70,7 @@ augroup ZFVimIM_cloud_async_augroup
                 \  if g:ZFVimIM_cloudAsync_enable > 0 && ZFVimIM_cloudAsyncAvailable()
                 \|     call s:autoUploadAsync()
                 \| endif
+    autocmd VimEnter * call s:UA_autoInit()
 augroup END
 
 " ============================================================
@@ -83,6 +87,13 @@ augroup END
 " }
 let s:UA_taskMap = {}
 
+function! s:UA_autoInit()
+    if g:ZFVimIM_cloudAsync_autoInit && ZFVimIM_cloudAsyncAvailable()
+        let g:ZFVimIM_cloudForceAsync=1
+        call ZFVimIME_init()
+        unlet g:ZFVimIM_cloudForceAsync
+    endif
+endfunction
 function! s:UA_cancel()
     call s:autoUploadAsyncCancel()
     let taskMap = s:UA_taskMap

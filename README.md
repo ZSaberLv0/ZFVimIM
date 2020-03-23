@@ -195,6 +195,12 @@ if you prefer huge db, here's one: [ZSaberLv0/ZFVimIM_pinyin_huge](https://githu
         otherwise your commits may lost occasionally
         (each time when commits exceeds `g:ZFVimIM_cloudAsync_autoCleanup`)
 
+* `let g:ZFVimIM_cloudAsync_autoInit=1`
+
+    for async cloud input only,
+    when on, we would load db when `VimEnter`,
+    to reduce the time you first `ZFVimIME_start()`
+
 
 # functions
 

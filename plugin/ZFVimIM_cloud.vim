@@ -16,7 +16,7 @@
 function! ZFVimIM_cloudRegister(cloudOption, ...)
     call add(g:ZFVimIM_cloudOption, a:cloudOption)
     " default use sync for init, more friendly for first time typing
-    if ZFVimIM_cloudAsyncAvailable() && get(a:, 1, 'sync') == 'async'
+    if ZFVimIM_cloudAsyncAvailable() && (get(a:, 1, 'sync') == 'async' || get(g:, 'ZFVimIM_cloudForceAsync', 0))
         call ZFVimIM_initAsync(a:cloudOption)
     else
         call ZFVimIM_initSync(a:cloudOption)

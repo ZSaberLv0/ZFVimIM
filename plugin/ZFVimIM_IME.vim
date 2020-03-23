@@ -24,6 +24,14 @@ augroup ZFVimIME_augroup
     autocmd User ZFVimIM_event_OnDbChange silent
 augroup END
 
+function! ZFVimIME_init()
+    if !exists('s:dbInitFlag')
+        let s:dbInitFlag = 1
+        doautocmd User ZFVimIM_event_OnDbInit
+        doautocmd User ZFVimIM_event_OnDbChange
+    endif
+endfunction
+
 " ============================================================
 function! ZFVimIME_toggle()
     return s:started ? ZFVimIME_stop() : ZFVimIME_start()
@@ -331,13 +339,8 @@ function! s:IME_update()
     endif
 endfunction
 
-let s:dbInitFlag = 0
 function! s:IME_start()
-    if !s:dbInitFlag
-        let s:dbInitFlag = 1
-        doautocmd User ZFVimIM_event_OnDbInit
-        doautocmd User ZFVimIM_event_OnDbChange
-    endif
+    call ZFVimIME_init()
 
     silent! call s:vimrcSave()
     silent! call s:vimrcSetup()
