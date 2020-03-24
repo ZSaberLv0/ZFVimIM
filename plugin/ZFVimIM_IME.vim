@@ -589,7 +589,7 @@ function! s:popupMenuList(complete)
         let complete_items['dup'] = 1
         let complete_items['word'] = item['word'] . left
         if s:completeItemAvailable
-            let complete_items['user_data'] = json_encode(item)
+            let complete_items['info'] = json_encode(item)
         endif
         call add(s:popup_list, complete_items)
         let label += 1
@@ -623,7 +623,7 @@ function! s:OnCompleteDone()
         return
     endif
     try
-        let item = json_decode(v:completed_item['user_data'])
+        let item = json_decode(v:completed_item['info'])
     catch
         let item = ''
     endtry
