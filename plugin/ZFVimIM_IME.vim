@@ -56,7 +56,7 @@ if get(g:, 'ZFVimIM_keymap', 1)
 endif
 
 function! ZFVimIME_keymap_toggle_n()
-    call feedkeys("i\<c-r>=ZFVimIME_toggle()\<cr>\<esc>", 'nt')
+    call feedkeys("i\<c-r>=ZFVimIME_toggle()\<cr>\<esc>l", 'nt')
     return ''
 endfunction
 function! ZFVimIME_keymap_toggle_i()
