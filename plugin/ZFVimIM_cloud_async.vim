@@ -387,9 +387,21 @@ function! s:UA_dbLoadOnExit(dbIndex, jobStatus, exitCode)
         let dbNew['dbEdit'] = db['dbEdit']
         let db['dbEdit'] = []
         let task['dbNew'] = dbNew
-        call ZFVimIM_DEBUG_profileStart('dbSaveJson')
-        let dbSaveJsonFileContent = [json_encode(dbNew)]
-        call ZFVimIM_DEBUG_profileStop()
+        if 0
+            " using vim's state,
+            " takes long time to json_encode()
+            call ZFVimIM_DEBUG_profileStart('dbSaveJson')
+            let dbSaveJsonFileContent = [json_encode(dbNew)]
+            call ZFVimIM_DEBUG_profileStop()
+        else
+            " let python to load>apply>save,
+            " may lost some local changes
+            call ZFVimIM_DEBUG_profileStart('dbSaveJson')
+            let dbSaveJsonFileContent = [json_encode({
+                        \   'dbEdit' : dbNew['dbEdit'],
+                        \ })]
+            call ZFVimIM_DEBUG_profileStop()
+        endif
         call ZFVimIM_DEBUG_profileStart('dbSaveJsonFile')
         call writefile(dbSaveJsonFileContent, task['dbSaveJsonFile'])
         call ZFVimIM_DEBUG_profileStop()

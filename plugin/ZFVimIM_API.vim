@@ -120,12 +120,15 @@ endfunction
 function! ZFVimIM_dbMapItemReorder(dbMapItem)
     call ZFVimIM_DEBUG_profileStart('ItemReorder')
     let tmp = []
-    for i in range(len(a:dbMapItem['wordList']))
+    let i = 0
+    let iEnd = len(a:dbMapItem['wordList'])
+    while i < iEnd
         call add(tmp, {
                     \   'word' : a:dbMapItem['wordList'][i],
                     \   'count' : a:dbMapItem['countList'][i],
                     \ })
-    endfor
+        let i += 1
+    endwhile
     call sort(tmp, function('s:dbMapItemReorderFunc'))
     let a:dbMapItem['wordList'] = []
     let a:dbMapItem['countList'] = []
@@ -144,14 +147,30 @@ endfunction
 "     'countList' : [],
 "   }
 function! ZFVimIM_dbMapItemDecode(dbMapItem)
-    let data = split(a:dbMapItem, "\r")
+    let split = split(a:dbMapItem, "\r")
+    let wordList = split(split[0], "\n")
+    let countList = []
+    for cnt in split(get(split, 1, ''), "\n")
+        call add(countList, str2nr(cnt))
+    endfor
+    while len(countList) < len(wordList)
+        call add(countList, 0)
+    endwhile
     return {
-                \   'wordList' : split(data[0], "\n"),
-                \   'countList' : split(data[1], "\n"),
+                \   'wordList' : wordList,
+                \   'countList' : countList,
                 \ }
 endfunction
 function! ZFVimIM_dbMapItemEncode(dbMapItem)
-    return join([join(a:dbMapItem['wordList'], "\n"), join(a:dbMapItem['countList'], "\n")], "\r")
+    let countText = ''
+    for cnt in a:dbMapItem['countList']
+        if cnt <= 0
+            break
+        endif
+        let countText .= cnt
+        let countText .= "\n"
+    endfor
+    return join(a:dbMapItem['wordList'], "\n") . "\r" . strpart(countText, 0, len(countText) - 1)
 endfunction
 
 " return : [
@@ -390,23 +409,22 @@ function! s:dbLoad(db, dbFile, ...)
         call ZFVimIM_DEBUG_profileStart('dbLoadCountFile')
         let lines = readfile(dbCountFile)
         call ZFVimIM_DEBUG_profileStop()
-        let countMap = {}
         for line in lines
-            let countList = split(line)
-            if len(countList) <= 1
+            let countTextList = split(line)
+            if len(countTextList) <= 1
                 continue
             endif
-            let key = countList[0]
+            let key = countTextList[0]
             if !exists("a:db['dbMap'][key]")
                 continue
             endif
             let dbMapItem = ZFVimIM_dbMapItemDecode(a:db['dbMap'][key])
             let wordListLen = len(dbMapItem['wordList'])
-            for i in range(len(countList) - 1)
+            for i in range(len(countTextList) - 1)
                 if i >= wordListLen
                     break
                 endif
-                let dbMapItem['countList'][i] = countList[i + 1]
+                let dbMapItem['countList'][i] = str2nr(countTextList[i + 1])
             endfor
             call ZFVimIM_dbMapItemReorder(dbMapItem)
             let a:db['dbMap'][key] = ZFVimIM_dbMapItemEncode(dbMapItem)
@@ -420,11 +438,10 @@ function! s:dbSave(db, dbFile, ...)
         let dbCountFile = ''
     endif
 
+    let dbMap = a:db['dbMap']
+    let lines = []
     if empty(dbCountFile)
-        let dbMap = a:db['dbMap']
-        let keys = sort(keys(dbMap))
-        let lines = []
-        for key in keys
+        for key in sort(keys(dbMap))
             let line = key
             for word in ZFVimIM_dbMapItemDecode(dbMap[key])['wordList']
                 let line .= ' '
@@ -436,18 +453,14 @@ function! s:dbSave(db, dbFile, ...)
         call writefile(lines, a:dbFile)
         call ZFVimIM_DEBUG_profileStop()
     else
-        let dbMap = a:db['dbMap']
-        let keys = sort(keys(dbMap))
-        let lines = []
         let countLines = []
-        for key in keys
+        for key in sort(keys(dbMap))
             let line = key
             let countLine = key
             let dbMapItem = ZFVimIM_dbMapItemDecode(dbMap[key])
             for i in range(len(dbMapItem['wordList']))
                 let line .= ' '
                 let line .= substitute(dbMapItem['wordList'][i], ' ', '\\ ', 'g')
-
                 if dbMapItem['countList'][i] > 0
                     let countLine .= ' '
                     let countLine .= dbMapItem['countList'][i]
@@ -573,8 +586,8 @@ function! s:dbEditMap(dbMap, dbEdit)
             endif
             let dbMapItem['countList'][index] = 0
             let sum = 0
-            for count in dbMapItem['countList']
-                let sum += count
+            for cnt in dbMapItem['countList']
+                let sum += cnt
             endfor
             let dbMapItem['countList'][index] = float2nr(dbMapItem['countList'][index] / 2)
             call ZFVimIM_dbMapItemReorder(dbMapItem)
@@ -608,12 +621,10 @@ function! s:dbKeyMapAdd(dbMap, dbKeyMap, key)
     let dbKeyMap = a:dbKeyMap
     for i in range(len(a:key))
         let c = a:key[i]
-        if exists('dbKeyMap[c]')
-            let dbKeyMap = dbKeyMap[c]
-        else
+        if !exists('dbKeyMap[c]')
             let dbKeyMap[c] = {}
-            let dbKeyMap = dbKeyMap[c]
         endif
+        let dbKeyMap = dbKeyMap[c]
     endfor
     let dbKeyMap[g:ZFVimIM_KEY_HAS_WORD] = ''
 endfunction
