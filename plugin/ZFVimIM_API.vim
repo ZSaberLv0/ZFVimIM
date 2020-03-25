@@ -47,6 +47,9 @@ endif
 "       },
 "       ...
 "     ],
+"     'implData' : {
+"       // extra data for impl
+"     },
 "   },
 "   ...
 " ]
@@ -70,6 +73,7 @@ function! ZFVimIM_dbInit(option)
                 \   'dbMap' : {},
                 \   'dbKeyMap' : {},
                 \   'dbEdit' : [],
+                \   'implData' : {},
                 \ }, a:option)
     call add(g:ZFVimIM_db, db)
     return db

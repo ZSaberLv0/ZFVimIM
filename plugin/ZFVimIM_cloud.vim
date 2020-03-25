@@ -127,6 +127,16 @@ function! ZFVimIM_cloud_dbUploadCmd(cloudOption)
                     \ . ' "' . a:cloudOption['gitUserToken'] . '"'
     endif
 endfunction
+function! ZFVimIM_cloud_dbCleanupCheckCmd(cloudOption)
+    if has('unix')
+        return 'sh'
+                    \ . ' "' . s:scriptPath . 'dbCleanupCheck.sh' . '"'
+                    \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
+    else
+        return '"' . s:scriptPath . 'dbCleanupCheck.bat' . '"'
+                    \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
+    endif
+endfunction
 function! ZFVimIM_cloud_dbCleanupCmd(cloudOption)
     if has('unix')
         let path = split(globpath(&rtp, '/misc/git_hard_remove_all_history.sh'), '\n')

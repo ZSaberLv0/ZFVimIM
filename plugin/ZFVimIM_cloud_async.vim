@@ -283,12 +283,12 @@ function! s:uploadAsync(cloudOption, mode)
         if g:ZFVimIM_cloudAsync_autoCleanup > 0 && ZFVimIM_cloud_gitInfoSupplied(a:cloudOption)
             let dbCleanupCmd = ZFVimIM_cloud_dbCleanupCmd(a:cloudOption)
             if !empty(dbCleanupCmd)
-                call ZFVimIM_DEBUG_profileStart('dbCleanupCheck')
-                let history = system('cd "' . a:cloudOption['repoPath'] . '" && git rev-list --count HEAD')
-                call ZFVimIM_DEBUG_profileStop()
-                let history = substitute(history, '[\r\n]', '', 'g')
-                let history = str2nr(history)
-                if history >= g:ZFVimIM_cloudAsync_autoCleanup
+                call add(groupJobOption['jobList'], [{
+                            \   'jobCmd' : ZFVimIM_cloud_dbCleanupCheckCmd(a:cloudOption),
+                            \   'onOutput' : ZFJobFunc(function('s:UA_dbCleanupCheckOnOutput'), [dbIndex]),
+                            \ }])
+
+                if get(g:ZFVimIM_db[dbIndex]['implData'], '_dbCleanupHistory', 0) >= g:ZFVimIM_cloudAsync_autoCleanup
                     call add(groupJobOption['jobList'], [{
                                 \   'jobCmd' : dbCleanupCmd,
                                 \   'onOutput' : ZFJobFunc(function('s:UA_dbCleanupOnOutput'), [dbIndex]),
@@ -431,6 +431,16 @@ function! s:UA_dbUploadOnOutput(dbIndex, jobStatus, text, type)
     call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'pushing : ' . a:text)
 endfunction
 
+function! s:UA_dbCleanupCheckOnOutput(dbIndex, jobStatus, text, type)
+    let task = get(s:UA_taskMap, a:dbIndex, {})
+    if empty(task)
+        return
+    endif
+    let history = substitute(a:text, '[\r\n]', '', 'g')
+    let history = str2nr(history)
+    let g:ZFVimIM_db[a:dbIndex]['implData']['_dbCleanupHistory'] = history
+    call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'history : ' . history)
+endfunction
 function! s:UA_dbCleanupOnOutput(dbIndex, jobStatus, text, type)
     let task = get(s:UA_taskMap, a:dbIndex, {})
     if empty(task)
