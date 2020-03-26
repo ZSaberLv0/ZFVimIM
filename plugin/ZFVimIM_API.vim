@@ -13,7 +13,9 @@ endif
 
 " db : [
 "   { // name,dbMap,dbKeyMap,dbEdit
-"     'name' : 'name of the db',
+"     'dbId' : 'auto generated id',
+"     'name' : 'name of the db, ZFVimIM by default',
+"     'priority' : 'priority of the db, smaller value has higher priority, 100 by default',
 "     'dbMap' : {
 "       // use plain string to save memory
 "       'a' : '啊\n阿\r123\n0',
@@ -67,16 +69,53 @@ augroup ZFVimIM_event_OnUpdateDb_augroup
 augroup END
 
 " ============================================================
-function! ZFVimIM_dbInit(option)
+function! ZFVimIM_dbInit(option, ...)
     let db = extend({
-                \   'name' : 'db' . g:ZFVimIM_dbIndex,
+                \   'dbId' : -1,
+                \   'name' : 'ZFVimIM',
+                \   'priority' : get(a:, 1, 100),
                 \   'dbMap' : {},
                 \   'dbKeyMap' : {},
                 \   'dbEdit' : [],
                 \   'implData' : {},
                 \ }, a:option)
-    call add(g:ZFVimIM_db, db)
+
+    let s:dbId = get(s:, 'dbId', 0) + 1
+    while ZFVimIM_dbIndexForId(s:dbId) >= 0
+        let s:dbId += 1
+        if s:dbId <= 0
+            let s:dbId = 1
+        endif
+    endwhile
+    let db['dbId'] = s:dbId
+
+    let index = len(g:ZFVimIM_db) - 1
+    while index >= 0 && db['priority'] < g:ZFVimIM_db[index]['priority']
+        let index -= 1
+    endwhile
+    if index < 0
+        let index = 0
+    endif
+    call insert(g:ZFVimIM_db, db, index)
+
     return db
+endfunction
+
+function! ZFVimIM_dbIndexForId(dbId)
+    for dbIndex in range(len(g:ZFVimIM_db))
+        if g:ZFVimIM_db[dbIndex]['dbId'] == a:dbId
+            return dbIndex
+        endif
+    endfor
+    return -1
+endfunction
+function! ZFVimIM_dbForId(dbId)
+    for dbIndex in range(len(g:ZFVimIM_db))
+        if g:ZFVimIM_db[dbIndex]['dbId'] == a:dbId
+            return g:ZFVimIM_db[dbIndex]
+        endif
+    endfor
+    return {}
 endfunction
 
 function! ZFVimIM_dbLoad(db, dbFile, ...)

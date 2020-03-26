@@ -335,7 +335,7 @@ function! s:IME_update()
     if g:ZFVimIM_dbIndex < len(g:ZFVimIM_db)
         let b:keymap_name=g:ZFVimIM_db[g:ZFVimIM_dbIndex]['name']
     else
-        let b:keymap_name='ZFVimIME'
+        let b:keymap_name='ZFVimIM'
     endif
 endfunction
 

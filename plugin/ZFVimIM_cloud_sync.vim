@@ -165,7 +165,7 @@ function! s:cloudSyncLog(msg)
 endfunction
 
 function! s:initSync(cloudOption)
-    let db = g:ZFVimIM_db[a:cloudOption['dbIndex']]
+    let db = ZFVimIM_dbForId(a:cloudOption['dbId'])
     call ZFVimIM_dbLoad(db, ZFVimIM_cloud_file(a:cloudOption, 'dbFile'), ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile'))
 endfunction
 
@@ -183,7 +183,7 @@ function! s:uploadSync(cloudOption, mode)
         return
     endif
 
-    let db = g:ZFVimIM_db[a:cloudOption['dbIndex']]
+    let db = ZFVimIM_dbForId(a:cloudOption['dbId'])
     if !downloadOnly && empty(db['dbEdit'])
         redraw!
         call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'canceled: nothing to push')
@@ -208,7 +208,7 @@ function! s:uploadSync(cloudOption, mode)
     call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'merging...')
     let dbFile = ZFVimIM_cloud_file(a:cloudOption, 'dbFile')
     let dbCountFile = ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile')
-    let db = g:ZFVimIM_db[a:cloudOption['dbIndex']]
+    let db = ZFVimIM_dbForId(a:cloudOption['dbId'])
     let dbNew = {}
     call ZFVimIM_dbLoad(dbNew, dbFile, dbCountFile)
 
