@@ -147,7 +147,7 @@ function! s:autoUploadAsync_timeout(...)
 endfunction
 function! s:autoUploadAsyncAction()
     for cloudOption in g:ZFVimIM_cloudOption
-        call s:uploadAsync(cloudOption, 'upload')
+        call s:uploadAsync(cloudOption, 'autoUpload')
     endfor
 endfunction
 
@@ -201,11 +201,14 @@ endfunction
 " * init
 " * download
 " * askIfNoGitInfo
-" * upload
+" * autoUpload
 function! s:uploadAsync(cloudOption, mode)
     let dbId = a:cloudOption['dbId']
     let db = ZFVimIM_dbForId(dbId)
     if exists('s:UA_taskMap[dbId]') || empty(db)
+        return
+    endif
+    if a:mode == 'autoUpload' && empty(db['dbEdit'])
         return
     endif
 

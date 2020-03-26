@@ -70,10 +70,12 @@ augroup END
 
 " ============================================================
 function! ZFVimIM_dbInit(option, ...)
+    let priority = get(a:, 1, 100)
+
     let db = extend({
                 \   'dbId' : -1,
                 \   'name' : 'ZFVimIM',
-                \   'priority' : get(a:, 1, 100),
+                \   'priority' : priority,
                 \   'dbMap' : {},
                 \   'dbKeyMap' : {},
                 \   'dbEdit' : [],
@@ -214,6 +216,7 @@ endfunction
 
 " return : [
 "   {
+"     'dbId' : 'match from which db',
 "     'len' : 'match count in key',
 "     'key' : 'matched full key',
 "     'word' : 'matched word',
@@ -227,37 +230,50 @@ endfunction
 "   },
 "   ...
 " ]
-function! ZFVimIM_complete(key)
-    return s:complete(a:key)
+function! ZFVimIM_complete(key, ...)
+    " option: {
+    "   'sentence' : 0/1,
+    "   'predict' : 'maxNum, default to g:ZFVimIM_predictLimit',
+    " }
+    let option = get(a:, 1, {})
+    let db = get(a:, 2, {})
+    return s:complete(a:key, option, db)
 endfunction
 
 " ============================================================
-function! s:complete(key)
-    if empty(a:key) || g:ZFVimIM_dbIndex >= len(g:ZFVimIM_db)
+function! s:complete(key, option, db)
+    let db = a:db
+    if empty(db) && g:ZFVimIM_dbIndex < len(g:ZFVimIM_db)
+        let db = g:ZFVimIM_db[g:ZFVimIM_dbIndex]
+    endif
+    if empty(a:key) || empty(db)
         return []
     endif
     let key = a:key
     let keyLen = len(key)
-    let dbMap = g:ZFVimIM_db[g:ZFVimIM_dbIndex]['dbMap']
+    let dbMap = db['dbMap']
 
     " sentence
     let sentenceRet = []
-    let sentence = {
-                \   'len' : 0,
-                \   'key' : '',
-                \   'word' : '',
-                \   'type' : 'sentence',
-                \   'sentenceList' : [],
-                \ }
-    if s:sentence(sentence, dbMap, key, keyLen) > 1
-        call add(sentenceRet, sentence)
+    if get(a:option, 'sentence', 1)
+        let sentence = {
+                    \   'dbId' : db['dbId'],
+                    \   'len' : 0,
+                    \   'key' : '',
+                    \   'word' : '',
+                    \   'type' : 'sentence',
+                    \   'sentenceList' : [],
+                    \ }
+        if s:sentence(sentence, dbMap, key, keyLen) > 1
+            call add(sentenceRet, sentence)
+        endif
     endif
 
     " predict
     let predictRet = []
-    if g:ZFVimIM_predictLimit != 0
+    if get(a:option, 'predict', g:ZFVimIM_predictLimit) > 0
         let predictPrefix = ''
-        let predictDb = g:ZFVimIM_db[g:ZFVimIM_dbIndex]['dbKeyMap']
+        let predictDb = db['dbKeyMap']
         let i = 0
         while i < keyLen
             let c = key[i]
@@ -272,7 +288,7 @@ function! s:complete(key)
             let i += 1
         endwhile
         if !empty(predictDb)
-            call s:predict(predictRet, len(predictRet), dbMap, len(predictPrefix), predictPrefix, predictDb)
+            call s:predict(predictRet, len(predictRet), db, len(predictPrefix), predictPrefix, predictDb, a:option)
         endif
     endif
 
@@ -364,24 +380,25 @@ function! s:sentence(match, dbMap, key, keyLen)
     return 0
 endfunction
 
-function! s:predict(ret, retInitLen, dbMap, prefixLen, predictPrefix, predictDb)
+function! s:predict(ret, retInitLen, db, prefixLen, predictPrefix, predictDb, option)
     for c in keys(a:predictDb)
         if c != g:ZFVimIM_KEY_HAS_WORD
-            call s:predict(a:ret, a:retInitLen, a:dbMap, a:prefixLen, a:predictPrefix . c, a:predictDb[c])
-            if g:ZFVimIM_predictLimit > 0 && len(a:ret) - a:retInitLen >= g:ZFVimIM_predictLimit
+            call s:predict(a:ret, a:retInitLen, a:db, a:prefixLen, a:predictPrefix . c, a:predictDb[c], a:option)
+            if len(a:ret) - a:retInitLen >= get(a:option, 'predict', g:ZFVimIM_predictLimit)
                 return
             endif
         endif
 
         if c == g:ZFVimIM_KEY_HAS_WORD
-            for word in ZFVimIM_dbMapItemDecode(a:dbMap[a:predictPrefix])['wordList']
+            for word in ZFVimIM_dbMapItemDecode(a:db['dbMap'][a:predictPrefix])['wordList']
                 call add(a:ret, {
+                            \   'dbId' : a:db['dbId'],
                             \   'len' : a:prefixLen,
                             \   'key' : a:predictPrefix,
                             \   'word' : word,
                             \   'type' : 'predict',
                             \ })
-                if g:ZFVimIM_predictLimit > 0 && len(a:ret) - a:retInitLen >= g:ZFVimIM_predictLimit
+                if len(a:ret) - a:retInitLen >= get(a:option, 'predict', g:ZFVimIM_predictLimit)
                     return
                 endif
             endfor
@@ -653,10 +670,6 @@ function! s:dbEditKeyMap(dbMap, dbKeyMap, dbEdit)
 endfunction
 
 function! s:dbKeyMapAdd(dbMap, dbKeyMap, key)
-    if g:ZFVimIM_predictLimit == 0
-        return
-    endif
-
     let dbKeyMap = a:dbKeyMap
     for i in range(len(a:key))
         let c = a:key[i]
@@ -669,10 +682,6 @@ function! s:dbKeyMapAdd(dbMap, dbKeyMap, key)
 endfunction
 
 function! s:dbKeyMapRemove(dbMap, dbKeyMap, key)
-    if g:ZFVimIM_predictLimit == 0
-        return
-    endif
-
     let dbKeyMapStack = []
     let charStack = []
     let dbKeyMap = a:dbKeyMap
