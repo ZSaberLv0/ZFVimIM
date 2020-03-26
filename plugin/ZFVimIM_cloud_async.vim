@@ -372,13 +372,22 @@ function! s:UA_dbLoadOnExit(dbIndex, jobStatus, exitCode)
     if empty(task)
         return
     endif
-    call ZFVimIM_DEBUG_profileStart('dbLoadJsonFile')
-    let dbLoadJsonFileContent = readfile(task['dbLoadJsonFile'])[0]
-    call ZFVimIM_DEBUG_profileStop()
-    call ZFVimIM_DEBUG_profileStart('dbLoadJson')
-    let dbNew = json_decode(dbLoadJsonFileContent)
-    call ZFVimIM_DEBUG_profileStop()
+
     let db = g:ZFVimIM_db[a:dbIndex]
+    if !empty(db['dbMap'])
+        let dbNew = {
+                    \   'dbMap' : db['dbMap'],
+                    \   'dbKeyMap' : db['dbKeyMap'],
+                    \ }
+    else
+        call ZFVimIM_DEBUG_profileStart('dbLoadJsonFile')
+        let dbLoadJsonFileContent = readfile(task['dbLoadJsonFile'])[0]
+        call ZFVimIM_DEBUG_profileStop()
+        call ZFVimIM_DEBUG_profileStart('dbLoadJson')
+        let dbNew = json_decode(dbLoadJsonFileContent)
+        call ZFVimIM_DEBUG_profileStop()
+    endif
+
     if task['initOnly']
         let db['dbMap'] = dbNew['dbMap']
         let db['dbKeyMap'] = dbNew['dbKeyMap']
