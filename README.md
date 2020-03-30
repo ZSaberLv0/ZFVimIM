@@ -95,7 +95,7 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     Plugin 'ZSaberLv0/ZFVimGitUtil'
     ```
 
-1. supply your git info (make sure it has `git push` permission)
+1. supply your git info (make sure it has `git push` [permission](https://github.com/settings/tokens))
 
     ```
     let g:ZFVimIM_pinyin_gitUserEmail='YourEmail'
