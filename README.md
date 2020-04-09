@@ -41,7 +41,7 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 
     ```
     Plugin 'ZSaberLv0/ZFVimIM'
-    Plugin 'ZSaberLv0/ZFVimIM_pinyin' " repo that contain db files, see `cloud input (minimal recommend config)`
+    Plugin 'YourUserName/YourDbRepo' " repo that contain db files, see `cloud input (minimal recommend config)`
 
     Plugin 'ZSaberLv0/ZFVimJob' " optional, for async db update
     Plugin 'ZSaberLv0/ZFVimGitUtil' " optional, see `g:ZFVimIM_cloudAsync_autoCleanup`
@@ -85,12 +85,12 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 
 ## cloud input (minimal recommend config)
 
-1. fork [ZSaberLv0/ZFVimIM_pinyin](https://github.com/ZSaberLv0/ZFVimIM_pinyin)
-    and use `Plugin 'YourUserName/ZFVimIM_pinyin'`
+1. fork [ZSaberLv0/ZFVimIM_pinyin_base](https://github.com/ZSaberLv0/ZFVimIM_pinyin_base)
+    to `Plugin 'YourUserName/ZFVimIM_pinyin_base'`
 
     ```
     Plugin 'ZSaberLv0/ZFVimIM'
-    Plugin 'YourUserName/ZFVimIM_pinyin'
+    Plugin 'YourUserName/ZFVimIM_pinyin_base'
     Plugin 'ZSaberLv0/ZFVimJob'
     Plugin 'ZSaberLv0/ZFVimGitUtil'
     ```
@@ -110,7 +110,7 @@ once configured properly, your db changes would be pushed to Github automaticall
 requirement:
 
 * register and supply your db repo and git info
-    (see [ZSaberLv0/ZFVimIM_pinyin](https://github.com/ZSaberLv0/ZFVimIM_pinyin) for how to implement)
+    (see [ZSaberLv0/ZFVimIM_pinyin_base](https://github.com/ZSaberLv0/ZFVimIM_pinyin_base) for how to implement)
 * (optional) have [ZSaberLv0/ZFVimJob](https://github.com/ZSaberLv0/ZFVimJob) installed and `ZFJobAvailable()`,
     for async pull and push
 * (optional) have `has('python')` or `has('python3')` support for better save/load performance
@@ -124,8 +124,23 @@ if it's hard to support async mode, you may also:
 
 
 of course, you must have push permission for db repo,
-feel free to fork the default repo (`ZSaberLv0/ZFVimIM_pinyin`),
+feel free to fork the default repo (`ZSaberLv0/ZFVimIM_pinyin_base`),
 or supply your own db repo
+
+
+**NOTE:**
+
+since db files are pretty personal,
+the default db only contains single word,
+words would be created during your usage
+
+if you prefer other choices:
+
+* [ZSaberLv0/ZFVimIM_pinyin](https://github.com/ZSaberLv0/ZFVimIM_pinyin) :
+    which I personally used
+* [ZSaberLv0/ZFVimIM_pinyin_huge](https://github.com/ZSaberLv0/ZFVimIM_pinyin_huge) :
+    if you want to test huge db
+
 
 **NOTE:**
 
@@ -138,14 +153,6 @@ it's recommended to clean up it occasionally, by:
     use [ZSaberLv0/ZFVimGitUtil](https://github.com/ZSaberLv0/ZFVimGitUtil)'s
     `:ZFGitHardRemoveAllHistory` to remove all history commits,
     or use `g:ZFVimIM_cloudAsync_autoCleanup` for short
-
-**NOTE:**
-
-the default db (which I personally used) is not huge and complete,
-because huge db may cause huge loading time (especially when you have no `python` support),
-and huge memory consume
-
-if you prefer huge db, here's one: [ZSaberLv0/ZFVimIM_pinyin_huge](https://github.com/ZSaberLv0/ZFVimIM_pinyin_huge)
 
 
 # configs
