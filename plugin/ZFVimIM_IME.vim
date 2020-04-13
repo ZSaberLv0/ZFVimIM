@@ -135,10 +135,10 @@ function! ZFVimIME_started()
 endfunction
 
 function! ZFVimIME_start()
-    let s:started = 1
-    call s:IME_stop()
-    let ret = s:IME_start()
+    call ZFVimIME_stop()
     doautocmd User ZFVimIM_event_OnStart
+    let s:started = 1
+    let ret = s:IME_start()
     return ret
 endfunction
 
@@ -347,13 +347,15 @@ function! s:IME_start()
     silent! call s:setupKeymap()
     call s:IME_update()
     let b:ZFVimIME_started = 1
+
+    let s:seamless_positions = getpos('.')
+
+    " :h i_CTRL-^
     silent! execute 'silent! return "' . nr2char(30) . '"'
 endfunction
 
 function! s:IME_stop()
-    if has('gui_running')
-        lmapclear
-    endif
+    lmapclear
     silent! call s:vimrcRestore()
     silent! call s:resetSuper()
     silent! unlet b:ZFVimIME_started
@@ -362,6 +364,7 @@ endfunction
 
 function! s:IME_syncBuffer_delay(...)
     if s:started && !get(b:, 'ZFVimIME_started', 0)
+        call ZFVimIME_stop()
         call ZFVimIME_start()
     endif
     redraw!
@@ -371,6 +374,7 @@ function! s:IME_syncBuffer()
         if has('timers')
             call timer_start(0, function('s:IME_syncBuffer_delay'))
         else
+            call ZFVimIME_stop()
             call ZFVimIME_start()
         endif
     endif

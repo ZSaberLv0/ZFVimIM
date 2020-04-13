@@ -242,7 +242,7 @@ it's recommended to clean up it occasionally, by:
     * (when entering command) use these keymaps:
 
         ```
-        function! s:cmdEdit()
+        function! ZF_Setting_cmdEdit()
             let cmdtype = getcmdtype()
             if cmdtype != ':' && cmdtype != '/'
                 return ''
@@ -250,22 +250,11 @@ it's recommended to clean up it occasionally, by:
             call feedkeys("\<c-c>q" . cmdtype . 'k0' . (getcmdpos() - 1) . 'li', 'nt')
             return ''
         endfunction
-        cnoremap <silent><expr> ;; s:cmdEdit()
+        cnoremap <silent><expr> ;; ZF_Setting_cmdEdit()
         ```
 
 
 # known issue
-
-* when used with complete engines (such as `coc.nvim`)
-    while switching buffers or toggle ZFVimIM,
-    some weird state may occur,
-    you have to quit vim to reset this issue
-
-    it's possibly caused by `:lmap`,
-    but I have no idea how to solve this
-
-    please consider create [PR](https://github.com/ZSaberLv0/ZFVimIM/compare)
-    if you know how to solve it
 
 * too slow
 
