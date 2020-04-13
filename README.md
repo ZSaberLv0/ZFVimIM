@@ -8,6 +8,7 @@
     * [cloud input (detail config)](#cloud-input-detail-config)
 * [configs](#configs)
 * [functions](#functions)
+* [FAQ](#faq)
 * [known issue](#known-issue)
 
 <!-- vim-markdown-toc -->
@@ -22,6 +23,7 @@ Outstanding features / why another remake:
 * auto create user word during input
 * auto re-order word priority accorrding to your input history
 * cloud input, auto pull and push your db file from/to Github
+* better txt db load performance if `has('python')`
 
 ![](https://raw.githubusercontent.com/ZSaberLv0/ZFVimIM/master/preview.gif)
 
@@ -228,6 +230,29 @@ it's recommended to clean up it occasionally, by:
 
     manually reorder word priority,
     by reducing it's input history count to a proper value
+
+
+# FAQ
+
+* Q: How to use in `Command-line` (search or command) ?
+
+    A: ZFVimIM can be used inside `command-line-window`, you may:
+
+    * (in normal mode) use `q:` or `q/` to enter `command-line-window`
+    * (when entering command) use these keymaps:
+
+        ```
+        function! s:cmdEdit()
+            let cmdtype = getcmdtype()
+            if cmdtype != ':' && cmdtype != '/'
+                return ''
+            endif
+            call feedkeys("\<c-c>q" . cmdtype . 'k0' . (getcmdpos() - 1) . 'li', 'nt')
+            return ''
+        endfunction
+        cnoremap <silent><expr> ;; s:cmdEdit()
+        ```
+
 
 # known issue
 
