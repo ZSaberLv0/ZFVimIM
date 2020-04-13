@@ -69,18 +69,19 @@ augroup ZFVimIM_event_OnUpdateDb_augroup
 augroup END
 
 " ============================================================
-function! ZFVimIM_dbInit(option, ...)
-    let priority = get(a:, 1, 100)
-
+function! ZFVimIM_dbInit(option)
     let db = extend({
                 \   'dbId' : -1,
                 \   'name' : 'ZFVimIM',
-                \   'priority' : priority,
+                \   'priority' : -1,
                 \   'dbMap' : {},
                 \   'dbKeyMap' : {},
                 \   'dbEdit' : [],
                 \   'implData' : {},
                 \ }, a:option)
+    if db['priority'] < 0
+        let db['priority'] = 100
+    endif
 
     let s:dbId = get(s:, 'dbId', 0) + 1
     while ZFVimIM_dbIndexForId(s:dbId) >= 0

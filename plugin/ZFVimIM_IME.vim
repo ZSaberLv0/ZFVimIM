@@ -156,10 +156,19 @@ function! ZFVimIME_next()
     if !s:started
         return ZFVimIME_start()
     endif
-    let g:ZFVimIM_dbIndex += 1
-    if g:ZFVimIM_dbIndex >= len(g:ZFVimIM_db)
-        let g:ZFVimIM_dbIndex = 0
+    call ZFVimIME_switchToIndex(g:ZFVimIM_dbIndex + 1)
+    return ''
+endfunction
+
+function! ZFVimIME_switchToIndex(dbIndex)
+    let dbIndex = a:dbIndex
+    if dbIndex >= len(g:ZFVimIM_db) || dbIndex < 0
+        let dbIndex = 0
     endif
+    if dbIndex == g:ZFVimIM_dbIndex
+        return ''
+    endif
+    let g:ZFVimIM_dbIndex = dbIndex
     call s:IME_update()
     doautocmd User ZFVimIM_event_OnDbChange
     return ''
