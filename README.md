@@ -6,10 +6,12 @@
 * [cloud input](#cloud-input)
     * [cloud input (minimal recommend config)](#cloud-input-minimal-recommend-config)
     * [cloud input (detail config)](#cloud-input-detail-config)
-* [configs](#configs)
-* [functions](#functions)
-* [FAQ](#faq)
-* [known issue](#known-issue)
+* [db repos](#db-repos)
+* [detailed](#detailed)
+    * [configs](#configs)
+    * [functions](#functions)
+    * [FAQ](#faq)
+    * [known issue](#known-issue)
 
 <!-- vim-markdown-toc -->
 
@@ -157,7 +159,19 @@ it's recommended to clean up it occasionally, by:
     or use `g:ZFVimIM_cloudAsync_autoCleanup` for short
 
 
-# configs
+# db repos
+
+* [ZSaberLv0/ZFVimIM_pinyin_base](https://github.com/ZSaberLv0/ZFVimIM_pinyin_base) :
+    base pinyin repo that only contain single word
+* [ZSaberLv0/ZFVimIM_pinyin](https://github.com/ZSaberLv0/ZFVimIM_pinyin) :
+    pinyin repo which I personally used
+* [ZSaberLv0/ZFVimIM_wubi_base](https://github.com/ZSaberLv0/ZFVimIM_wubi_base) :
+    wubi which converted from [ywvim](https://github.com/vim-scripts/ywvim)
+
+
+# detailed
+
+## configs
 
 * `let g:ZFVimIM_predictLimitWhenMatch = 5`
 
@@ -211,7 +225,7 @@ it's recommended to clean up it occasionally, by:
     to reduce the time you first `ZFVimIME_start()`
 
 
-# functions
+## functions
 
 * `ZFVimIME_start()` `ZFVimIME_stop()` `ZFVimIME_toggle()` `ZFVimIME_next()`
 
@@ -232,7 +246,7 @@ it's recommended to clean up it occasionally, by:
     by reducing it's input history count to a proper value
 
 
-# FAQ
+## FAQ
 
 * Q: How to use in `Command-line` (search or command) ?
 
@@ -254,7 +268,7 @@ it's recommended to clean up it occasionally, by:
         ```
 
 
-# known issue
+## known issue
 
 * too slow
 
