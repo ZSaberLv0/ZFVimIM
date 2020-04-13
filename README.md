@@ -6,7 +6,7 @@
 * [cloud input](#cloud-input)
     * [cloud input (minimal recommend config)](#cloud-input-minimal-recommend-config)
     * [cloud input (detail config)](#cloud-input-detail-config)
-* [db repos](#db-repos)
+* [db samples](#db-samples)
 * [detailed](#detailed)
     * [configs](#configs)
     * [functions](#functions)
@@ -138,12 +138,7 @@ since db files are pretty personal,
 the default db only contains single word,
 words would be created during your usage
 
-if you prefer other choices:
-
-* [ZSaberLv0/ZFVimIM_pinyin](https://github.com/ZSaberLv0/ZFVimIM_pinyin) :
-    which I personally used
-* [ZSaberLv0/ZFVimIM_pinyin_huge](https://github.com/ZSaberLv0/ZFVimIM_pinyin_huge) :
-    if you want to test huge db
+if you prefer other choices, see [db samples](https://github.com/ZSaberLv0/ZFVimIM#db-samples):
 
 
 **NOTE:**
@@ -159,14 +154,22 @@ it's recommended to clean up it occasionally, by:
     or use `g:ZFVimIM_cloudAsync_autoCleanup` for short
 
 
-# db repos
+# db samples
 
-* [ZSaberLv0/ZFVimIM_pinyin_base](https://github.com/ZSaberLv0/ZFVimIM_pinyin_base) :
-    base pinyin repo that only contain single word
 * [ZSaberLv0/ZFVimIM_pinyin](https://github.com/ZSaberLv0/ZFVimIM_pinyin) :
-    pinyin repo which I personally used
+    pinyin repo which I personally used,
+    update frequently
+* [ZSaberLv0/ZFVimIM_pinyin_base](https://github.com/ZSaberLv0/ZFVimIM_pinyin_base) :
+    base pinyin repo that only contain single word,
+    recommended if you care about performance
+    or want to create personal user word during usage
+* [ZSaberLv0/ZFVimIM_pinyin_huge](https://github.com/ZSaberLv0/ZFVimIM_pinyin_base) :
+    huge pinyin repo that contains many words,
+    it's converted from other IME and haven't been daily used,
+    which may contain many useless words,
+    I put it here just in case you prefer huge db or want to test huge db's performance
 * [ZSaberLv0/ZFVimIM_wubi_base](https://github.com/ZSaberLv0/ZFVimIM_wubi_base) :
-    wubi which converted from [ywvim](https://github.com/vim-scripts/ywvim)
+    wubi converted from [ywvim](https://github.com/vim-scripts/ywvim)
 
 
 # detailed
