@@ -15,6 +15,7 @@ augroup ZFVimIME_augroup
     autocmd User ZFVimIM_event_OnStop silent
 
     " added word can be checked by g:ZFVimIM_event_OnAddWord : {
+    "   'dbId' : 'add to which db',
     "   'key' : 'matched full key',
     "   'word' : 'matched word',
     " }
@@ -596,8 +597,11 @@ function! s:popupMenuList(complete)
         else
             let complete_items['menu'] = item['key']
         endif
+        if item['dbId'] != g:ZFVimIM_db[g:ZFVimIM_dbIndex]['dbId']
+            let complete_items['menu'] .= '  <' . ZFVimIM_dbForId(item['dbId'])['name'] . '>'
+        endif
         if get(g:, 'ZFVimIME_DEBUG', 0)
-            let complete_items['menu'] .= ' (' . item['type'] . ')'
+            let complete_items['menu'] .= '  (' . item['type'] . ')'
         endif
         let complete_items['dup'] = 1
         let complete_items['word'] = item['word'] . left
@@ -614,10 +618,13 @@ function! s:popupMenuList(complete)
 endfunction
 
 
-function! s:addWord(key, word)
-    call ZFVimIM_wordAdd(a:word, a:key)
+function! s:addWord(dbId, key, word)
+    if a:dbId == g:ZFVimIM_db[g:ZFVimIM_dbIndex]['dbId']
+        call ZFVimIM_wordAdd(a:word, a:key)
+    endif
 
     let g:ZFVimIM_event_OnAddWord = {
+                \   'dbId' : a:dbId,
                 \   'key' : a:key,
                 \   'word' : a:word,
                 \ }
@@ -647,7 +654,7 @@ function! s:OnCompleteDone()
 
     if item['type'] == 'sentence'
         for word in item['sentenceList']
-            call s:addWord(word['key'], word['word'])
+            call s:addWord(item['dbId'], word['key'], word['word'])
         endfor
         let s:userWord = []
         return
@@ -664,15 +671,20 @@ function! s:addWordFromUserWord()
     if !empty(s:userWord)
         let sentenceKey = ''
         let sentenceWord = ''
+        let hasOtherDb = 0
+        let dbIdCur = g:ZFVimIM_db[g:ZFVimIM_dbIndex]['dbId']
         for word in s:userWord
+            if !hasOtherDb
+                let hasOtherDb = (dbIdCur != word['dbId'])
+            endif
             let sentenceKey .= word['key']
             let sentenceWord .= word['word']
         endfor
-        if len(sentenceWord) <= g:ZFVimIM_autoAddWordLen
-            call s:addWord(sentenceKey, sentenceWord)
+        if !hasOtherDb && len(sentenceWord) <= g:ZFVimIM_autoAddWordLen
+            call s:addWord(s:userWord[0]['dbId'], sentenceKey, sentenceWord)
         else
             for word in s:userWord
-                call s:addWord(word['key'], word['word'])
+                call s:addWord(word['dbId'], word['key'], word['word'])
             endfor
         endif
     endif

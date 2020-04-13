@@ -7,6 +7,19 @@ if !exists('g:ZFVimIM_predictLimit')
     let g:ZFVimIM_predictLimit = 10
 endif
 
+if !exists('g:ZFVimIM_crossDbLimitWhenMatch')
+    let g:ZFVimIM_crossDbLimitWhenMatch = 2
+endif
+if !exists('g:ZFVimIM_crossDbLimit')
+    let g:ZFVimIM_crossDbLimit = 4
+endif
+if !exists('g:ZFVimIM_crossDbMatchOnly')
+    let g:ZFVimIM_crossDbMatchOnly = 1
+endif
+if !exists('g:ZFVimIM_crossDbPos')
+    let g:ZFVimIM_crossDbPos = 5
+endif
+
 if !exists('g:ZFVimIM_cachePath')
     let g:ZFVimIM_cachePath = get(g:, 'zf_vim_cache_path', $HOME . '/.vim_cache')
 endif
@@ -58,7 +71,9 @@ endif
 if !exists('g:ZFVimIM_db')
     let g:ZFVimIM_db = []
 endif
-let g:ZFVimIM_dbIndex = 0
+if !exists('g:ZFVimIM_dbIndex')
+    let g:ZFVimIM_dbIndex = 0
+endif
 
 let g:ZFVimIM_KEY_HAS_WORD = '@@'
 
@@ -215,6 +230,12 @@ function! ZFVimIM_dbMapItemEncode(dbMapItem)
     return join(a:dbMapItem['wordList'], "\n") . "\r" . strpart(countText, 0, len(countText) - 1)
 endfunction
 
+" option: {
+"   'sentence' : '0/1',
+"   'crossDb' : 'maxNum, default to g:ZFVimIM_crossDbLimit',
+"   'predict' : 'maxNum, default to g:ZFVimIM_predictLimit',
+"   'match' : 'maxNum, default to -1',
+" }
 " return : [
 "   {
 "     'dbId' : 'match from which db',
@@ -232,17 +253,13 @@ endfunction
 "   ...
 " ]
 function! ZFVimIM_complete(key, ...)
-    " option: {
-    "   'sentence' : 0/1,
-    "   'predict' : 'maxNum, default to g:ZFVimIM_predictLimit',
-    " }
     let option = get(a:, 1, {})
     let db = get(a:, 2, {})
-    return s:complete(a:key, option, db)
+    return ZFVimIM_completeDefault(a:key, option, db)
 endfunction
 
 " ============================================================
-function! s:complete(key, option, db)
+function! ZFVimIM_completeDefault(key, option, db)
     let db = a:db
     if empty(db) && g:ZFVimIM_dbIndex < len(g:ZFVimIM_db)
         let db = g:ZFVimIM_db[g:ZFVimIM_dbIndex]
@@ -267,6 +284,30 @@ function! s:complete(key, option, db)
                     \ }
         if s:sentence(sentence, dbMap, key, keyLen) > 1
             call add(sentenceRet, sentence)
+        endif
+    endif
+
+    " crossDb
+    let crossDbRet = []
+    if get(a:option, 'crossDb', g:ZFVimIM_crossDbLimit) > 0
+        for crossDbTmp in g:ZFVimIM_db
+            if crossDbTmp['dbId'] != db['dbId']
+                call extend(crossDbRet, ZFVimIM_complete(key, {
+                            \   'sentence' : 0,
+                            \   'crossDb' : 0,
+                            \   'predict' : 0,
+                            \   'match' : get(a:option, 'crossDb', g:ZFVimIM_crossDbLimit),
+                            \ }, crossDbTmp))
+            endif
+        endfor
+        if g:ZFVimIM_crossDbMatchOnly && !empty(crossDbRet)
+            let crossDbRetIndex = len(crossDbRet) - 1
+            while crossDbRetIndex >= 0
+                if crossDbRet[crossDbRetIndex]['key'] != key
+                    call remove(crossDbRet, crossDbRetIndex)
+                endif
+                let crossDbRetIndex -= 1
+            endwhile
         endif
     endif
 
@@ -295,28 +336,46 @@ function! s:complete(key, option, db)
 
     " exact match
     let matchRet = []
-    let matchKeyList = []
-    let i = 0
-    while i < keyLen
-        let i += 1
-        let sub = strpart(key, 0, i)
-        if exists('dbMap[sub]')
-            call add(matchKeyList, sub)
+    let match = get(a:option, 'match', -1)
+    if match != 0
+        if match < 0
+            let match = 9999
         endif
-    endwhile
-    let i = len(matchKeyList) - 1
-    while i >= 0
-        let k = matchKeyList[i]
-        for w in ZFVimIM_dbMapItemDecode(dbMap[k])['wordList']
-            call add(matchRet, {
-                        \   'len' : len(k),
-                        \   'key' : k,
-                        \   'word' : w,
-                        \   'type' : 'match',
-                        \ })
-        endfor
-        let i -= 1
-    endwhile
+        let matchKeyList = []
+        let i = 0
+        while i < keyLen
+            let i += 1
+            let sub = strpart(key, 0, i)
+            if exists('dbMap[sub]')
+                call add(matchKeyList, sub)
+            endif
+        endwhile
+        let i = len(matchKeyList) - 1
+        while i >= 0
+            let k = matchKeyList[i]
+            for w in ZFVimIM_dbMapItemDecode(dbMap[k])['wordList']
+                call add(matchRet, {
+                            \   'dbId' : db['dbId'],
+                            \   'len' : len(k),
+                            \   'key' : k,
+                            \   'word' : w,
+                            \   'type' : 'match',
+                            \ })
+                if len(matchRet) >= match
+                    break
+                endif
+            endfor
+            let i -= 1
+            if len(matchRet) >= match
+                break
+            endif
+        endwhile
+    endif
+
+    " limit crossDb if has predict or match
+    if len(sentenceRet) + len(predictRet) + len(matchRet) >= 5 && len(crossDbRet) > g:ZFVimIM_crossDbLimitWhenMatch
+        call remove(crossDbRet, g:ZFVimIM_crossDbLimitWhenMatch, len(crossDbRet) - 1)
+    endif
 
     " limit predict if has match
     if len(sentenceRet) + len(matchRet) >= 5 && len(predictRet) > g:ZFVimIM_predictLimitWhenMatch
@@ -327,6 +386,8 @@ function! s:complete(key, option, db)
     let ret = []
     " sentence always first
     call extend(ret, sentenceRet)
+    " predict
+    call extend(ret, predictRet)
     " exact match should placed first
     let iExactMatch = 0
     for i in range(len(matchRet))
@@ -338,7 +399,6 @@ function! s:complete(key, option, db)
         execute 'call extend(ret, matchRet[0:' . (iExactMatch-1) . '])'
         execute 'let matchRet = matchRet[' . iExactMatch . ':' . (len(matchRet) - 1) . ']'
     endif
-    call extend(ret, predictRet)
     call extend(ret, matchRet)
 
     " remove duplicate
@@ -347,7 +407,7 @@ function! s:complete(key, option, db)
     let exists = {}
     while i < iEnd
         let item = ret[i]
-        let hash = item['len'] . item['key'] . item['word']
+        let hash = item['key'] . item['word']
         if exists('exists[hash]')
             call remove(ret, i)
             let iEnd -= 1
@@ -357,6 +417,16 @@ function! s:complete(key, option, db)
         endif
         let i += 1
     endwhile
+
+    " crossDb should be placed at lower order,
+    " also, we need duplicate check
+    for item in crossDbRet
+        let hash = item['key'] . item['word']
+        if !exists('exists[hash]')
+            let exists[hash] = 1
+            call insert(ret, item, g:ZFVimIM_crossDbPos)
+        endif
+    endfor
 
     return ret
 endfunction
@@ -403,7 +473,6 @@ function! s:predict(ret, retInitLen, db, prefixLen, predictPrefix, predictDb, op
                     return
                 endif
             endfor
-            continue
         endif
     endfor
 endfunction
