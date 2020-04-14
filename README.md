@@ -24,10 +24,12 @@ Outstanding features / why another remake:
 
 * more friendly long sentence match and better predict logic
 * predict from multiple db without switching dbs
-* auto create user word during input
-* auto re-order word priority accorrding to your input history
+* auto create user word and re-order word priority accorrding to your input history
 * cloud input, auto pull and push your db file from/to Github
-* better txt db load performance if `has('python')`
+* solve many VimIM's issues:
+    * better txt db load performance if `has('python')`
+    * auto disable and re-enable complete engines when using input method
+    * sync input method state acrossing buffers
 
 ![](https://raw.githubusercontent.com/ZSaberLv0/ZFVimIM/master/preview.gif)
 
