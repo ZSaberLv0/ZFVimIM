@@ -307,7 +307,9 @@ function! s:uploadAsync(cloudOption, mode)
 
     let task['jobId'] = ZFGroupJobStart(groupJobOption)
     if task['jobId'] == -1
-        unlet s:UA_taskMap[db['dbId']]
+        if exists("s:UA_taskMap[db['dbId']]")
+            unlet s:UA_taskMap[db['dbId']]
+        endif
         return
     endif
 
