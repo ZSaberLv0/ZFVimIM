@@ -88,7 +88,9 @@ augroup END
 let s:UA_taskMap = {}
 
 function! s:UA_autoInit()
-    if g:ZFVimIM_cloudAsync_autoInit && ZFVimIM_cloudAsyncAvailable()
+    if g:ZFVimIM_cloudAsync_autoInit
+                \ && ZFVimIM_cloudAsyncAvailable()
+                \ && (has('python') || has('python3'))
         let g:ZFVimIM_cloudForceAsync=1
         call ZFVimIME_init()
         unlet g:ZFVimIM_cloudForceAsync
