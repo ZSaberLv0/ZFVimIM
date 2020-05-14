@@ -168,7 +168,7 @@ it's recommended to clean up it occasionally, by:
     base pinyin repo that only contain single word,
     recommended if you care about performance
     or want to create personal user word during usage
-* [ZSaberLv0/ZFVimIM_pinyin_huge](https://github.com/ZSaberLv0/ZFVimIM_pinyin_base) :
+* [ZSaberLv0/ZFVimIM_pinyin_huge](https://github.com/ZSaberLv0/ZFVimIM_pinyin_huge) :
     huge pinyin repo that contains many words,
     it's converted from other IME and haven't been daily used,
     which may contain many useless words,
