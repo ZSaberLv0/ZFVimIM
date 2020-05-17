@@ -181,27 +181,31 @@ endfunction
 
 
 " ============================================================
-function! ZFVimIME_bracket(offset)
-    let cursor = ''
-    let range = col('.') - 1 - s:start_column
-    let repeat_times = range / s:multibyte + a:offset
-    if repeat_times
-        let cursor = repeat("\<left>\<delete>", repeat_times)
-    elseif repeat_times < 1
-        let cursor = strpart(getline('.'), s:start_column, s:multibyte)
-    endif
-    return cursor
-endfunction
-
 function! ZFVimIME_esc()
-    let key = nr2char(27)
+    if mode() != 'i'
+        call feedkeys("\<esc>", 'nt')
+        redraw
+        return ''
+    endif
+    let key = "\<esc>"
     if pumvisible()
-        let key = ZFVimIME_clear()
+        " :help i_CTRL-U
+        let key = nr2char(21)
+        if pumvisible()
+            let range = col('.') - 1 - s:start_column
+            let key = "\<c-e>" . repeat("\<left>\<delete>", range)
+        endif
+        silent! call s:resetAfterInsert()
     endif
     silent! execute 'silent! return "' . key . '"'
 endfunction
 
 function! ZFVimIME_label(key)
+    if mode() != 'i'
+        call feedkeys(a:key, 'nt')
+        redraw
+        return ''
+    endif
     let key = a:key
     if pumvisible()
         if key =~ '\d'
@@ -226,7 +230,23 @@ function! ZFVimIME_label(key)
     silent! execute 'silent! return "' . key . '"'
 endfunction
 
+function! ZFVimIME_bracket(offset)
+    let cursor = ''
+    let range = col('.') - 1 - s:start_column
+    let repeat_times = range / s:multibyte + a:offset
+    if repeat_times
+        let cursor = repeat("\<left>\<delete>", repeat_times)
+    elseif repeat_times < 1
+        let cursor = strpart(getline('.'), s:start_column, s:multibyte)
+    endif
+    return cursor
+endfunction
 function! ZFVimIME_page(key)
+    if mode() != 'i'
+        call feedkeys(a:key, 'nt')
+        redraw
+        return ''
+    endif
     let key = a:key
     if pumvisible()
         let page = "\<c-e>\<c-r>=ZFVimIME_callOmni()\<cr>"
@@ -248,6 +268,11 @@ function! ZFVimIME_page(key)
 endfunction
 
 function! ZFVimIME_space()
+    if mode() != 'i'
+        call feedkeys("\<space>", 'nt')
+        redraw
+        return ''
+    endif
     if pumvisible()
         let s:confirmFlag = 1
         let key = "\<c-y>\<c-r>=ZFVimIME_callOmni()\<cr>"
@@ -259,6 +284,11 @@ function! ZFVimIME_space()
 endfunction
 
 function! ZFVimIME_enter()
+    if mode() != 'i'
+        call feedkeys("\<cr>", 'nt')
+        redraw
+        return ''
+    endif
     let s:omni = 0
     let key = ''
     if pumvisible()
@@ -281,22 +311,25 @@ function! ZFVimIME_enter()
     silent! execute 'silent! return "' . key . '"'
 endfunction
 
-function! ZFVimIME_clear()
-    " :help i_CTRL-U
-    let key = nr2char(21)
-    if pumvisible()
-        let range = col('.') - 1 - s:start_column
-        let key = "\<c-e>" . repeat("\<left>\<delete>", range)
+function! ZFVimIME_backspace()
+    if mode() != 'i'
+        call feedkeys("\<bs>", 'nt')
+        redraw
+        return ''
     endif
-    silent! call s:resetAfterInsert()
+    let s:omni = 0
+    let key = pumvisible() ? "\<c-r>=ZFVimIME_callOmni()\<cr>" : ''
+    let key = "\<bs>" . key
     silent! execute 'silent! return "' . key . '"'
 endfunction
 
-function! ZFVimIME_backspace()
-    let s:omni = 0
-    let key = pumvisible() ? "\<c-r>=ZFVimIME_callOmni()\<cr>" : ''
-    let key = "\<left>\<delete>" . key
-    silent! execute 'silent! return "' . key . '"'
+function! ZFVimIME_input(c)
+    if mode() != 'i'
+        call feedkeys(a:c, 'nt')
+        redraw
+        return ''
+    endif
+    return a:c . ZFVimIME_callOmni()
 endfunction
 
 function! ZFVimIME_callOmni()
@@ -416,7 +449,7 @@ endfunction
 
 function! s:setupKeymap()
     for char in s:valid_keys
-        silent! execute 'lnoremap<silent><buffer> ' . char . ' ' . char . '<c-r>=ZFVimIME_callOmni()<cr>'
+        silent! execute 'lnoremap<silent><buffer> ' . char . " <c-r>=ZFVimIME_input('" . char . "')<cr>"
     endfor
 
     let common_punctuations = split('] [ = -')
@@ -499,7 +532,7 @@ function! s:hasLeftChar()
     let key = 0
     let one_byte_before = getline('.')[col('.')-2]
     if one_byte_before =~ '\s' || empty(one_byte_before)
-        let key = ''
+        let key = 0
     elseif one_byte_before =~# s:valid_keyboard
         let key = 1
     endif
