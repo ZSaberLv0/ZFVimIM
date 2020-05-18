@@ -329,13 +329,12 @@ function! ZFVimIME_backspace()
     silent! execute 'silent! return "' . key . '"'
 endfunction
 
-function! ZFVimIME_input(c)
+function! ZFVimIME_input()
     if mode() != 'i'
-        call feedkeys(a:c, 'nt')
         redraw
         return ''
     endif
-    return a:c . ZFVimIME_callOmni()
+    return ZFVimIME_callOmni()
 endfunction
 
 function! ZFVimIME_callOmni()
@@ -455,7 +454,7 @@ endfunction
 
 function! s:setupKeymap()
     for char in s:valid_keys
-        silent! execute 'lnoremap<silent><buffer> ' . char . " <c-r>=ZFVimIME_input('" . char . "')<cr>"
+        silent! execute 'lnoremap<silent><buffer> ' . char . ' ' . char . '<c-r>=ZFVimIME_input()<cr>'
     endfor
 
     let common_punctuations = split('] [ = -')
