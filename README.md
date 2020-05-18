@@ -185,6 +185,21 @@ it's recommended to clean up it occasionally, by:
 
     when you choose word and the word's byte length less than this value,
     we would add the word to db file automatically
+    (ignored when `g:ZFVimIM_autoAddWordChecker` is set)
+
+* `let g:ZFVimIM_autoAddWordChecker=[]`
+
+    list of function to check whether need to add user word
+
+    ```
+    function! MyChecker(userWord)
+        let needAdd = ...
+        return needAdd
+    endfunction
+    let g:ZFVimIM_autoAddWordChecker=[function('MyChecker')]
+    ```
+
+    when any of checker returned `0`, we won't add user word
 
 * `let g:ZFVimIM_cachePath=$HOME.'/.vim_cache'`
 

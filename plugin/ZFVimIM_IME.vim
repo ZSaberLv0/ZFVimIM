@@ -3,6 +3,12 @@
 if !exists('g:ZFVimIM_autoAddWordLen')
     let g:ZFVimIM_autoAddWordLen=3*4
 endif
+" function(userWords)
+" userWords: see ZFVimIM_complete
+" return: 1 if need add word
+if !exists('g:ZFVimIM_autoAddWordChecker')
+    let g:ZFVimIM_autoAddWordChecker=[]
+endif
 
 " ============================================================
 augroup ZFVimIME_augroup
@@ -707,18 +713,35 @@ function! s:addWordFromUserWord()
         let hasOtherDb = 0
         let dbIdCur = g:ZFVimIM_db[g:ZFVimIM_dbIndex]['dbId']
         for word in s:userWord
+            call s:addWord(word['dbId'], word['key'], word['word'])
+
             if !hasOtherDb
                 let hasOtherDb = (dbIdCur != word['dbId'])
             endif
             let sentenceKey .= word['key']
             let sentenceWord .= word['word']
         endfor
-        if !hasOtherDb && len(sentenceWord) <= g:ZFVimIM_autoAddWordLen
-            call s:addWord(s:userWord[0]['dbId'], sentenceKey, sentenceWord)
-        else
-            for word in s:userWord
-                call s:addWord(word['dbId'], word['key'], word['word'])
+
+        let needAdd = 0
+        if !empty(g:ZFVimIM_autoAddWordChecker)
+            let needAdd = 1
+            for Checker in g:ZFVimIM_autoAddWordChecker
+                if ZFJobFuncCallable(Checker)
+                    let needAdd = ZFJobFuncCall(Checker, [s:userWord])
+                    if !needAdd
+                        break
+                    endif
+                endif
             endfor
+        else
+            if !hasOtherDb
+                        \ && len(s:userWord) > 1
+                        \ && len(sentenceWord) <= g:ZFVimIM_autoAddWordLen
+                let needAdd = 1
+            endif
+        endif
+        if needAdd
+            call s:addWord(s:userWord[0]['dbId'], sentenceKey, sentenceWord)
         endif
     endif
 endfunction
