@@ -467,7 +467,7 @@ function! s:predict(ret, retInitLen, db, prefixLen, predictPrefix, predictDb, op
                             \   'len' : a:prefixLen,
                             \   'key' : a:predictPrefix,
                             \   'word' : word,
-                            \   'type' : 'predict',
+                            \   'type' : a:prefixLen == len(a:predictPrefix) ? 'match' : 'predict',
                             \ })
                 if len(a:ret) - a:retInitLen >= get(a:option, 'predict', g:ZFVimIM_predictLimit)
                     return
