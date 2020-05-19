@@ -357,6 +357,17 @@ it's recommended to clean up it occasionally, by:
         cnoremap <silent><expr> ;; ZF_Setting_cmdEdit()
         ```
 
+* Q: strange complete popup?
+
+    A: we use `omnifunc` to achieve IM popup,
+    which would conflict with most of complete engines,
+    by default, we would automatically disable complete engines when IM started,
+    if your other plugins conflict with IM,
+    you may disable it manually ([see this](https://github.com/ZSaberLv0/ZFVimIM/blob/master/plugin/ZFVimIM_autoDisable.vim))
+
+    also, if any strange behaviors occurred,
+    `:verbose set omnifunc?` to check whether it's changed by other plugins
+
 
 ## known issue
 
