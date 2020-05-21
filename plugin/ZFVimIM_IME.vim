@@ -410,10 +410,14 @@ function! s:IME_stop()
     silent! execute 'silent! return "' . nr2char(30) . '"'
 endfunction
 
+function! s:IME_syncBuffer_action()
+    call ZFVimIME_stop()
+    call ZFVimIME_start()
+    set iminsert=1
+endfunction
 function! s:IME_syncBuffer_delay(...)
     if s:started && !get(b:, 'ZFVimIME_started', 0)
-        call ZFVimIME_stop()
-        call ZFVimIME_start()
+        call s:IME_syncBuffer_action()
     endif
     redraw!
 endfunction
@@ -422,8 +426,7 @@ function! s:IME_syncBuffer()
         if has('timers')
             call timer_start(0, function('s:IME_syncBuffer_delay'))
         else
-            call ZFVimIME_stop()
-            call ZFVimIME_start()
+            call s:IME_syncBuffer_action()
         endif
     endif
 endfunction
