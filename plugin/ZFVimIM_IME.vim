@@ -379,13 +379,11 @@ function! ZFVimIME_backspace()
     return ''
 endfunction
 
-function! ZFVimIME_input(key)
+function! ZFVimIME_input()
     if mode() != 'i'
-        call feedkeys(a:key, 'nt')
         redraw
         return ''
     endif
-    call feedkeys(a:key, 'nt')
     return ZFVimIME_callOmni()
 endfunction
 
@@ -506,7 +504,7 @@ endfunction
 
 function! s:setupKeymap()
     for c in s:valid_keys
-        execute 'lnoremap<buffer><expr> ' . c . ' ZFVimIME_input("' . c . '")'
+        execute 'lnoremap<buffer> ' . c . ' ' . c . '<c-r>=ZFVimIME_input()<cr>'
     endfor
 
     for c in ['-']
@@ -535,10 +533,10 @@ function! s:setupKeymap()
         execute 'lnoremap<buffer><expr> ' . n . ' ZFVimIME_label("' . n . '")'
     endfor
 
-    lnoremap <silent><buffer> <expr> <bs>    ZFVimIME_backspace()
-    lnoremap <silent><buffer> <expr> <esc>   ZFVimIME_esc()
-    lnoremap <silent><buffer> <expr> <cr>    ZFVimIME_enter()
-    lnoremap <silent><buffer> <expr> <space> ZFVimIME_space()
+    lnoremap <buffer><expr> <bs>    ZFVimIME_backspace()
+    lnoremap <buffer><expr> <esc>   ZFVimIME_esc()
+    lnoremap <buffer><expr> <cr>    ZFVimIME_enter()
+    lnoremap <buffer><expr> <space> ZFVimIME_space()
 endfunction
 
 function! s:resetState()
