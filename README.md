@@ -83,6 +83,7 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 
     * scroll page by `-` or `=`
     * input and choose word by `<space>` or `0~9`
+    * choose head or tail word by `[` or `]`
 
 1. your input history would be recorded and
     automatically push to github,

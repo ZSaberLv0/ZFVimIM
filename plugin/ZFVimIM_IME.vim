@@ -40,10 +40,6 @@ function! ZFVimIME_init()
 endfunction
 
 " ============================================================
-function! ZFVimIME_toggle()
-    return s:started ? ZFVimIME_stop() : ZFVimIME_start()
-endfunction
-
 if get(g:, 'ZFVimIM_keymap', 1)
     nnoremap <expr><silent> ;; ZFVimIME_keymap_toggle_n()
     inoremap <expr> ;; ZFVimIME_keymap_toggle_i()
@@ -63,48 +59,54 @@ if get(g:, 'ZFVimIM_keymap', 1)
 endif
 
 function! ZFVimIME_keymap_toggle_n()
-    call feedkeys("i\<c-r>=ZFVimIME_toggle()\<cr>\<esc>l", 'nt')
+    call ZFVimIME_toggle()
+    redraw
     return ''
 endfunction
 function! ZFVimIME_keymap_toggle_i()
-    call feedkeys("\<c-r>=ZFVimIME_toggle()\<cr>", 'nt')
+    call ZFVimIME_toggle()
+    redraw
     return ''
 endfunction
 function! ZFVimIME_keymap_toggle_v()
-    call feedkeys("\<esc>a\<c-r>=ZFVimIME_toggle()\<cr>\<esc>gv", 'nt')
+    call ZFVimIME_toggle()
+    redraw
     return ''
 endfunction
 
 function! ZFVimIME_keymap_next_n()
-    call feedkeys("i\<c-r>=ZFVimIME_next()\<cr>\<esc>", 'nt')
+    call ZFVimIME_next()
+    redraw
     return ''
 endfunction
 function! ZFVimIME_keymap_next_i()
-    call feedkeys("\<c-r>=ZFVimIME_next()\<cr>", 'nt')
+    call ZFVimIME_next()
+    redraw
     return ''
 endfunction
 function! ZFVimIME_keymap_next_v()
-    call feedkeys("\<esc>a\<c-r>=ZFVimIME_next()\<cr>\<esc>gv", 'nt')
+    call ZFVimIME_next()
+    redraw
     return ''
 endfunction
 
 function! ZFVimIME_keymap_add_n()
     if !s:started
-        call feedkeys("i\<c-r>=ZFVimIME_start()\<cr>\<esc>", 'nt')
+        call ZFVimIME_start()
     endif
     call feedkeys(":IMAdd\<space>\<c-c>q:kA", 'nt')
     return ''
 endfunction
 function! ZFVimIME_keymap_add_i()
     if !s:started
-        call feedkeys("\<c-r>=ZFVimIME_start()\<cr>", 'nt')
+        call ZFVimIME_start()
     endif
     call feedkeys("\<esc>:IMAdd\<space>\<c-c>q:kA", 'nt')
     return ''
 endfunction
 function! ZFVimIME_keymap_add_v()
     if !s:started
-        call feedkeys("\<esc>i\<c-r>=ZFVimIME_start()\<cr>\<esc>gv", 'nt')
+        call ZFVimIME_start()
     endif
     call feedkeys("\"ty:IMAdd\<space>\<c-r>t\<space>\<c-c>q:kA", 'nt')
     return ''
@@ -112,21 +114,21 @@ endfunction
 
 function! ZFVimIME_keymap_remove_n()
     if !s:started
-        call feedkeys("i\<c-r>=ZFVimIME_start()\<cr>\<esc>", 'nt')
+        call ZFVimIME_start()
     endif
     call feedkeys(":IMRemove\<space>\<c-c>q:kA", 'nt')
     return ''
 endfunction
 function! ZFVimIME_keymap_remove_i()
     if !s:started
-        call feedkeys("\<c-r>=ZFVimIME_start()\<cr>", 'nt')
+        call ZFVimIME_start()
     endif
     call feedkeys("\<esc>:IMRemove\<space>\<c-c>q:kA", 'nt')
     return ''
 endfunction
 function! ZFVimIME_keymap_remove_v()
     if !s:started
-        call feedkeys("\<esc>i\<c-r>=ZFVimIME_start()\<cr>\<esc>gv", 'nt')
+        call ZFVimIME_start()
     endif
     call feedkeys("\"tx:IMRemove\<space>\<c-r>t\<cr>", 'nt')
     return ''
@@ -141,12 +143,27 @@ function! ZFVimIME_started()
     return s:started
 endfunction
 
+function! ZFVimIME_toggle()
+    if s:started
+        call ZFVimIME_stop()
+    else
+        call ZFVimIME_start()
+    endif
+endfunction
+
 function! ZFVimIME_start()
     call ZFVimIME_stop()
     doautocmd User ZFVimIM_event_OnStart
+    if mode() == 'i'
+        " :h i_CTRL-^
+        " when enabled first time,
+        " just setting iminsert seems not work,
+        " reason unknown
+        call feedkeys(nr2char(30), 'nt')
+    endif
     let s:started = 1
-    let ret = s:IME_start()
-    return ret
+    let &iminsert = s:started
+    call s:IME_start()
 endfunction
 
 function! ZFVimIME_stop()
@@ -154,9 +171,9 @@ function! ZFVimIME_stop()
         return ''
     endif
     let s:started = 0
-    let ret = s:IME_stop()
+    let &iminsert = s:started
+    call s:IME_stop()
     doautocmd User ZFVimIM_event_OnStop
-    return ret
 endfunction
 
 function! ZFVimIME_next()
@@ -164,7 +181,6 @@ function! ZFVimIME_next()
         return ZFVimIME_start()
     endif
     call ZFVimIME_switchToIndex(g:ZFVimIM_dbIndex + 1)
-    return ''
 endfunction
 
 function! ZFVimIME_switchToIndex(dbIndex)
@@ -173,12 +189,11 @@ function! ZFVimIME_switchToIndex(dbIndex)
         let dbIndex = 0
     endif
     if dbIndex == g:ZFVimIM_dbIndex
-        return ''
+        return
     endif
     let g:ZFVimIM_dbIndex = dbIndex
     call s:IME_update()
     doautocmd User ZFVimIM_event_OnDbChange
-    return ''
 endfunction
 
 function! ZFVimIME_omnifunc(start, keyboard)
@@ -193,84 +208,112 @@ function! ZFVimIME_esc()
         redraw
         return ''
     endif
-    let key = "\<esc>"
     if pumvisible()
-        " :help i_CTRL-U
-        let key = nr2char(21)
-        if pumvisible()
-            let range = col('.') - 1 - s:start_column
-            let key = "\<c-e>" . repeat("\<left>\<delete>", range)
-        endif
-        silent! call s:resetAfterInsert()
+        let range = col('.') - 1 - s:start_column
+        let key = "\<c-e>" . repeat("\<bs>", range)
+        call s:resetAfterInsert()
+    else
+        let key = "\<esc>"
     endif
-    silent! execute 'silent! return "' . key . '"'
+    call feedkeys(key, 'nt')
+    return ''
 endfunction
 
-function! ZFVimIME_label(key)
+function! ZFVimIME_label(n)
     if mode() != 'i'
-        call feedkeys(a:key, 'nt')
+        call feedkeys(a:n, 'nt')
         redraw
         return ''
     endif
-    let key = a:key
     if pumvisible()
-        if key =~ '\d'
-            let n = key < 1 ? 9 : key - 1
-        endif
-        let yes = repeat("\<down>", n). "\<c-y>"
-        let omni = "\<c-r>=ZFVimIME_callOmni()\<cr>"
-        let key = yes . omni
-        let item = s:match_list[n]
-        let s:confirmFlag = 1
+        let n = a:n < 1 ? 9 : a:n - 1
+        let key = repeat("\<down>", n) . "\<c-y>\<c-r>=ZFVimIME_callOmni()\<cr>"
 
+        let s:confirmFlag = 1
         if !s:completeItemAvailable
+            let item = s:match_list[n]
             call add(s:userWord, item)
             if item['len'] == len(s:keyboard)
                 call s:addWordFromUserWord()
                 let s:userWord = []
             endif
         endif
-
-        silent! call s:resetAfterInsert()
+        call s:resetAfterInsert()
+    else
+        let key = a:key
     endif
-    silent! execute 'silent! return "' . key . '"'
+    call feedkeys(key, 'nt')
+    return ''
 endfunction
 
-function! ZFVimIME_bracket(offset)
-    let cursor = ''
-    let range = col('.') - 1 - s:start_column
-    let repeat_times = range / s:multibyte + a:offset
-    if repeat_times
-        let cursor = repeat("\<left>\<delete>", repeat_times)
-    elseif repeat_times < 1
-        let cursor = strpart(getline('.'), s:start_column, s:multibyte)
-    endif
-    return cursor
-endfunction
-function! ZFVimIME_page(key)
+function! ZFVimIME_pageUp(key)
     if mode() != 'i'
         call feedkeys(a:key, 'nt')
         redraw
         return ''
     endif
-    let key = a:key
     if pumvisible()
         let page = "\<c-e>\<c-r>=ZFVimIME_callOmni()\<cr>"
-        if key =~ '[][]'
-            let left  = (key == ']') ? "\<left>"  : ''
-            let right = (key == ']') ? "\<right>" : ''
-            let _ = key == ']' ? 0 : -1
-            let backspace = "\<c-r>=ZFVimIME_bracket("._.")\<cr>"
-            let key = "\<c-y>" . left . backspace . right
-        elseif key =~ '[=.]'
-            let s:pageup_pagedown = &pumheight ? 1 : 0
-            let key = &pumheight ? page : "\<pagedown>"
-        elseif key =~ '[-,]'
-            let s:pageup_pagedown = &pumheight ? -1 : 0
-            let key = &pumheight ? page : "\<pageup>"
-        endif
+        let s:pageup_pagedown = &pumheight ? -1 : 0
+        let key = &pumheight ? page : "\<pageup>"
+    else
+        let key = a:key
     endif
-    silent! execute 'silent! return "' . key . '"'
+    call feedkeys(key, 'nt')
+    return ''
+endfunction
+function! ZFVimIME_pageDown(key)
+    if mode() != 'i'
+        call feedkeys(a:key, 'nt')
+        redraw
+        return ''
+    endif
+    if pumvisible()
+        let page = "\<c-e>\<c-r>=ZFVimIME_callOmni()\<cr>"
+        let s:pageup_pagedown = &pumheight ? 1 : 0
+        let key = &pumheight ? page : "\<pagedown>"
+    else
+        let key = a:key
+    endif
+    call feedkeys(key, 'nt')
+    return ''
+endfunction
+
+" note, this func must invoked as `<c-r>=`
+" to ensure `<c-y>` actually transformed popup word
+function! ZFVimIME_choose_fix(offset)
+    let words = split(strpart(getline('.'), s:start_column, col('.') - s:start_column), '\ze')
+    return repeat("\<bs>", len(words) - 1)
+endfunction
+function! ZFVimIME_chooseL(key)
+    if mode() != 'i'
+        call feedkeys(a:key, 'nt')
+        redraw
+        return ''
+    endif
+    if pumvisible()
+        let key = "\<c-y>\<c-r>=ZFVimIME_choose_fix(0)\<cr>"
+        call s:resetAfterInsert()
+    else
+        let key = a:key
+    endif
+    call feedkeys(key, 'nt')
+    return ''
+endfunction
+function! ZFVimIME_chooseR(key)
+    if mode() != 'i'
+        call feedkeys(a:key, 'nt')
+        redraw
+        return ''
+    endif
+    if pumvisible()
+        let key = "\<c-y>\<left>\<c-r>=ZFVimIME_choose_fix(-1)\<cr>\<right>"
+        call s:resetAfterInsert()
+    else
+        let key = a:key
+    endif
+    call feedkeys(key, 'nt')
+    return ''
 endfunction
 
 function! ZFVimIME_space()
@@ -286,7 +329,8 @@ function! ZFVimIME_space()
         let key = ' '
     endif
     call s:resetAfterInsert()
-    silent! execute 'silent! return "' . key . '"'
+    call feedkeys(key, 'nt')
+    return ''
 endfunction
 
 function! ZFVimIME_enter()
@@ -314,7 +358,9 @@ function! ZFVimIME_enter()
         let key = "\<cr>"
         let s:smart_enter = 0
     endif
-    silent! execute 'silent! return "' . key . '"'
+    call s:resetAfterInsert()
+    call feedkeys(key, 'nt')
+    return ''
 endfunction
 
 function! ZFVimIME_backspace()
@@ -324,9 +370,13 @@ function! ZFVimIME_backspace()
         return ''
     endif
     let s:omni = 0
-    let key = pumvisible() ? "\<c-r>=ZFVimIME_callOmni()\<cr>" : ''
-    let key = "\<bs>" . key
-    silent! execute 'silent! return "' . key . '"'
+    let key = "\<bs>"
+    if pumvisible()
+        let key .= "\<c-r>=ZFVimIME_callOmni()\<cr>"
+    endif
+    call s:resetAfterInsert()
+    call feedkeys(key, 'nt')
+    return ''
 endfunction
 
 function! ZFVimIME_input()
@@ -341,14 +391,13 @@ function! ZFVimIME_callOmni()
     let s:omni = s:omni < 0 ? -1 : 0
     let s:keyboard = empty(s:pageup_pagedown) ? '' : s:keyboard
     let key = s:hasLeftChar() ? "\<c-x>\<c-o>\<c-r>=ZFVimIME_fixOmni()\<cr>" : ''
-    silent! execute 'silent! return "' . key . '"'
+    execute 'return "' . key . '"'
 endfunction
 
 function! ZFVimIME_fixOmni()
     let s:omni = s:omni < 0 ? 0 : 1
-    let key = "\<c-p>\<down>"
-    let key = pumvisible() ? key : ''
-    silent! execute 'silent! return "' . key . '"'
+    let key = pumvisible() ? "\<c-p>\<down>" : ''
+    execute 'return "' . key . '"'
 endfunction
 
 augroup ZFVimIME_impl_toggle_augroup
@@ -359,7 +408,7 @@ augroup END
 function! s:IMEEventStart()
     augroup ZFVimIME_impl_augroup
         autocmd!
-        autocmd InsertLeave * let s:userWord=[]
+        autocmd InsertLeave * call s:OnInsertLeave()
         autocmd BufEnter,CmdwinEnter * call s:IME_syncBuffer()
         autocmd CompleteDone * call s:OnCompleteDone()
     augroup END
@@ -390,24 +439,22 @@ endfunction
 function! s:IME_start()
     call ZFVimIME_init()
 
-    silent! call s:vimrcSave()
-    silent! call s:vimrcSetup()
-    silent! call s:setupKeymap()
+    call s:vimrcSave()
+    call s:vimrcSetup()
+    call s:setupKeymap()
     call s:IME_update()
     let b:ZFVimIME_started = 1
 
     let s:seamless_positions = getpos('.')
-
-    " :h i_CTRL-^
-    silent! execute 'silent! return "' . nr2char(30) . '"'
 endfunction
 
 function! s:IME_stop()
     lmapclear
-    silent! call s:vimrcRestore()
-    silent! call s:resetSuper()
-    silent! unlet b:ZFVimIME_started
-    silent! execute 'silent! return "' . nr2char(30) . '"'
+    call s:vimrcRestore()
+    call s:resetState()
+    if exists('b:ZFVimIME_started')
+        unlet b:ZFVimIME_started
+    endif
 endfunction
 
 function! s:IME_syncBuffer_action()
@@ -456,20 +503,34 @@ function! s:vimrcRestore()
 endfunction
 
 function! s:setupKeymap()
-    for char in s:valid_keys
-        silent! execute 'lnoremap<silent><buffer> ' . char . ' ' . char . '<c-r>=ZFVimIME_input()<cr>'
+    for c in s:valid_keys
+        execute 'lnoremap<silent><buffer> ' . c . ' ' . c . '<c-r>=ZFVimIME_input()<cr>'
     endfor
 
-    let common_punctuations = split('] [ = -')
-    for _ in common_punctuations
-        if _ !~ s:valid_keyboard
-            silent! execute 'lnoremap<buffer><expr> '._.' ZFVimIME_page("'._.'")'
+    for c in ['-']
+        if c !~ s:valid_keyboard
+            execute 'lnoremap<buffer><expr> ' . c . ' ZFVimIME_pageUp("' . c . '")'
+        endif
+    endfor
+    for c in ['=']
+        if c !~ s:valid_keyboard
+            execute 'lnoremap<buffer><expr> ' . c . ' ZFVimIME_pageDown("' . c . '")'
         endif
     endfor
 
-    let common_labels = range(10)
-    for _ in common_labels
-        silent! execute 'lnoremap<buffer><expr> '._.' ZFVimIME_label("'._.'")'
+    for c in ['[']
+        if c !~ s:valid_keyboard
+            execute 'lnoremap<buffer><expr> ' . c . ' ZFVimIME_chooseL("' . c . '")'
+        endif
+    endfor
+    for c in [']']
+        if c !~ s:valid_keyboard
+            execute 'lnoremap<buffer><expr> ' . c . ' ZFVimIME_chooseR("' . c . '")'
+        endif
+    endfor
+
+    for n in range(10)
+        execute 'lnoremap<buffer><expr> ' . n . ' ZFVimIME_label("' . n . '")'
     endfor
 
     lnoremap <silent><buffer> <expr> <bs>    ZFVimIME_backspace()
@@ -478,20 +539,12 @@ function! s:setupKeymap()
     lnoremap <silent><buffer> <expr> <space> ZFVimIME_space()
 endfunction
 
-function! s:resetSuper()
-    silent! call s:resetBeforeAnything()
-    silent! call s:resetBeforeOmni()
-    silent! call s:resetAfterInsert()
-endfunction
-
-function! s:resetBeforeAnything()
+function! s:resetState()
+    call s:resetAfterInsert()
     let s:keyboard = ''
     let s:omni = 0
     let s:smart_enter = 0
-    let s:popup_list = []
-endfunction
-
-function! s:resetBeforeOmni()
+    let s:userWord = []
 endfunction
 
 function! s:resetAfterInsert()
@@ -528,8 +581,8 @@ function! s:getSeamless(cursor_positions)
     if empty(len(snip))
         return -1
     endif
-    for char in split(snip, '\zs')
-        if char !~ s:valid_keyboard
+    for c in split(snip, '\zs')
+        if c !~ s:valid_keyboard
             return -1
         endif
     endfor
@@ -593,9 +646,7 @@ function! s:omnifunc(start, keyboard)
             return []
         endif
         let results = s:omniCache()
-        if empty(results)
-            silent! call s:resetBeforeOmni()
-        else
+        if !empty(results)
             return s:popupMenuList(results)
         endif
         let keyboard = a:keyboard
@@ -618,7 +669,7 @@ function! s:popupMenuList(complete)
         return []
     endif
     let label = 1
-    let s:popup_list = []
+    let popup_list = []
     for item in s:match_list
         " :h complete-items
         let complete_items = {}
@@ -649,13 +700,17 @@ function! s:popupMenuList(complete)
         if s:completeItemAvailable
             let complete_items['info'] = json_encode(item)
         endif
-        call add(s:popup_list, complete_items)
+        call add(popup_list, complete_items)
         let label += 1
     endfor
 
     let &completeopt = 'menuone'
     let &pumheight = 10
-    return s:popup_list
+    return popup_list
+endfunction
+
+function! s:OnInsertLeave()
+    call s:resetState()
 endfunction
 
 
@@ -748,7 +803,6 @@ function! s:addWordFromUserWord()
     endif
 endfunction
 
-
-silent! call s:init()
-silent! call s:resetSuper()
+call s:init()
+call s:resetState()
 
