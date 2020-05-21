@@ -240,7 +240,7 @@ function! ZFVimIME_label(n)
         endif
         call s:resetAfterInsert()
     else
-        let key = a:key
+        let key = a:n
     endif
     call feedkeys(key, 'nt')
     return ''
