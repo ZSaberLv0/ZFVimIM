@@ -151,19 +151,21 @@ function! ZFVimIME_toggle()
     endif
 endfunction
 
+function! s:fixIMState()
+    if mode() == 'i'
+        call feedkeys(nr2char(30), 'nt')
+        if &iminsert != s:started
+            call feedkeys(nr2char(30), 'nt')
+        endif
+    endif
+endfunction
 function! ZFVimIME_start()
     call ZFVimIME_stop()
     doautocmd User ZFVimIM_event_OnStart
-    if mode() == 'i'
-        " :h i_CTRL-^
-        " when enabled first time,
-        " just setting iminsert seems not work,
-        " reason unknown
-        call feedkeys(nr2char(30), 'nt')
-    endif
     let s:started = 1
     let &iminsert = s:started
     call s:IME_start()
+    call s:fixIMState()
 endfunction
 
 function! ZFVimIME_stop()
@@ -173,6 +175,7 @@ function! ZFVimIME_stop()
     let s:started = 0
     let &iminsert = s:started
     call s:IME_stop()
+    call s:fixIMState()
     doautocmd User ZFVimIM_event_OnStop
 endfunction
 
