@@ -42,51 +42,45 @@ endfunction
 " ============================================================
 if get(g:, 'ZFVimIM_keymap', 1)
     nnoremap <expr><silent> ;; ZFVimIME_keymap_toggle_n()
-    inoremap <expr> ;; ZFVimIME_keymap_toggle_i()
-    vnoremap <expr> ;; ZFVimIME_keymap_toggle_v()
+    inoremap <expr><silent> ;; ZFVimIME_keymap_toggle_i()
+    vnoremap <expr><silent> ;; ZFVimIME_keymap_toggle_v()
 
     nnoremap <expr><silent> ;: ZFVimIME_keymap_next_n()
-    inoremap <expr> ;: ZFVimIME_keymap_next_i()
-    vnoremap <expr> ;: ZFVimIME_keymap_next_v()
+    inoremap <expr><silent> ;: ZFVimIME_keymap_next_i()
+    vnoremap <expr><silent> ;: ZFVimIME_keymap_next_v()
 
     nnoremap <expr><silent> ;, ZFVimIME_keymap_add_n()
-    inoremap <expr> ;, ZFVimIME_keymap_add_i()
-    xnoremap <expr> ;, ZFVimIME_keymap_add_v()
+    inoremap <expr><silent> ;, ZFVimIME_keymap_add_i()
+    xnoremap <expr><silent> ;, ZFVimIME_keymap_add_v()
 
     nnoremap <expr><silent> ;. ZFVimIME_keymap_remove_n()
-    inoremap <expr> ;. ZFVimIME_keymap_remove_i()
-    xnoremap <expr> ;. ZFVimIME_keymap_remove_v()
+    inoremap <expr><silent> ;. ZFVimIME_keymap_remove_i()
+    xnoremap <expr><silent> ;. ZFVimIME_keymap_remove_v()
 endif
 
 function! ZFVimIME_keymap_toggle_n()
     call ZFVimIME_toggle()
-    redraw
     return ''
 endfunction
 function! ZFVimIME_keymap_toggle_i()
     call ZFVimIME_toggle()
-    redraw
     return ''
 endfunction
 function! ZFVimIME_keymap_toggle_v()
     call ZFVimIME_toggle()
-    redraw
     return ''
 endfunction
 
 function! ZFVimIME_keymap_next_n()
     call ZFVimIME_next()
-    redraw
     return ''
 endfunction
 function! ZFVimIME_keymap_next_i()
     call ZFVimIME_next()
-    redraw
     return ''
 endfunction
 function! ZFVimIME_keymap_next_v()
     call ZFVimIME_next()
-    redraw
     return ''
 endfunction
 
@@ -208,7 +202,6 @@ endfunction
 function! ZFVimIME_esc()
     if mode() != 'i'
         call feedkeys("\<esc>", 'nt')
-        redraw
         return ''
     endif
     if pumvisible()
@@ -225,7 +218,6 @@ endfunction
 function! ZFVimIME_label(n)
     if mode() != 'i'
         call feedkeys(a:n, 'nt')
-        redraw
         return ''
     endif
     if pumvisible()
@@ -252,7 +244,6 @@ endfunction
 function! ZFVimIME_pageUp(key)
     if mode() != 'i'
         call feedkeys(a:key, 'nt')
-        redraw
         return ''
     endif
     if pumvisible()
@@ -268,7 +259,6 @@ endfunction
 function! ZFVimIME_pageDown(key)
     if mode() != 'i'
         call feedkeys(a:key, 'nt')
-        redraw
         return ''
     endif
     if pumvisible()
@@ -291,7 +281,6 @@ endfunction
 function! ZFVimIME_chooseL(key)
     if mode() != 'i'
         call feedkeys(a:key, 'nt')
-        redraw
         return ''
     endif
     if pumvisible()
@@ -306,7 +295,6 @@ endfunction
 function! ZFVimIME_chooseR(key)
     if mode() != 'i'
         call feedkeys(a:key, 'nt')
-        redraw
         return ''
     endif
     if pumvisible()
@@ -322,7 +310,6 @@ endfunction
 function! ZFVimIME_space()
     if mode() != 'i'
         call feedkeys("\<space>", 'nt')
-        redraw
         return ''
     endif
     if pumvisible()
@@ -339,7 +326,6 @@ endfunction
 function! ZFVimIME_enter()
     if mode() != 'i'
         call feedkeys("\<cr>", 'nt')
-        redraw
         return ''
     endif
     let s:omni = 0
@@ -369,7 +355,6 @@ endfunction
 function! ZFVimIME_backspace()
     if mode() != 'i'
         call feedkeys("\<bs>", 'nt')
-        redraw
         return ''
     endif
     let s:omni = 0
@@ -382,12 +367,12 @@ function! ZFVimIME_backspace()
     return ''
 endfunction
 
-function! ZFVimIME_input()
+function! ZFVimIME_input(key)
     if mode() != 'i'
-        redraw
+        call feedkeys(a:key, 'nt')
         return ''
     endif
-    return ZFVimIME_callOmni()
+    return a:key . "\<c-r>=ZFVimIME_callOmni()\<cr>"
 endfunction
 
 function! ZFVimIME_callOmni()
@@ -469,7 +454,6 @@ function! s:IME_syncBuffer_delay(...)
     if s:started && !get(b:, 'ZFVimIME_started', 0)
         call s:IME_syncBuffer_action()
     endif
-    redraw!
 endfunction
 function! s:IME_syncBuffer()
     if s:started && !get(b:, 'ZFVimIME_started', 0)
@@ -507,7 +491,7 @@ endfunction
 
 function! s:setupKeymap()
     for c in s:valid_keys
-        execute 'lnoremap<buffer> ' . c . ' ' . c . '<c-r>=ZFVimIME_input()<cr>'
+        execute 'lnoremap<buffer><expr> ' . c . ' ZFVimIME_input("' . c . '")'
     endfor
 
     for c in ['-']
