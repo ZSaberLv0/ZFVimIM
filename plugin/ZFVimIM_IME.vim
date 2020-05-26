@@ -10,6 +10,47 @@ if !exists('g:ZFVimIM_autoAddWordChecker')
     let g:ZFVimIM_autoAddWordChecker=[]
 endif
 
+if !exists('g:ZFVimIM_symbolMap_chinese')
+    let g:ZFVimIM_symbolMap_chinese = {
+                \   ' ' : [''],
+                \   '`' : ['·'],
+                \   '!' : ['！'],
+                \   '$' : ['￥'],
+                \   '^' : ['……'],
+                \   '-' : [''],
+                \   '_' : ['——'],
+                \   '(' : ['（'],
+                \   ')' : ['）'],
+                \   '[' : ['【'],
+                \   ']' : ['】'],
+                \   '<' : ['《'],
+                \   '>' : ['》'],
+                \   '\' : ['、'],
+                \   '/' : ['、'],
+                \   ';' : ['；'],
+                \   ':' : ['：'],
+                \   ',' : ['，'],
+                \   '.' : ['。'],
+                \   '?' : ['？'],
+                \   "'" : ['‘', '’'],
+                \   '"' : ['“', '”'],
+                \   '0' : [''],
+                \   '1' : [''],
+                \   '2' : [''],
+                \   '3' : [''],
+                \   '4' : [''],
+                \   '5' : [''],
+                \   '6' : [''],
+                \   '7' : [''],
+                \   '8' : [''],
+                \   '9' : [''],
+                \ }
+endif
+if !exists('g:ZFVimIM_symbolMap')
+    let g:ZFVimIM_symbolMap = {}
+endif
+let g:ZFVimIM_symbolMap = g:ZFVimIM_symbolMap_chinese
+
 " ============================================================
 augroup ZFVimIME_augroup
     autocmd!
@@ -60,27 +101,34 @@ endif
 
 function! ZFVimIME_keymap_toggle_n()
     call ZFVimIME_toggle()
+    " redraw to ensure `b:keymap_name` updated
+    redraw
     return ''
 endfunction
 function! ZFVimIME_keymap_toggle_i()
     call ZFVimIME_toggle()
+    redraw
     return ''
 endfunction
 function! ZFVimIME_keymap_toggle_v()
     call ZFVimIME_toggle()
+    redraw
     return ''
 endfunction
 
 function! ZFVimIME_keymap_next_n()
     call ZFVimIME_next()
+    redraw
     return ''
 endfunction
 function! ZFVimIME_keymap_next_i()
     call ZFVimIME_next()
+    redraw
     return ''
 endfunction
 function! ZFVimIME_keymap_next_v()
     call ZFVimIME_next()
+    redraw
     return ''
 endfunction
 
@@ -235,7 +283,7 @@ function! ZFVimIME_label(n)
         endif
         call s:resetAfterInsert()
     else
-        let key = a:n
+        let key = s:symbol(a:n)
     endif
     call feedkeys(key, 'nt')
     return ''
@@ -251,7 +299,7 @@ function! ZFVimIME_pageUp(key)
         let s:pageup_pagedown = &pumheight ? -1 : 0
         let key = &pumheight ? page : "\<pageup>"
     else
-        let key = a:key
+        let key = s:symbol(a:key)
     endif
     call feedkeys(key, 'nt')
     return ''
@@ -266,7 +314,7 @@ function! ZFVimIME_pageDown(key)
         let s:pageup_pagedown = &pumheight ? 1 : 0
         let key = &pumheight ? page : "\<pagedown>"
     else
-        let key = a:key
+        let key = s:symbol(a:key)
     endif
     call feedkeys(key, 'nt')
     return ''
@@ -287,7 +335,7 @@ function! ZFVimIME_chooseL(key)
         let key = "\<c-y>\<c-r>=ZFVimIME_choose_fix(0)\<cr>"
         call s:resetAfterInsert()
     else
-        let key = a:key
+        let key = s:symbol(a:key)
     endif
     call feedkeys(key, 'nt')
     return ''
@@ -301,7 +349,7 @@ function! ZFVimIME_chooseR(key)
         let key = "\<c-y>\<left>\<c-r>=ZFVimIME_choose_fix(-1)\<cr>\<right>"
         call s:resetAfterInsert()
     else
-        let key = a:key
+        let key = s:symbol(a:key)
     endif
     call feedkeys(key, 'nt')
     return ''
@@ -316,7 +364,7 @@ function! ZFVimIME_space()
         let s:confirmFlag = 1
         let key = "\<c-y>\<c-r>=ZFVimIME_callOmni()\<cr>"
     else
-        let key = ' '
+        let key = s:symbol(' ')
     endif
     call s:resetAfterInsert()
     call feedkeys(key, 'nt')
@@ -373,6 +421,30 @@ function! ZFVimIME_input(key)
         return ''
     endif
     return a:key . "\<c-r>=ZFVimIME_callOmni()\<cr>"
+endfunction
+
+let s:symbolState = {}
+function! s:symbol(key)
+    let symbol = get(g:ZFVimIM_symbolMap, a:key, [])
+    if empty(symbol)
+        return a:key
+    elseif len(symbol) == 1
+        if symbol[0] == ''
+            return a:key
+        else
+            return symbol[0]
+        endif
+    endif
+    let s:symbolState[a:key] = (get(s:symbolState, a:key, -1) + 1) % len(symbol)
+    return symbol[s:symbolState[a:key]]
+endfunction
+function! ZFVimIME_symbol(key)
+    if mode() != 'i'
+        call feedkeys(a:key, 'nt')
+        return ''
+    endif
+    call feedkeys(s:symbol(a:key), 'nt')
+    return ''
 endfunction
 
 function! ZFVimIME_callOmni()
@@ -490,40 +562,55 @@ function! s:vimrcRestore()
 endfunction
 
 function! s:setupKeymap()
+    let mapped = {}
+
     for c in s:valid_keys
-        execute 'lnoremap<buffer><expr> ' . c . ' ZFVimIME_input("' . c . '")'
+        let mapped[c] = 1
+        execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_input("' . c . '")'
     endfor
 
     for c in ['-']
         if c !~ s:valid_keyboard
-            execute 'lnoremap<buffer><expr> ' . c . ' ZFVimIME_pageUp("' . c . '")'
+            let mapped[c] = 1
+            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_pageUp("' . c . '")'
         endif
     endfor
     for c in ['=']
         if c !~ s:valid_keyboard
-            execute 'lnoremap<buffer><expr> ' . c . ' ZFVimIME_pageDown("' . c . '")'
+            let mapped[c] = 1
+            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_pageDown("' . c . '")'
         endif
     endfor
 
     for c in ['[']
         if c !~ s:valid_keyboard
-            execute 'lnoremap<buffer><expr> ' . c . ' ZFVimIME_chooseL("' . c . '")'
+            let mapped[c] = 1
+            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_chooseL("' . c . '")'
         endif
     endfor
     for c in [']']
         if c !~ s:valid_keyboard
-            execute 'lnoremap<buffer><expr> ' . c . ' ZFVimIME_chooseR("' . c . '")'
+            let mapped[c] = 1
+            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_chooseR("' . c . '")'
         endif
     endfor
 
     for n in range(10)
-        execute 'lnoremap<buffer><expr> ' . n . ' ZFVimIME_label("' . n . '")'
+        let mapped['' . n] = 1
+        execute 'lnoremap <buffer><expr> ' . n . ' ZFVimIME_label("' . n . '")'
     endfor
 
-    lnoremap <buffer><expr> <bs>    ZFVimIME_backspace()
-    lnoremap <buffer><expr> <esc>   ZFVimIME_esc()
-    lnoremap <buffer><expr> <cr>    ZFVimIME_enter()
+    let mapped[' '] = 1
+    lnoremap <buffer><expr> <bs> ZFVimIME_backspace()
+    lnoremap <buffer><expr> <esc> ZFVimIME_esc()
+    lnoremap <buffer><expr> <cr> ZFVimIME_enter()
     lnoremap <buffer><expr> <space> ZFVimIME_space()
+
+    for c in keys(g:ZFVimIM_symbolMap)
+        if !exists("mapped[c]")
+            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_symbol("' . substitute(c, '"', '\\"', 'g') . '")'
+        endif
+    endfor
 endfunction
 
 function! s:resetState()
@@ -532,6 +619,7 @@ function! s:resetState()
     let s:omni = 0
     let s:smart_enter = 0
     let s:userWord = []
+    let s:confirmFlag = 0
 endfunction
 
 function! s:resetAfterInsert()

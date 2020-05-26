@@ -202,6 +202,53 @@ it's recommended to clean up it occasionally, by:
 
     when any of checker returned `0`, we won't add user word
 
+* `let g:ZFVimIM_symbolMap = {}`
+
+    used to transform unicode symbols during input
+
+    it's empty by default, typical config for Chinese:
+
+    ```
+    let g:ZFVimIM_symbolMap = {
+                \   ' ' : [''],
+                \   '`' : ['·'],
+                \   '!' : ['！'],
+                \   '$' : ['￥'],
+                \   '^' : ['……'],
+                \   '-' : [''],
+                \   '_' : ['——'],
+                \   '(' : ['（'],
+                \   ')' : ['）'],
+                \   '[' : ['【'],
+                \   ']' : ['】'],
+                \   '<' : ['《'],
+                \   '>' : ['》'],
+                \   '\' : ['、'],
+                \   '/' : ['、'],
+                \   ';' : ['；'],
+                \   ':' : ['：'],
+                \   ',' : ['，'],
+                \   '.' : ['。'],
+                \   '?' : ['？'],
+                \   "'" : ['‘', '’'],
+                \   '"' : ['“', '”'],
+                \   '0' : [''],
+                \   '1' : [''],
+                \   '2' : [''],
+                \   '3' : [''],
+                \   '4' : [''],
+                \   '5' : [''],
+                \   '6' : [''],
+                \   '7' : [''],
+                \   '8' : [''],
+                \   '9' : [''],
+                \ }
+    ```
+
+    note, if you want to change this setting at runtime,
+    you should use `call ZFVimIME_stop() | call ZFVimIME_start()`
+    to restart to take effect
+
 * `let g:ZFVimIM_cachePath=$HOME.'/.vim_cache'`
 
     cache path for temp files
@@ -364,7 +411,8 @@ it's recommended to clean up it occasionally, by:
     which would conflict with most of complete engines,
     by default, we would automatically disable complete engines when IM started,
     if your other plugins conflict with IM,
-    you may disable it manually ([see this](https://github.com/ZSaberLv0/ZFVimIM/blob/master/plugin/ZFVimIM_autoDisable.vim))
+    you may disable it manually
+    ([see this](https://github.com/ZSaberLv0/ZFVimIM/blob/master/plugin/ZFVimIM_autoDisable.vim))
 
     also, if any strange behaviors occurred,
     `:verbose set omnifunc?` to check whether it's changed by other plugins
@@ -381,11 +429,33 @@ it's recommended to clean up it occasionally, by:
 
     this plugin is designed lightweight that can fallback to pure vimscript,
     so, there's no plan to completely move db data to python side
-    (further more, async mode would break `:lmap` logic, and require features like LSP plugins)
+    (further more, async complete popup would break `:lmap` logic,
+    and require features like LSP plugins,
+    no plan to achieve this too)
 
     if you want to benchmark:
 
     1. `let g:ZFVimIM_DEBUG_profile = 1`
     1. input freely
     1. `call ZFVimIM_DEBUG_profileInfo()` to check which step consumed most time
+
+* use with LSP plugins
+
+    it's possible,
+    but it's a better design to make a external executable for LSP plugins,
+    not some vimscript like this plugin,
+    so, no plan on this
+
+    if you really want to hack, there's two idea:
+
+    * use `ZFVimIM_complete()` to get word completion,
+        and supply things like `omnifunc` for LSP plugins
+    * use python or other tools to parse db files and supply LSP plugins
+
+* can not use in `input()`
+
+    unfortunately, I've no idea how to make `lmap` work in `input()`,
+    and there's no plan to make complex `cmap` to achieve this
+
+    of course, if you have better solution, PR is always welcomed
 
