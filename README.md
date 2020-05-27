@@ -247,7 +247,9 @@ it's recommended to clean up it occasionally, by:
 
     note, if you want to change this setting at runtime,
     you should use `call ZFVimIME_stop() | call ZFVimIME_start()`
-    to restart to take effect
+    to restart to take effect,
+    or, add autocmd to `ZFVimIM_event_OnStart`
+    to setup this value
 
 * `let g:ZFVimIM_cachePath=$HOME.'/.vim_cache'`
 
