@@ -10,46 +10,9 @@ if !exists('g:ZFVimIM_autoAddWordChecker')
     let g:ZFVimIM_autoAddWordChecker=[]
 endif
 
-if !exists('g:ZFVimIM_symbolMap_chinese')
-    let g:ZFVimIM_symbolMap_chinese = {
-                \   ' ' : [''],
-                \   '`' : ['·'],
-                \   '!' : ['！'],
-                \   '$' : ['￥'],
-                \   '^' : ['……'],
-                \   '-' : [''],
-                \   '_' : ['——'],
-                \   '(' : ['（'],
-                \   ')' : ['）'],
-                \   '[' : ['【'],
-                \   ']' : ['】'],
-                \   '<' : ['《'],
-                \   '>' : ['》'],
-                \   '\' : ['、'],
-                \   '/' : ['、'],
-                \   ';' : ['；'],
-                \   ':' : ['：'],
-                \   ',' : ['，'],
-                \   '.' : ['。'],
-                \   '?' : ['？'],
-                \   "'" : ['‘', '’'],
-                \   '"' : ['“', '”'],
-                \   '0' : [''],
-                \   '1' : [''],
-                \   '2' : [''],
-                \   '3' : [''],
-                \   '4' : [''],
-                \   '5' : [''],
-                \   '6' : [''],
-                \   '7' : [''],
-                \   '8' : [''],
-                \   '9' : [''],
-                \ }
-endif
 if !exists('g:ZFVimIM_symbolMap')
     let g:ZFVimIM_symbolMap = {}
 endif
-let g:ZFVimIM_symbolMap = g:ZFVimIM_symbolMap_chinese
 
 " ============================================================
 augroup ZFVimIME_augroup
