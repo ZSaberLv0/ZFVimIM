@@ -91,7 +91,7 @@ function! ZFVimIM_cloud_file(cloudOption, key)
 endfunction
 
 function! s:realPath(path)
-    if has("win32unix") && executable('cygpath')
+    if executable('cygpath')
         return substitute(system('cygpath -m "' . a:path . '"'), '[\r\n]', '', 'g')
     elseif has('win32')
         return substitute(a:path, '/', '\\', 'g')
