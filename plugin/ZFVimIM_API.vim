@@ -452,27 +452,27 @@ function! s:sentence(match, dbMap, key, keyLen)
 endfunction
 
 function! s:predict(ret, retInitLen, db, prefixLen, predictPrefix, predictDb, option)
+    if exists('a:predictDb[g:ZFVimIM_KEY_HAS_WORD]')
+        for word in ZFVimIM_dbMapItemDecode(a:db['dbMap'][a:predictPrefix])['wordList']
+            call add(a:ret, {
+                        \   'dbId' : a:db['dbId'],
+                        \   'len' : a:prefixLen,
+                        \   'key' : a:predictPrefix,
+                        \   'word' : word,
+                        \   'type' : a:prefixLen == len(a:predictPrefix) ? 'match' : 'predict',
+                        \ })
+            if len(a:ret) - a:retInitLen >= get(a:option, 'predict', g:ZFVimIM_predictLimit)
+                return
+            endif
+        endfor
+    endif
+
     for c in keys(a:predictDb)
         if c != g:ZFVimIM_KEY_HAS_WORD
             call s:predict(a:ret, a:retInitLen, a:db, a:prefixLen, a:predictPrefix . c, a:predictDb[c], a:option)
             if len(a:ret) - a:retInitLen >= get(a:option, 'predict', g:ZFVimIM_predictLimit)
                 return
             endif
-        endif
-
-        if c == g:ZFVimIM_KEY_HAS_WORD
-            for word in ZFVimIM_dbMapItemDecode(a:db['dbMap'][a:predictPrefix])['wordList']
-                call add(a:ret, {
-                            \   'dbId' : a:db['dbId'],
-                            \   'len' : a:prefixLen,
-                            \   'key' : a:predictPrefix,
-                            \   'word' : word,
-                            \   'type' : a:prefixLen == len(a:predictPrefix) ? 'match' : 'predict',
-                            \ })
-                if len(a:ret) - a:retInitLen >= get(a:option, 'predict', g:ZFVimIM_predictLimit)
-                    return
-                endif
-            endfor
         endif
     endfor
 endfunction
