@@ -511,7 +511,10 @@ endfunction
 function! s:vimrcSetup()
     set omnifunc=ZFVimIME_omnifunc
     set completeopt=menuone
-    set shortmess+=c
+    try
+        " some old vim does not have `c`
+        silent! set shortmess+=c
+    endtry
     set pumheight=10
     set nolazyredraw
 endfunction
