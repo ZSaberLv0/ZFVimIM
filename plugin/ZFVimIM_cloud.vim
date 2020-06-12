@@ -92,7 +92,11 @@ endfunction
 
 function! s:realPath(path)
     if has('win32unix') && executable('cygpath')
-        return substitute(system('cygpath -m "' . a:path . '"'), '[\r\n]', '', 'g')
+        if get(g:, 'ZFVimIM_disableCygpath', 0)
+            return substitute(a:path, '\\', '/', 'g')
+        else
+            return substitute(system('cygpath -m "' . a:path . '"'), '[\r\n]', '', 'g')
+        endif
     elseif has('win32')
         return substitute(a:path, '/', '\\', 'g')
     else

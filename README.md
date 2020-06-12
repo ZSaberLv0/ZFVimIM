@@ -461,3 +461,19 @@ it's recommended to clean up it occasionally, by:
 
     of course, if you have better solution, PR is always welcomed
 
+* slow in cygwin's vim
+
+    we need a lot of `cygpath` call to ensure paths can be recognized by
+    both `cygwin shell` and `Windows external command`
+    (`/usr/bin/git` and `C:/Program Files/Git/bin/git` for example),
+    the typical and main reason is `C:/Program Files/Git/bin/git` can not
+    read cygwin's path (`/cygdrive/c/file`)
+
+    since cygwin's vim is not common use case,
+    and solving this problem require a lot of tedious conversion in job script,
+    I would prefer keep it simple stupid
+
+    if you are sure all of your external commands is inside cygwin shell,
+    you may `let g:ZFVimIM_disableCygpath=1` to disable the `cygpath` call
+    (the required commands are `git` and `python/python3`)
+
