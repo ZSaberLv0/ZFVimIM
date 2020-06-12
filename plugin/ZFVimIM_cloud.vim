@@ -91,7 +91,13 @@ function! ZFVimIM_cloud_file(cloudOption, key)
 endfunction
 
 function! s:realPath(path)
-    return substitute(a:path, '\\', '/', 'g')
+    if has('win32unix') && executable('cygpath')
+        return substitute(system('cygpath -m "' . a:path . '"'), '[\r\n]', '', 'g')
+    elseif has('win32')
+        return substitute(a:path, '/', '\\', 'g')
+    else
+        return a:path
+    endif
 endfunction
 let s:scriptPath = s:realPath(expand('<sfile>:p:h:h') . '/misc/')
 
