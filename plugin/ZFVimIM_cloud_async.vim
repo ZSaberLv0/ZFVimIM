@@ -485,11 +485,16 @@ endfunction
 function! s:UA_onExit(dbId, groupJobStatus, exitCode)
     while 1
         let task = get(s:UA_taskMap, a:dbId, {})
-        let db = ZFVimIM_dbForId(a:dbId)
-        if empty(task) || empty(db)
+        if empty(task)
             break
         endif
         unlet s:UA_taskMap[a:dbId]
+
+        let db = ZFVimIM_dbForId(a:dbId)
+        if empty(db)
+            break
+        endif
+
         if a:exitCode == '0'
             call s:cloudAsyncLog(a:groupJobStatus, ZFVimIM_cloud_logInfo(task['cloudOption']) . 'update success')
             let s:autoUploadAsyncRetryTimeInc = 1
@@ -514,6 +519,10 @@ function! s:UA_onExit(dbId, groupJobStatus, exitCode)
         break
     endwhile
 
+    if(!empty(task))
+        call delete(task['dbLoadJsonFile'])
+        call delete(task['dbSaveJsonFile'])
+    endif
     call ZFJobOutputCleanup(a:groupJobStatus)
 endfunction
 
