@@ -1,6 +1,7 @@
 
 " ============================================================
 " cloudOption: {
+"   'mode' : 'git/local',
 "   'repoPath' : 'git repo path',
 "   'dbFile' : 'db file path relative to repoPath, must start with /',
 "   'dbCountFile' : 'optional, db count file path relative to repoPath, must start with /',

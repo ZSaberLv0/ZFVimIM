@@ -45,15 +45,15 @@ endfunction
 augroup ZFVimIM_cloud_sync_augroup
     autocmd!
     autocmd VimLeavePre *
-                \  if g:ZFVimIM_cloudSync_enable == 1 || (g:ZFVimIM_cloudSync_enable == -1 && s:US_gitInfoSupplied())
+                \  if g:ZFVimIM_cloudSync_enable == 1 || (g:ZFVimIM_cloudSync_enable == -1 && s:US_containUploadable())
                 \|     call ZFVimIM_uploadAllSync()
                 \| endif
 augroup END
 
 " ============================================================
-function! s:US_gitInfoSupplied()
+function! s:US_containUploadable()
     for cloudOption in g:ZFVimIM_cloudOption
-        if ZFVimIM_cloud_gitInfoSupplied(cloudOption)
+        if ZFVimIM_cloud_gitInfoSupplied(cloudOption) || (get(cloudOption, 'mode', '') == 'local')
             return 1
         endif
     endfor
@@ -175,9 +175,10 @@ endfunction
 function! s:uploadSync(cloudOption, mode)
     let g:ZFVimIM_cloudSync_log = []
 
+    let localMode = (get(a:cloudOption, 'mode', '') == 'local')
     let downloadOnly = (a:mode == 'download')
 
-    if !executable('git')
+    if !localMode && !executable('git')
         redraw!
         call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'canceled: git not available')
         return
@@ -190,18 +191,22 @@ function! s:uploadSync(cloudOption, mode)
         return
     endif
 
-    if !s:US_gitInfoPrepare(a:cloudOption, downloadOnly)
-        return
+    if !localMode
+        if !s:US_gitInfoPrepare(a:cloudOption, downloadOnly)
+            return
+        endif
     endif
 
-    redraw!
-    call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'updating...')
-    let result = system(ZFVimIM_cloud_dbDownloadCmd(a:cloudOption))
-    if v:shell_error
-        call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . ZFVimIM_cloud_dbDownloadCmd(a:cloudOption))
-        let result = ZFVimIM_cloud_fixOutputEncoding(result)
-        call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . result)
-        return
+    if !localMode
+        redraw!
+        call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'updating...')
+        let result = system(ZFVimIM_cloud_dbDownloadCmd(a:cloudOption))
+        if v:shell_error
+            call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . ZFVimIM_cloud_dbDownloadCmd(a:cloudOption))
+            let result = ZFVimIM_cloud_fixOutputEncoding(result)
+            call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . result)
+            return
+        endif
     endif
 
     redraw!
@@ -227,17 +232,20 @@ function! s:uploadSync(cloudOption, mode)
         call ZFVimIM_dbEditApply(dbNew, db['dbEdit'])
         call ZFVimIM_dbSave(dbNew, dbFile, dbCountFile)
 
-        redraw!
-        call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'pushing...')
-        let result = system(ZFVimIM_cloud_dbUploadCmd(a:cloudOption))
-        " strip password
-        let result = substitute(result, ':[^:]*@', '@', 'g')
-        if v:shell_error
-            call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . ZFVimIM_cloud_dbUploadCmd(a:cloudOption))
-            let result = ZFVimIM_cloud_fixOutputEncoding(result)
-            call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . result)
-            return
+        if !localMode
+            redraw!
+            call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'pushing...')
+            let result = system(ZFVimIM_cloud_dbUploadCmd(a:cloudOption))
+            " strip password
+            let result = substitute(result, ':[^:]*@', '@', 'g')
+            if v:shell_error
+                call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . ZFVimIM_cloud_dbUploadCmd(a:cloudOption))
+                let result = ZFVimIM_cloud_fixOutputEncoding(result)
+                call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . result)
+                return
+            endif
         endif
+
         let db['dbMap'] = dbNew['dbMap']
         let db['dbKeyMap'] = dbNew['dbKeyMap']
         let db['dbEdit'] = []

@@ -419,6 +419,38 @@ it's recommended to clean up it occasionally, by:
     also, if any strange behaviors occurred,
     `:verbose set omnifunc?` to check whether it's changed by other plugins
 
+* Q: lazy db load?
+
+    A: you may manually use these methods to achieve lazy load:
+
+    * register:
+        * `ZFVimIM_dbInit(...)` : register a empty db that can be toggle by
+            `ZFVimIME_keymap_toggle_n()` or `ZFVimIME_keymap_next_n()`
+    * db load:
+        * `ZFVimIM_cloudRegister(...)` : (recommended) register cloud setting, and would load db content when called
+        * `ZFVimIM_dbLoad(...)` : to load actual db content,
+            can be called separately for split db,
+            new data would be merged to old data
+        * `g:ZFVimIM_db` : (not recommended) manually modify internal db data
+
+* Q: apply changes / input history to local files only?
+
+    A: use `mode='local'` option when `ZFVimIM_cloudRegister(...)`,
+        and all changes would be stored to local file only, example:
+
+        ```
+        let db = ZFVimIM_dbInit({
+                    \   'name' : 'YourDb',
+                    \ })
+        call ZFVimIM_cloudRegister({
+                    \   'mode' : 'local',
+                    \   'repoPath' : '/path/to/repo',
+                    \   'dbFile' : '/YourDbFile',
+                    \   'dbCountFile' : '/YourDbCountFile',
+                    \   'dbId' : db['dbId'],
+                    \ })
+        ```
+
 
 ## known issue
 

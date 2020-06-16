@@ -78,6 +78,7 @@ augroup END
 "   'dbId' : {
 "     'cloudOption' : {},
 "     'initOnly' : 0,
+"     'applyOnly' : 0,
 "     'downloadOnly' : 0,
 "     'jobId' : -1,
 "     'dbLoadJsonFile' : '',
@@ -216,6 +217,7 @@ function! s:uploadAsync(cloudOption, mode)
 
     let g:ZFVimIM_cloudAsync_log = []
 
+    let applyOnly = (get(a:cloudOption, 'mode', '') == 'local')
     let downloadOnly = (a:mode == 'download')
     let initOnly = (a:mode == 'init') || !executable('git')
     let askIfNoGitInfo = (a:mode == 'askIfNoGitInfo')
@@ -228,7 +230,7 @@ function! s:uploadAsync(cloudOption, mode)
         call s:cloudAsyncLog({}, ZFVimIM_cloud_logInfo(a:cloudOption) . 'canceled: async mode not available')
         return
     endif
-    if !initOnly && !s:UA_gitInfoPrepare(a:cloudOption, downloadOnly)
+    if !initOnly && !applyOnly && !s:UA_gitInfoPrepare(a:cloudOption, downloadOnly)
         if askIfNoGitInfo
             call ZFVimIM_uploadSync(a:cloudOption)
         endif
@@ -238,6 +240,7 @@ function! s:uploadAsync(cloudOption, mode)
     let task = {
                 \   'cloudOption' : a:cloudOption,
                 \   'initOnly' : initOnly,
+                \   'applyOnly' : applyOnly,
                 \   'downloadOnly' : downloadOnly,
                 \   'jobId' : -1,
                 \   'dbLoadJsonFile' : tempname(),
@@ -254,7 +257,7 @@ function! s:uploadAsync(cloudOption, mode)
                 \   'jobTimeout' : g:ZFVimIM_cloudAsync_timeout,
                 \   'outputTo' : g:ZFVimIM_cloudAsync_outputTo,
                 \ }
-    if !initOnly
+    if !initOnly && !applyOnly
         call add(groupJobOption['jobList'], [{
                     \       'jobCmd' : ZFVimIM_cloud_dbDownloadCmd(a:cloudOption),
                     \       'onOutput' : ZFJobFunc(function('s:UA_dbDownloadOnOutput'), [db['dbId']]),
@@ -277,31 +280,34 @@ function! s:uploadAsync(cloudOption, mode)
             call add(groupJobOption['jobList'], [{
                         \   'jobCmd' : dbSaveCmd,
                         \   'onOutput' : ZFJobFunc(function('s:UA_dbSaveOnOutput'), [db['dbId']]),
-                        \   'onExit' : ZFJobFunc(function('s:UA_dbSaveOnExit'), [db['dbId']]),
                         \ }])
         else
             " nothing to do
             " should be done at s:UA_dbLoadFallback
         endif
-        call add(groupJobOption['jobList'], [{
-                    \   'jobCmd' : ZFVimIM_cloud_dbUploadCmd(a:cloudOption),
-                    \   'onOutput' : ZFJobFunc(function('s:UA_dbUploadOnOutput'), [db['dbId']]),
-                    \ }])
 
-        if g:ZFVimIM_cloudAsync_autoCleanup > 0 && ZFVimIM_cloud_gitInfoSupplied(a:cloudOption)
-            let dbCleanupCmd = ZFVimIM_cloud_dbCleanupCmd(a:cloudOption)
-            if !empty(dbCleanupCmd)
-                call add(groupJobOption['jobList'], [{
-                            \   'jobCmd' : ZFVimIM_cloud_dbCleanupCheckCmd(a:cloudOption),
-                            \   'onOutput' : ZFJobFunc(function('s:UA_dbCleanupCheckOnOutput'), [db['dbId']]),
-                            \ }])
+        if !applyOnly
+            call add(groupJobOption['jobList'], [{
+                        \   'jobCmd' : ZFVimIM_cloud_dbUploadCmd(a:cloudOption),
+                        \   'onEnter' : ZFJobFunc(function('s:UA_dbUploadOnEnter'), [db['dbId']]),
+                        \   'onOutput' : ZFJobFunc(function('s:UA_dbUploadOnOutput'), [db['dbId']]),
+                        \ }])
 
-                if get(db['implData'], '_dbCleanupHistory', 0) >= g:ZFVimIM_cloudAsync_autoCleanup
+            if g:ZFVimIM_cloudAsync_autoCleanup > 0 && ZFVimIM_cloud_gitInfoSupplied(a:cloudOption)
+                let dbCleanupCmd = ZFVimIM_cloud_dbCleanupCmd(a:cloudOption)
+                if !empty(dbCleanupCmd)
                     call add(groupJobOption['jobList'], [{
-                                \   'jobCmd' : dbCleanupCmd,
-                                \   'onOutput' : ZFJobFunc(function('s:UA_dbCleanupOnOutput'), [db['dbId']]),
+                                \   'jobCmd' : ZFVimIM_cloud_dbCleanupCheckCmd(a:cloudOption),
+                                \   'onOutput' : ZFJobFunc(function('s:UA_dbCleanupCheckOnOutput'), [db['dbId']]),
                                 \ }])
-                    let groupJobOption['jobTimeout'] += g:ZFVimIM_cloudAsync_timeout
+
+                    if get(db['implData'], '_dbCleanupHistory', 0) >= g:ZFVimIM_cloudAsync_autoCleanup
+                        call add(groupJobOption['jobList'], [{
+                                    \   'jobCmd' : dbCleanupCmd,
+                                    \   'onOutput' : ZFJobFunc(function('s:UA_dbCleanupOnOutput'), [db['dbId']]),
+                                    \ }])
+                        let groupJobOption['jobTimeout'] += g:ZFVimIM_cloudAsync_timeout
+                    endif
                 endif
             endif
         endif
@@ -444,17 +450,14 @@ function! s:UA_dbSaveOnOutput(dbId, jobStatus, text, type)
     endif
     call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'merging : ' . a:text)
 endfunction
-function! s:UA_dbSaveOnExit(dbId, jobStatus, exitCode)
-    if a:exitCode != '0'
-        return
-    endif
+
+function! s:UA_dbUploadOnEnter(dbId, jobStatus)
     let task = get(s:UA_taskMap, a:dbId, {})
     if empty(task)
         return
     endif
     call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'pushing...')
 endfunction
-
 function! s:UA_dbUploadOnOutput(dbId, jobStatus, text, type)
     let task = get(s:UA_taskMap, a:dbId, {})
     if empty(task)
