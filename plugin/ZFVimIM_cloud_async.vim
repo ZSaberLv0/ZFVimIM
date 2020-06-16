@@ -25,7 +25,7 @@ endif
 " ============================================================
 function! ZFVimIM_cloudAsyncAvailable()
     if !exists('s:uploadAsyncAvailableCache')
-        let s:uploadAsyncAvailableCache = executable('git') && exists('*ZFJobAvailable') && ZFJobAvailable()
+        let s:uploadAsyncAvailableCache = exists('*ZFJobAvailable') && ZFJobAvailable()
     endif
     return s:uploadAsyncAvailableCache
 endfunction
@@ -217,7 +217,7 @@ function! s:uploadAsync(cloudOption, mode)
     let g:ZFVimIM_cloudAsync_log = []
 
     let downloadOnly = (a:mode == 'download')
-    let initOnly = (a:mode == 'init')
+    let initOnly = (a:mode == 'init') || !executable('git')
     let askIfNoGitInfo = (a:mode == 'askIfNoGitInfo')
 
     if !initOnly && !downloadOnly && empty(db['dbEdit'])
