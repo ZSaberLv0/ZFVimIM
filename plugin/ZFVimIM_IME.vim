@@ -65,33 +65,33 @@ endif
 function! ZFVimIME_keymap_toggle_n()
     call ZFVimIME_toggle()
     " redraw to ensure `b:keymap_name` updated
-    redraw
+    redraw!
     return ''
 endfunction
 function! ZFVimIME_keymap_toggle_i()
     call ZFVimIME_toggle()
-    redraw
+    redraw!
     return ''
 endfunction
 function! ZFVimIME_keymap_toggle_v()
     call ZFVimIME_toggle()
-    redraw
+    redraw!
     return ''
 endfunction
 
 function! ZFVimIME_keymap_next_n()
     call ZFVimIME_next()
-    redraw
+    redraw!
     return ''
 endfunction
 function! ZFVimIME_keymap_next_i()
     call ZFVimIME_next()
-    redraw
+    redraw!
     return ''
 endfunction
 function! ZFVimIME_keymap_next_v()
     call ZFVimIME_next()
-    redraw
+    redraw!
     return ''
 endfunction
 
