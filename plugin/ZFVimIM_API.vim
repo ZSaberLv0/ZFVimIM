@@ -424,7 +424,11 @@ function! ZFVimIM_completeDefault(key, option, db)
         let hash = item['key'] . item['word']
         if !exists('exists[hash]')
             let exists[hash] = 1
-            call insert(ret, item, g:ZFVimIM_crossDbPos)
+            if g:ZFVimIM_crossDbPos >= len(ret)
+                call add(ret, item)
+            else
+                call insert(ret, item, g:ZFVimIM_crossDbPos)
+            endif
         endif
     endfor
 
