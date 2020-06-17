@@ -451,6 +451,17 @@ it's recommended to clean up it occasionally, by:
                     \ })
         ```
 
+* Q: meet some weird problem, how to check log?
+
+    A: use `:IMCloudLog` to check first, if not enough:
+
+    1. put this in your vimrc: `let g:ZFJobVerboseLogEnable = 1`
+    1. restart vim and reproduce your problem
+    1. write log file by: `:call writefile(g:ZFJobVerboseLog, 'log.txt')`
+
+    **WARNING** : the verbose log may contain your git access token or password,
+    please verify before posting the log file to public
+
 
 ## known issue
 
