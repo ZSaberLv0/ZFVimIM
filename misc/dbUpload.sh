@@ -29,7 +29,7 @@ if ! test "$?" = "0"; then
     cd "$_OLD_DIR"
     exit 1
 fi
-git fetch --all
+git fetch "$PUSH_URL" "+refs/heads/*:refs/remotes/origin/*"
 
 cd "$_OLD_DIR"
 

@@ -111,9 +111,15 @@ function! ZFVimIM_cloud_dbDownloadCmd(cloudOption)
         return 'sh'
                     \ . ' "' . s:scriptPath . 'dbDownload.sh' . '"'
                     \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
+                    \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
+                    \ . ' "' . a:cloudOption['gitUserName'] . '"'
+                    \ . ' "' . a:cloudOption['gitUserToken'] . '"'
     else
         return '"' . s:scriptPath . 'dbDownload.bat' . '"'
                     \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
+                    \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
+                    \ . ' "' . a:cloudOption['gitUserName'] . '"'
+                    \ . ' "' . a:cloudOption['gitUserToken'] . '"'
     endif
 endfunction
 function! ZFVimIM_cloud_dbUploadCmd(cloudOption)

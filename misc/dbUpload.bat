@@ -33,7 +33,7 @@ if not "!errorlevel!" == "0" (
     cd /d "%_OLD_DIR%"
     exit /b 1
 )
-git fetch --all
+git fetch "%PUSH_URL%" "+refs/heads/*:refs/remotes/origin/*"
 
 cd /d "%_OLD_DIR%"
 
