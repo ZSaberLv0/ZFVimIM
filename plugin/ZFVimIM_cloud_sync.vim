@@ -158,10 +158,9 @@ function! s:US_gitInfoPrepare(cloudOption, downloadOnly)
     return 1
 endfunction
 
-let g:ZFVimIM_cloudSync_log = []
 function! s:cloudSyncLog(msg)
     echo a:msg
-    call add(g:ZFVimIM_cloudSync_log, a:msg)
+    call ZFVimIM_cloudLogAdd(a:msg)
 endfunction
 
 function! s:initSync(cloudOption)
@@ -173,7 +172,7 @@ endfunction
 " * download
 " * upload
 function! s:uploadSync(cloudOption, mode)
-    let g:ZFVimIM_cloudSync_log = []
+    call ZFVimIM_cloudLogClear()
 
     let localMode = (get(a:cloudOption, 'mode', '') == 'local')
     let downloadOnly = (a:mode == 'download')

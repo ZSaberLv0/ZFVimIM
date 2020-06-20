@@ -47,18 +47,31 @@ endfunction
 command! -nargs=0 IMCloud :call ZFVimIM_upload()
 
 function! ZFVimIM_cloudLog()
-    if ZFVimIM_cloudAsyncAvailable()
-        let log = g:ZFVimIM_cloudAsync_log
-    else
-        let log = g:ZFVimIM_cloudSync_log
-    endif
-
     redraw!
-    for line in log
+    for line in s:ZFVimIM_cloud_log
         echo line
     endfor
+    return s:ZFVimIM_cloud_log
 endfunction
 command! -nargs=0 IMCloudLog :call ZFVimIM_cloudLog()
+
+
+if !exists('s:ZFVimIM_cloud_log')
+    let s:ZFVimIM_cloud_log = []
+endif
+function! ZFVimIM_cloudLogAdd(msg)
+    call add(s:ZFVimIM_cloud_log, a:msg)
+endfunction
+function! ZFVimIM_cloudLogClear()
+    let s:ZFVimIM_cloud_log = []
+endfunction
+
+function! ZFVimIM_cloudLog_stripSensitive(text)
+    return substitute(a:text, ':[^:]*@', '@', 'g')
+endfunction
+function! ZFVimIM_cloudLog_stripSensitiveForJob(jobStatus, text, type)
+    return ZFVimIM_cloudLog_stripSensitive(a:text)
+endfunction
 
 
 function! ZFVimIM_cloud_gitInfoSupplied(cloudOption)
@@ -66,6 +79,35 @@ function! ZFVimIM_cloud_gitInfoSupplied(cloudOption)
                 \ && !empty(get(a:cloudOption, 'gitUserEmail', ''))
                 \ && !empty(get(a:cloudOption, 'gitUserName', ''))
                 \ && !empty(get(a:cloudOption, 'gitUserToken', ''))
+endfunction
+
+
+" param:
+" * 0~n : clean g:ZFVimIM_cloudOption[n]
+" * cloudOption
+" * none : clean all
+function! ZFVimIM_cloud_dbCleanup(...)
+    let cloudOptionList = []
+    if a:0 > 0
+        if type(a:1) == type(0)
+            call add(cloudOptionList, g:ZFVimIM_cloudOption[a:1])
+        else
+            call add(cloudOptionList, a:1)
+        endif
+    else
+        let cloudOptionList = g:ZFVimIM_cloudOption
+    endif
+
+    call ZFVimIM_cloudLogClear()
+    for cloudOption in cloudOptionList
+        let dbCleanupCachePath = ZFVimIM_cloud_dbCleanupCachePath(cloudOption)
+        let dbCleanupCmd = ZFVimIM_cloud_dbCleanupCmd(cloudOption, dbCleanupCachePath)
+        if empty(dbCleanupCmd)
+            continue
+        endif
+        call ZFVimIM_cloudLogAdd(ZFVimIM_cloudLog_stripSensitive(system(dbCleanupCmd)))
+    endfor
+    return ZFVimIM_cloudLog()
 endfunction
 
 
@@ -148,7 +190,10 @@ function! ZFVimIM_cloud_dbCleanupCheckCmd(cloudOption)
                     \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
     endif
 endfunction
-function! ZFVimIM_cloud_dbCleanupCmd(cloudOption)
+function! ZFVimIM_cloud_dbCleanupCachePath(cloudOption)
+    return s:realPath(g:ZFVimIM_cachePath . '/ZFVimIM_dbCleanup_' . rand())
+endfunction
+function! ZFVimIM_cloud_dbCleanupCmd(cloudOption, dbCleanupCachePath)
     if has('unix')
         let path = split(globpath(&rtp, '/misc/git_hard_remove_all_history.sh'), '\n')
         if empty(path)
@@ -163,7 +208,7 @@ function! ZFVimIM_cloud_dbCleanupCmd(cloudOption)
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
                     \ . ' "' . a:cloudOption['gitUserToken'] . '"'
                     \ . ' "' . s:realPath(path) . '"'
-                    \ . ' "' . s:realPath(g:ZFVimIM_cachePath) . '"'
+                    \ . ' "' . a:dbCleanupCachePath . '"'
     else
         let path = split(globpath(&rtp, '/misc/git_hard_remove_all_history.bat'), '\n')
         if empty(path)
@@ -177,27 +222,33 @@ function! ZFVimIM_cloud_dbCleanupCmd(cloudOption)
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
                     \ . ' "' . a:cloudOption['gitUserToken'] . '"'
                     \ . ' "' . s:realPath(path) . '"'
-                    \ . ' "' . s:realPath(g:ZFVimIM_cachePath) . '"'
+                    \ . ' "' . a:dbCleanupCachePath . '"'
     endif
 endfunction
 
-function! ZFVimIM_cloud_dbLoadCmd(cloudOption, dbJsonFile)
+function! ZFVimIM_cloud_dbLoadCachePath(cloudOption)
+    return s:realPath(g:ZFVimIM_cachePath . '/ZFVimIM_dbLoad_' . rand())
+endfunction
+function! ZFVimIM_cloud_dbLoadCmd(cloudOption, dbLoadCachePath)
     if empty(s:py)
         return ''
     endif
     return s:py
                 \ . ' "' . s:scriptPath . 'dbLoad.py' . '"'
-                \ . ' "' . s:realPath(a:dbJsonFile) . '"'
+                \ . ' "' . s:realPath(a:dbLoadCachePath) . '"'
                 \ . ' "' . s:realPath(ZFVimIM_cloud_file(a:cloudOption, 'dbFile')) . '"'
                 \ . ' "' . s:realPath(ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile')) . '"'
 endfunction
-function! ZFVimIM_cloud_dbSaveCmd(cloudOption, dbJsonFile)
+function! ZFVimIM_cloud_dbSaveCachePath(cloudOption)
+    return s:realPath(g:ZFVimIM_cachePath . '/ZFVimIM_dbSave_' . rand())
+endfunction
+function! ZFVimIM_cloud_dbSaveCmd(cloudOption, dbSaveCachePath)
     if empty(s:py)
         return ''
     endif
     return s:py
                 \ . ' "' . s:scriptPath . 'dbSave.py' . '"'
-                \ . ' "' . s:realPath(a:dbJsonFile) . '"'
+                \ . ' "' . s:realPath(a:dbSaveCachePath) . '"'
                 \ . ' "' . s:realPath(ZFVimIM_cloud_file(a:cloudOption, 'dbFile')) . '"'
                 \ . ' "' . s:realPath(ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile')) . '"'
 endfunction

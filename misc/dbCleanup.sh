@@ -16,13 +16,11 @@ if test "1" = "0" \
     exit 1
 fi
 
-mkdir "$CACHE_PATH" >/dev/null 2>&1
-_TMP_DIR="$CACHE_PATH/ZFVimIM_cache_dbCleanup"
-rm -rf "$_TMP_DIR" >/dev/null 2>&1
-mkdir "$_TMP_DIR"
-cp -r "$REPO_PATH/.git" "$_TMP_DIR/" >/dev/null 2>&1
-sh "$CLEANUP_SCRIPT" "$_TMP_DIR" "$GIT_USER_EMAIL" "$GIT_USER_NAME" "$GIT_USER_TOKEN"
+rm -rf "$CACHE_PATH" >/dev/null 2>&1
+mkdir -p "$CACHE_PATH"
+cp -r "$REPO_PATH/.git" "$CACHE_PATH/" >/dev/null 2>&1
+sh "$CLEANUP_SCRIPT" "$CACHE_PATH" "$GIT_USER_EMAIL" "$GIT_USER_NAME" "$GIT_USER_TOKEN"
 result="$?"
-rm -rf "$_TMP_DIR" >/dev/null 2>&1
+rm -rf "$CACHE_PATH" >/dev/null 2>&1
 exit $result
 

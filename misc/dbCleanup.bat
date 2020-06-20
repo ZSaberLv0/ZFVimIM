@@ -20,15 +20,13 @@ goto :run
 exit /b 1
 :run
 
-mkdir "%CACHE_PATH%" >nul 2>&1
-set _TMP_DIR="%CACHE_PATH%\ZFVimIM_cache_dbCleanup"
-del /f/s/q "%_TMP_DIR%" >nul 2>&1
-rmdir /s/q "%_TMP_DIR%" >nul 2>&1
-mkdir "%_TMP_DIR%"
-xcopy /s/e/y/r/h "%REPO_PATH%\.git" "%_TMP_DIR%\.git\" >nul 2>&1
-call "%CLEANUP_SCRIPT%" "%_TMP_DIR%" "%GIT_USER_EMAIL%" "%GIT_USER_NAME%" "%GIT_USER_TOKEN%"
+del /f/s/q "%CACHE_PATH%" >nul 2>&1
+rmdir /s/q "%CACHE_PATH%" >nul 2>&1
+mkdir "%CACHE_PATH%"
+xcopy /s/e/y/r/h "%REPO_PATH%\.git" "%CACHE_PATH%\.git\" >nul 2>&1
+call "%CLEANUP_SCRIPT%" "%CACHE_PATH%" "%GIT_USER_EMAIL%" "%GIT_USER_NAME%" "%GIT_USER_TOKEN%"
 set result=%errorlevel%
-del /f/s/q "%_TMP_DIR%" >nul 2>&1
-rmdir /s/q "%_TMP_DIR%" >nul 2>&1
+del /f/s/q "%CACHE_PATH%" >nul 2>&1
+rmdir /s/q "%CACHE_PATH%" >nul 2>&1
 exit /b %result%
 
