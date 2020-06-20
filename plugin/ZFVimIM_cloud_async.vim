@@ -523,8 +523,12 @@ function! s:UA_onExit(dbId, groupJobStatus, exitCode)
     endwhile
 
     if(!empty(task))
-        call delete(task['dbLoadJsonFile'])
-        call delete(task['dbSaveJsonFile'])
+        if filereadable(task['dbLoadJsonFile'])
+            call delete(task['dbLoadJsonFile'])
+        endif
+        if filereadable(task['dbSaveJsonFile'])
+            call delete(task['dbSaveJsonFile'])
+        endif
     endif
     call ZFJobOutputCleanup(a:groupJobStatus)
 endfunction
