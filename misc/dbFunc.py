@@ -1,4 +1,4 @@
-import codecs
+import io
 import os
 import re
 
@@ -64,7 +64,7 @@ def dbLoad(db, dbFile, dbCountFile):
     if 'dbKeyMap' not in db:
         db['dbKeyMap'] = {}
     # load db
-    for line in codecs.open(dbFile, 'r', 'utf-8'):
+    for line in io.open(dbFile, 'r', encoding='utf-8'):
         if line.find('\ ') >= 0:
             wordListTmp = line.replace('\ ', '_ZFVimIM_space_').split(' ')
             if len(wordListTmp) > 0:
@@ -93,7 +93,7 @@ def dbLoad(db, dbFile, dbCountFile):
             _dbKeyMapAdd(db['dbMap'], db['dbKeyMap'], key)
     # load word count
     if len(dbCountFile) > 0 and os.access(dbCountFile, os.F_OK) and os.access(dbCountFile, os.R_OK):
-        for line in codecs.open(dbCountFile, 'r', 'utf-8'):
+        for line in io.open(dbCountFile, 'r', encoding='utf-8'):
             countTextList = line.split(' ')
             if len(countTextList) <= 1:
                 continue
@@ -122,7 +122,7 @@ def dbSave(db, dbFile, dbCountFile):
                 line += word.replace(' ', '\ ')
             line += '\n'
             lines.append(line)
-        with codecs.open(dbFile, 'w', 'utf-8') as file:
+        with io.open(dbFile, 'w', encoding='utf-8') as file:
             file.writelines(lines)
     else:
         countLines = []
@@ -141,9 +141,9 @@ def dbSave(db, dbFile, dbCountFile):
             if countLine != key:
                 countLine += '\n'
                 countLines.append(countLine)
-        with codecs.open(dbFile, 'w', 'utf-8') as file:
+        with io.open(dbFile, 'w', encoding='utf-8') as file:
             file.writelines(lines)
-        with codecs.open(dbCountFile, 'w', 'utf-8') as file:
+        with io.open(dbCountFile, 'w', encoding='utf-8') as file:
             file.writelines(countLines)
 
 
