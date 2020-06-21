@@ -11,6 +11,9 @@ endif
 if !exists('g:ZFVimIM_cloudAsync_autoCleanup')
     let g:ZFVimIM_cloudAsync_autoCleanup=30
 endif
+if !exists('g:ZFVimIM_cloudAsync_autoCleanup_timeout')
+    let g:ZFVimIM_cloudAsync_autoCleanup_timeout=g:ZFVimIM_cloudAsync_timeout*2
+endif
 if !exists('g:ZFVimIM_cloudAsync_autoInit')
     let g:ZFVimIM_cloudAsync_autoInit=(g:ZFVimIM_cloudAsync_enable > 0)
 endif
@@ -311,7 +314,7 @@ function! s:uploadAsync(cloudOption, mode)
                                     \   'onOutputFilter' : function('ZFVimIM_cloudLog_stripSensitiveForJob'),
                                     \   'onOutput' : ZFJobFunc(function('s:UA_dbCleanupOnOutput'), [db['dbId']]),
                                     \ }])
-                        let groupJobOption['jobTimeout'] += g:ZFVimIM_cloudAsync_timeout
+                        let groupJobOption['jobTimeout'] += g:ZFVimIM_cloudAsync_autoCleanup_timeout
                     endif
                 endif
             endif
