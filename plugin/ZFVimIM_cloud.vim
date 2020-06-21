@@ -146,6 +146,11 @@ function! s:realPath(path)
         return a:path
     endif
 endfunction
+
+function! s:randName()
+    return fnamemodify(tempname(), ':t')
+endfunction
+
 let s:scriptPath = s:realPath(expand('<sfile>:p:h:h') . '/misc/')
 
 function! ZFVimIM_cloud_dbDownloadCmd(cloudOption)
@@ -191,7 +196,7 @@ function! ZFVimIM_cloud_dbCleanupCheckCmd(cloudOption)
     endif
 endfunction
 function! ZFVimIM_cloud_dbCleanupCachePath(cloudOption)
-    return s:realPath(g:ZFVimIM_cachePath . '/ZFVimIM_dbCleanup_' . rand())
+    return s:realPath(ZFVimIM_cachePath() . '/ZFVimIM_dbCleanup_' . s:randName())
 endfunction
 function! ZFVimIM_cloud_dbCleanupCmd(cloudOption, dbCleanupCachePath)
     if has('unix')
@@ -227,7 +232,7 @@ function! ZFVimIM_cloud_dbCleanupCmd(cloudOption, dbCleanupCachePath)
 endfunction
 
 function! ZFVimIM_cloud_dbLoadCachePath(cloudOption)
-    return s:realPath(g:ZFVimIM_cachePath . '/ZFVimIM_dbLoad_' . rand())
+    return s:realPath(ZFVimIM_cachePath() . '/ZFVimIM_dbLoad_' . s:randName())
 endfunction
 function! ZFVimIM_cloud_dbLoadCmd(cloudOption, dbLoadCachePath)
     if empty(s:py)
@@ -240,7 +245,7 @@ function! ZFVimIM_cloud_dbLoadCmd(cloudOption, dbLoadCachePath)
                 \ . ' "' . s:realPath(ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile')) . '"'
 endfunction
 function! ZFVimIM_cloud_dbSaveCachePath(cloudOption)
-    return s:realPath(g:ZFVimIM_cachePath . '/ZFVimIM_dbSave_' . rand())
+    return s:realPath(ZFVimIM_cachePath() . '/ZFVimIM_dbSave_' . s:randName())
 endfunction
 function! ZFVimIM_cloud_dbSaveCmd(cloudOption, dbSaveCachePath)
     if empty(s:py)

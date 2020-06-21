@@ -21,8 +21,15 @@ if !exists('g:ZFVimIM_crossDbPos')
 endif
 
 if !exists('g:ZFVimIM_cachePath')
-    let g:ZFVimIM_cachePath = get(g:, 'zf_vim_cache_path', $HOME . '/.vim_cache')
+    let g:ZFVimIM_cachePath = get(g:, 'zf_vim_cache_path', $HOME . '/.vim_cache') . '/ZFVimIM'
 endif
+
+function! ZFVimIM_cachePath()
+    if !isdirectory(g:ZFVimIM_cachePath)
+        call mkdir(g:ZFVimIM_cachePath, 'p')
+    endif
+    return g:ZFVimIM_cachePath
+endfunction
 
 " db : [
 "   { // name,dbMap,dbKeyMap,dbEdit

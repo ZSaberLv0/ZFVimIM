@@ -251,7 +251,7 @@ it's recommended to clean up it occasionally, by:
     or, add autocmd to `ZFVimIM_event_OnStart`
     to setup this value
 
-* `let g:ZFVimIM_cachePath=$HOME.'/.vim_cache'`
+* `let g:ZFVimIM_cachePath=$HOME.'/.vim_cache/ZFVimIM'`
 
     cache path for temp files
 
