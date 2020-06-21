@@ -1,4 +1,4 @@
-import io
+import codecs
 import json
 import sys
 
@@ -25,7 +25,7 @@ DB_COUNT_FILE = sys.argv[3]
 
 
 # load config file
-with io.open(DB_JSON_FILE, 'r', encoding='utf-8') as file:
+with codecs.open(DB_JSON_FILE, 'r', 'utf-8') as file:
     db = json.load(file)
 
 
