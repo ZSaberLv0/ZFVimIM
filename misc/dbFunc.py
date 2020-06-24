@@ -1,209 +1,312 @@
-import codecs
+import io
 import os
 import re
+import sys
 
-ZFVimIM_KEY_HAS_WORD = '@@'
+
+ZFVimIM_KEY_S_MAIN = '#'
+ZFVimIM_KEY_S_SUB = ','
+ZFVimIM_KEY_SR_MAIN = '_ZFVimIM_m_'
+ZFVimIM_KEY_SR_SUB = '_ZFVimIM_s_'
 
 
-def dbMapItemDecode(dbMapItem):
-    split = dbMapItem.split('\r')
-    wordText = re.sub('^[\r\n]+|[\r\n]+$', '', split[0])
-    wordList = wordText.split('\n')
-    countText = re.sub('^[\r\n]+|[\r\n]+$', '', len(split) >= 2 and split[1] or '')
+DB_FILE_LINE_BUFFER = 2000
+
+
+if sys.version_info >= (3, 0):
+    def dbMapIter(dbMapDict):
+        return dbMapDict.items()
+else:
+    def dbMapIter(dbMapDict):
+        return dbMapDict.iteritems()
+
+
+def dbWordIndex(wordList, word):
+    try:
+        return wordList.index(word)
+    except:
+        return -1
+
+
+def dbItemReorder(dbItem):
+    tmp = []
+    i = 0
+    iEnd = len(dbItem['wordList'])
+    while i < iEnd:
+        tmp.append({
+            'word' : dbItem['wordList'][i],
+            'count' : dbItem['countList'][i],
+        })
+        i += 1
+    tmp.sort(key = lambda e:e['count'], reverse = True)
+    dbItem['wordList'] = []
+    dbItem['countList'] = []
+    for item in tmp:
+        dbItem['wordList'].append(item['word'])
+        dbItem['countList'].append(item['count'])
+
+
+def dbItemDecode(dbItemEncoded):
+    split = dbItemEncoded.split(ZFVimIM_KEY_S_MAIN)
+    wordList = split[1].split(ZFVimIM_KEY_S_SUB)
+    for i in range(len(wordList)):
+        wordList[i] = re.sub(ZFVimIM_KEY_SR_SUB, ZFVimIM_KEY_S_SUB,
+                re.sub(ZFVimIM_KEY_SR_MAIN, ZFVimIM_KEY_S_MAIN, wordList[i])
+            )
     countList = []
-    for cnt in countText.split('\n'):
-        if cnt != '':
+    if len(split) >= 3:
+        for cnt in split[2].split(ZFVimIM_KEY_S_SUB):
             countList.append(int(cnt))
     while len(countList) < len(wordList):
         countList.append(0)
     return {
+        'key' : split[0],
         'wordList' : wordList,
         'countList' : countList,
     }
-def dbMapItemEncode(dbMapItem):
-    line = '\n'.join(dbMapItem['wordList'])
-    line += '\r'
-    for cnt in dbMapItem['countList']:
-        if cnt <= 0:
+
+
+def dbItemEncode(dbItem):
+    dbItemEncoded = dbItem['key']
+    dbItemEncoded += ZFVimIM_KEY_S_MAIN
+    for i in range(len(dbItem['wordList'])):
+        if i != 0:
+            dbItemEncoded += ZFVimIM_KEY_S_SUB
+        dbItemEncoded += re.sub(ZFVimIM_KEY_S_SUB, ZFVimIM_KEY_SR_SUB,
+                re.sub(ZFVimIM_KEY_S_MAIN, ZFVimIM_KEY_SR_MAIN, dbItem['wordList'][i])
+            )
+    for i in range(len(dbItem['countList'])):
+        if dbItem['countList'][i] <= 0:
             break
-        line += str(cnt)
-        line += '\n'
-    return line[0:-1]
-
-
-def dbMapItemReorder(dbMapItem):
-    tmp = []
-    i = 0
-    iEnd = len(dbMapItem['wordList'])
-    while i < iEnd:
-        tmp.append({
-            'word' : dbMapItem['wordList'][i],
-            'count' : dbMapItem['countList'][i],
-        })
-        i += 1
-    tmp.sort(key = lambda e:e['count'], reverse = True)
-    dbMapItem['wordList'] = []
-    dbMapItem['countList'] = []
-    for item in tmp:
-        dbMapItem['wordList'].append(item['word'])
-        dbMapItem['countList'].append(item['count'])
-
-
-def _dbKeyMapAdd(dbMap, dbKeyMap, key):
-    for i in range(len(key)):
-        c = key[i]
-        if c not in dbKeyMap:
-            dbKeyMap[c] = {}
-        dbKeyMap = dbKeyMap[c]
-    dbKeyMap[ZFVimIM_KEY_HAS_WORD] = ''
-
-
-def dbLoad(db, dbFile, dbCountFile):
-    if 'dbMap' not in db:
-        db['dbMap'] = {}
-    if 'dbKeyMap' not in db:
-        db['dbKeyMap'] = {}
-    # load db
-    for line in codecs.open(dbFile, 'r', 'utf-8'):
-        if line.find('\ ') >= 0:
-            wordListTmp = line.replace('\ ', '_ZFVimIM_space_').split(' ')
-            if len(wordListTmp) > 0:
-                key = wordListTmp[0]
-                del wordListTmp[0]
-            wordList = []
-            for word in wordListTmp:
-                wordList.append(word.replace('_ZFVimIM_space_', ' '))
+        if i == 0:
+            dbItemEncoded += ZFVimIM_KEY_S_MAIN
         else:
-            wordList = line.split(' ')
-            if len(wordList) > 0:
-                key = wordList[0]
-                del wordList[0]
-        if len(wordList) > 0:
-            if key in db['dbMap']:
-                dbMapItem = dbMapItemDecode(db['dbMap'][key])
-                dbMapItem['wordList'].extend(wordList)
+            dbItemEncoded += ZFVimIM_KEY_S_SUB
+        dbItemEncoded += str(dbItem['countList'][i])
+    return dbItemEncoded
+
+
+# since python has low performance on List search,
+# we use different db struct with vim side
+#
+# return pyMap: {
+#   'a' : {
+#     'a' : 'a#啊,阿#3,2',
+#     'ai' : 'ai#爱,哀#3',
+#   },
+#   'c' : {
+#     'ceshi' : 'ceshi#测试',
+#   },
+# }
+def dbLoadPy(dbFile, dbCountFile):
+    pyMap = {}
+    # load db
+    with io.open(dbFile, 'r', encoding='utf-8') as dbFilePtr:
+        for line in dbFilePtr:
+            line = line.rstrip('\n')
+            if line.find('\ ') >= 0:
+                wordListTmp = line.replace('\ ', '_ZFVimIM_space_').split(' ')
+                if len(wordListTmp) > 0:
+                    key = wordListTmp[0]
+                    del wordListTmp[0]
+                wordList = []
+                for word in wordListTmp:
+                    wordList.append(word.replace('_ZFVimIM_space_', ' '))
             else:
-                dbMapItem = {
+                wordList = line.split(' ')
+                if len(wordList) > 0:
+                    key = wordList[0]
+                    del wordList[0]
+            if len(wordList) > 0:
+                if key[0] not in pyMap:
+                    pyMap[key[0]] = {}
+                pyMap[key[0]][key] = dbItemEncode({
+                    'key' : key,
+                    'wordList' : wordList,
+                    'countList' : [],
+                })
+    # load word count
+    if len(dbCountFile) > 0 and os.access(dbCountFile, os.F_OK) and os.access(dbCountFile, os.R_OK):
+        with io.open(dbCountFile, 'r', encoding='utf-8') as dbCountFilePtr:
+            for line in dbCountFilePtr:
+                line = line.rstrip('\n')
+                countTextList = line.split(' ')
+                if len(countTextList) <= 1:
+                    continue
+                key = countTextList[0]
+                dbItemEncoded = pyMap.get(key[0], {}).get(key, '')
+                if dbItemEncoded == '':
+                    continue
+                dbItem = dbItemDecode(dbItemEncoded)
+                wordListLen = len(dbItem['wordList'])
+                for i in range(len(countTextList) - 1):
+                    if i >= wordListLen:
+                        break
+                    dbItem['countList'][i] = int(countTextList[i + 1])
+                dbItemReorder(dbItem)
+                pyMap[key[0]][key] = dbItemEncode(dbItem)
+    return pyMap
+    # end of dbLoadPy
+
+
+# similar to dbFunc.dbLoad()
+# but transform db file to formal format:
+# * ensure key only contains a-z
+# * sort lines
+# * transform:
+#     key a1 a2
+#     key a1 a3
+#   to:
+#     key a1 a2 a3
+def dbLoadNormalizePy(dbFile):
+    pyMap = {}
+    # load db
+    with io.open(dbFile, 'r', encoding='utf-8') as dbFilePtr:
+        for line in dbFilePtr:
+            line = line.rstrip('\n')
+            if line.find('\ ') >= 0:
+                wordListTmp = line.replace('\ ', '_ZFVimIM_space_').split(' ')
+                if len(wordListTmp) > 0:
+                    key = wordListTmp[0]
+                    del wordListTmp[0]
+                wordList = []
+                for word in wordListTmp:
+                    wordList.append(word.replace('_ZFVimIM_space_', ' '))
+            else:
+                wordList = line.split(' ')
+                if len(wordList) > 0:
+                    key = wordList[0]
+                    del wordList[0]
+            if len(wordList) <= 0:
+                continue
+            key = re.sub('[^a-z]', '', key)
+            if key == '':
+                continue
+            if key[0] not in pyMap:
+                pyMap[key[0]] = {}
+            if key in pyMap[key[0]]:
+                dbItem = dbItemDecode(pyMap[key[0]][key])
+                for word in wordList:
+                    if word not in dbItem['wordList']:
+                        dbItem['wordList'].append(word)
+            else:
+                dbItem = {
+                    'key' : key,
                     'wordList' : wordList,
                     'countList' : [],
                 }
-            for i in range(len(wordList)):
-                dbMapItem['countList'].append(0)
-            db['dbMap'][key] = dbMapItemEncode(dbMapItem)
-            _dbKeyMapAdd(db['dbMap'], db['dbKeyMap'], key)
-    # load word count
-    if len(dbCountFile) > 0 and os.access(dbCountFile, os.F_OK) and os.access(dbCountFile, os.R_OK):
-        for line in codecs.open(dbCountFile, 'r', 'utf-8'):
-            countTextList = line.split(' ')
-            if len(countTextList) <= 1:
-                continue
-            key = countTextList[0]
-            if key not in db['dbMap']:
-                continue
-            dbMapItem = dbMapItemDecode(db['dbMap'][key])
-            wordListLen = len(dbMapItem['wordList'])
-            for i in range(len(countTextList) - 1):
-                if i >= wordListLen:
-                    break
-                dbMapItem['countList'][i] = int(countTextList[i + 1])
-            dbMapItemReorder(dbMapItem)
-            db['dbMap'][key] = dbMapItemEncode(dbMapItem)
-    # end of dbLoad
+            pyMap[key[0]][key] = dbItemEncode(dbItem)
+    return pyMap
+    # end of dbLoadNormalizePy
 
 
-def dbSave(db, dbFile, dbCountFile):
-    dbMap = db['dbMap']
+def dbSavePy(pyMap, dbFile, dbCountFile):
     lines = []
     if len(dbCountFile) == 0 or not (not os.access(dbCountFile, os.F_OK) or os.access(dbCountFile, os.W_OK)):
-        for key in sorted(db['dbMap'].keys()):
-            line = key
-            for word in dbMapItemDecode(db['dbMap'][key])['wordList']:
-                line += ' '
-                line += word.replace(' ', '\ ')
-            line += '\n'
-            lines.append(line)
-        with codecs.open(dbFile, 'w', 'utf-8') as file:
-            file.writelines(lines)
+        dbFilePtr = io.open(dbFile, 'wb')
+        for c in pyMap.keys():
+            for key, dbItemEncoded in sorted(dbMapIter(pyMap[c])):
+                dbItem = dbItemDecode(dbItemEncoded)
+                line = dbItem['key']
+                for word in dbItem['wordList']:
+                    line += ' '
+                    line += word.replace(' ', '\ ')
+                lines.append(line)
+                if len(lines) >= DB_FILE_LINE_BUFFER:
+                    dbFilePtr.write(('\n'.join(lines) + '\n').encode())
+                    lines = []
+        if len(lines) > 0:
+            dbFilePtr.write(('\n'.join(lines) + '\n').encode())
+        dbFilePtr.close()
     else:
+        dbFilePtr = io.open(dbFile, 'wb')
+        dbCountFilePtr = io.open(dbCountFile, 'wb')
         countLines = []
-        for key in sorted(db['dbMap'].keys()):
-            line = key
-            countLine = key
-            dbMapItem = dbMapItemDecode(dbMap[key])
-            for i in range(len(dbMapItem['wordList'])):
-                line += ' '
-                line += dbMapItem['wordList'][i].replace(' ', '\ ')
-                if dbMapItem['countList'][i] > 0:
+        for c in pyMap.keys():
+            for key, dbItemEncoded in sorted(dbMapIter(pyMap[c])):
+                dbItem = dbItemDecode(dbItemEncoded)
+                line = dbItem['key']
+                countLine = dbItem['key']
+                for word in dbItem['wordList']:
+                    line += ' '
+                    line += word.replace(' ', '\ ')
+                lines.append(line)
+                if len(lines) >= DB_FILE_LINE_BUFFER:
+                    dbFilePtr.write(('\n'.join(lines) + '\n').encode())
+                    lines = []
+                for cnt in dbItem['countList']:
+                    if cnt <= 0:
+                        break
                     countLine += ' '
-                    countLine += str(dbMapItem['countList'][i])
-            line += '\n'
-            lines.append(line)
-            if countLine != key:
-                countLine += '\n'
-                countLines.append(countLine)
-        with codecs.open(dbFile, 'w', 'utf-8') as file:
-            file.writelines(lines)
-        with codecs.open(dbCountFile, 'w', 'utf-8') as file:
-            file.writelines(countLines)
+                    countLine += str(cnt)
+                if countLine != key:
+                    countLines.append(countLine)
+                if len(countLines) >= DB_FILE_LINE_BUFFER:
+                    dbCountFilePtr.write(('\n'.join(countLines) + '\n').encode())
+                    lines = []
+        if len(lines) > 0:
+            dbFilePtr.write(('\n'.join(lines) + '\n').encode())
+        if len(countLines) > 0:
+            dbCountFilePtr.write(('\n'.join(countLines) + '\n').encode())
+        dbFilePtr.close()
+        dbCountFilePtr.close()
+    # end of dbSavePy
 
 
-# note, for python, we don't need to apply dbKeyMap
-def dbEditApply(db, dbEdit):
-    dbMap = db['dbMap']
+def dbEditApplyPy(pyMap, dbEdit):
     for e in dbEdit:
         key = e['key']
         word = e['word']
         if e['action'] == 'add':
-            if key in dbMap:
-                dbMapItem = dbMapItemDecode(dbMap[key])
-                try:
-                    index = dbMapItem['wordList'].index(word)
-                except:
-                    index = -1
-                if index >= 0:
-                    dbMapItem['countList'][index] += 1
+            if key[0] not in pyMap:
+                pyMap[key[0]] = []
+            dbItemEncoded = pyMap[key[0]].get(key, '')
+            if dbItemEncoded != '':
+                dbItem = dbItemDecode(dbItemEncoded)
+                wordIndex = dbWordIndex(dbItem['wordList'], word)
+                if wordIndex >= 0:
+                    dbItem['countList'][wordIndex] += 1
                 else:
-                    dbMapItem['wordList'].append(word)
-                    dbMapItem['countList'].append(1)
-                dbMapItemReorder(dbMapItem)
-                dbMap[key] = dbMapItemEncode(dbMapItem)
+                    dbItem['wordList'].append(word)
+                    dbItem['countList'].append(1)
+                dbItemReorder(dbItem)
+                pyMap[key[0]][key] = dbItemEncode(dbItem)
             else:
-                dbMap[key] = dbMapItemEncode({
+                pyMap[key[0]][key] = dbItemEncode({
+                    'key' : key,
                     'wordList' : [word],
                     'countList' : [1],
                 })
         elif e['action'] == 'remove':
-            if key not in dbMap:
+            dbItemEncoded = pyMap.get(key[0], {}).get(key, '')
+            if dbItemEncoded == '':
                 continue
-            dbMapItem = dbMapItemDecode(dbMap[key])
-            try:
-                index = dbMapItem['wordList'].index(word)
-            except:
-                index = -1
-            if index < 0:
+            dbItem = dbItemDecode(dbItemEncoded)
+            wordIndex = dbWordIndex(dbItem['wordIndex'], word)
+            if wordIndex < 0:
                 continue
-            del dbMapItem['wordList'][index]
-            del dbMapItem['countList'][index]
-            if len(dbMapItem['wordList']) == 0:
-                del dbMap[key]
+            del dbItem['wordList'][wordIndex]
+            del dbItem['countList'][wordIndex]
+            if len(dbItem['wordList']) == 0:
+                del pyMap[key[0]][key]
+                if len(pyMap[key[0]]) == 0:
+                    del pyMap[key[0]]
             else:
-                dbMap[key] = dbMapItemEncode(dbMapItem)
+                pyMap[key[0]][key] = dbItemEncode(dbItem)
         elif e['action'] == 'reorder':
-            if key not in dbMap:
+            dbItemEncoded = pyMap.get(key[0], {}).get(key, '')
+            if dbItemEncoded == '':
                 continue
-            dbMapItem = dbMapItemDecode(dbMap[key])
-            try:
-                index = dbMapItem['wordList'].index(word)
-            except:
-                index = -1
-            if index < 0:
+            dbItem = dbItemDecode(dbItemEncoded)
+            wordIndex = dbWordIndex(dbItem['wordIndex'], word)
+            if wordIndex < 0:
                 continue
-            dbMapItem['countList'][index] = 0
+            dbItem['countList'][wordIndex] = 0
             sum = 0
-            for cnt in dbMapItem['countList']:
+            for cnt in dbItem['countList']:
                 sum += cnt
-            dbMapItem['countList'][index] = int(dbMapItem['countList'][index] / 2)
-            dbMapItemReorder(dbMapItem)
-            dbMap[key] = dbMapItemEncode(dbMapItem)
-    # end of dbEditApply
+            dbItem['countList'][wordIndex] = int(sum / 2)
+            dbItemReorder(dbItem)
+            pyMap[key[0]][key] = dbItemEncode(dbItem)
+    # end of dbEditApplyPy
 

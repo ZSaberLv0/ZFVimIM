@@ -460,7 +460,10 @@ function! s:IME_update()
 endfunction
 
 function! s:IME_start()
+    let cloudInitMode = get(g:, 'ZFVimIM_cloudInitMode', '')
+    let g:ZFVimIM_cloudInitMode = 'preferSync'
     call ZFVimIME_init()
+    let g:ZFVimIM_cloudInitMode = cloudInitMode
 
     call s:vimrcSave()
     call s:vimrcSetup()

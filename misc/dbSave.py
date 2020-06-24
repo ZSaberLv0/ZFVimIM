@@ -1,44 +1,18 @@
-import codecs
+import io
 import json
 import sys
 
 import dbFunc
 
 
-# the db json file should be:
-# * only dbMap, write contents unmodified:
-#     {
-#       'dbMap' : {...}
-#     }
-# * only dbEdit, load from current and apply edit:
-#     {
-#       'dbEdit' : {...}
-#     }
-# * dbMap and dbEdit, apply to dbMap:
-#     {
-#       'dbMap' : {...}
-#       'dbEdit' : {...}
-#     }
-DB_JSON_FILE = sys.argv[1]
-DB_FILE = sys.argv[2]
-DB_COUNT_FILE = sys.argv[3]
+DB_FILE = sys.argv[1]
+DB_COUNT_FILE = sys.argv[2]
+DB_SAVE_CACHE_PATH = sys.argv[3]
 
 
-# load config file
-with codecs.open(DB_JSON_FILE, 'r', 'utf-8') as file:
-    db = json.load(file)
-
-
-# check load dbMap
-if 'dbMap' not in db:
-    dbFunc.dbLoad(db, DB_FILE, DB_COUNT_FILE)
-
-
-# check apply dbEdit
-if 'dbEdit' in db:
-    dbFunc.dbEditApply(db, db['dbEdit'])
-
-
-# finally write dbMap
-dbFunc.dbSave(db, DB_FILE, DB_COUNT_FILE)
+with io.open(DB_SAVE_CACHE_PATH, 'r', encoding='utf-8') as file:
+    dbEdit = json.load(file)
+pyMap = dbFunc.dbLoadPy(DB_FILE, DB_COUNT_FILE)
+dbFunc.dbEditApplyPy(pyMap, dbEdit)
+dbFunc.dbSavePy(pyMap, DB_FILE, DB_COUNT_FILE)
 

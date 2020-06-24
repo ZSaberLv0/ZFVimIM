@@ -67,10 +67,14 @@ function! ZFVimIM_DEBUG_profileInfo()
     call sort(list, function('s:ZFVimIM_DEBUG_profileInfo_sort'))
     let ret = []
     for item in list
+        let total = item['total'] / 1000
+        let avg = item['avg'] / 1000
+        let max = item['max'] / 1000
+        let min = item['min'] / 1000
         call add(ret, [item['name']
-                    \ , '  avg:' , string(item['avg']) , ' (' , item['total'] , '/' , string(item['count']) , ')'
-                    \ , '  max:' , string(item['max'])
-                    \ , '  min:' , string(item['min'])
+                    \ , '  avg:' , string(avg) , ' (' , total , '/' , string(item['count']) , ')'
+                    \ , '  max:' , string(max)
+                    \ , '  min:' , string(min)
                     \ ])
     endfor
     let ret = s:joinAligned(ret)

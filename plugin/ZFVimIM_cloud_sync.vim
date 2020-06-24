@@ -218,7 +218,6 @@ function! s:uploadSync(cloudOption, mode)
 
     if downloadOnly
         let db['dbMap'] = dbNew['dbMap']
-        let db['dbKeyMap'] = dbNew['dbKeyMap']
     else
         if !empty(db['dbEdit'])
             let logHead = ZFVimIM_cloud_logInfo(a:cloudOption)
@@ -246,7 +245,6 @@ function! s:uploadSync(cloudOption, mode)
         endif
 
         let db['dbMap'] = dbNew['dbMap']
-        let db['dbKeyMap'] = dbNew['dbKeyMap']
         let db['dbEdit'] = []
     endif
 
