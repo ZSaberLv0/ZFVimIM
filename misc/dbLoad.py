@@ -22,9 +22,9 @@ for c_ in range(ord('a'), ord('z') + 1):
         for key,dbItemEncoded in dbFunc.dbMapIter(cMap):
             lines.append(dbItemEncoded)
             if len(lines) >= dbFunc.DB_FILE_LINE_BUFFER:
-                file.write(('\n'.join(lines) + '\n').encode())
+                file.write(('\n'.join(lines) + '\n').encode('utf-8'))
                 lines = []
         if len(lines) > 0:
-            file.write(('\n'.join(lines) + '\n').encode())
+            file.write(('\n'.join(lines) + '\n').encode('utf-8'))
             lines = []
 

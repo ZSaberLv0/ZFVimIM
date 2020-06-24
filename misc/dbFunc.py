@@ -91,11 +91,11 @@ def dbItemEncode(dbItem):
 #
 # return pyMap: {
 #   'a' : {
-#     'a' : 'a#啊,阿#3,2',
-#     'ai' : 'ai#爱,哀#3',
+#     'a' : 'a#AAA,BBB#3,2',
+#     'ai' : 'ai#CCC,DDD#3',
 #   },
 #   'c' : {
-#     'ceshi' : 'ceshi#测试',
+#     'ceshi' : 'ceshi#EEE',
 #   },
 # }
 def dbLoadPy(dbFile, dbCountFile):
@@ -213,10 +213,10 @@ def dbSavePy(pyMap, dbFile, dbCountFile):
                     line += word.replace(' ', '\ ')
                 lines.append(line)
                 if len(lines) >= DB_FILE_LINE_BUFFER:
-                    dbFilePtr.write(('\n'.join(lines) + '\n').encode())
+                    dbFilePtr.write(('\n'.join(lines) + '\n').encode('utf-8'))
                     lines = []
         if len(lines) > 0:
-            dbFilePtr.write(('\n'.join(lines) + '\n').encode())
+            dbFilePtr.write(('\n'.join(lines) + '\n').encode('utf-8'))
         dbFilePtr.close()
     else:
         dbFilePtr = io.open(dbFile, 'wb')
@@ -232,7 +232,7 @@ def dbSavePy(pyMap, dbFile, dbCountFile):
                     line += word.replace(' ', '\ ')
                 lines.append(line)
                 if len(lines) >= DB_FILE_LINE_BUFFER:
-                    dbFilePtr.write(('\n'.join(lines) + '\n').encode())
+                    dbFilePtr.write(('\n'.join(lines) + '\n').encode('utf-8'))
                     lines = []
                 for cnt in dbItem['countList']:
                     if cnt <= 0:
@@ -242,12 +242,12 @@ def dbSavePy(pyMap, dbFile, dbCountFile):
                 if countLine != key:
                     countLines.append(countLine)
                 if len(countLines) >= DB_FILE_LINE_BUFFER:
-                    dbCountFilePtr.write(('\n'.join(countLines) + '\n').encode())
+                    dbCountFilePtr.write(('\n'.join(countLines) + '\n').encode('utf-8'))
                     lines = []
         if len(lines) > 0:
-            dbFilePtr.write(('\n'.join(lines) + '\n').encode())
+            dbFilePtr.write(('\n'.join(lines) + '\n').encode('utf-8'))
         if len(countLines) > 0:
-            dbCountFilePtr.write(('\n'.join(countLines) + '\n').encode())
+            dbCountFilePtr.write(('\n'.join(countLines) + '\n').encode('utf-8'))
         dbFilePtr.close()
         dbCountFilePtr.close()
     # end of dbSavePy
