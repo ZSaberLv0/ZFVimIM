@@ -41,7 +41,7 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 
 1. requirement:
 
-    * `v:version >= 704`, older version may work, but not tested
+    * `v:version >= 703`, older version may work, but not tested
     * (optional) `git`, for db update
     * (optional) `vim8` with `job` or `neovim`, and `Plug 'ZSaberLv0/ZFVimJob'`, for async db update
     * (optional) `has('python')` or `has('python3')`, for better db load performance
