@@ -36,7 +36,7 @@ endfunction
 "     'dbId' : 'auto generated id',
 "     'name' : 'name of the db, ZFVimIM by default',
 "     'priority' : 'priority of the db, smaller value has higher priority, 100 by default',
-"     'dbCallback' : 'func(key, option, db), see ZFVimIM_complete',
+"     'dbCallback' : 'func(key, option), see ZFVimIM_complete',
 "     'dbMap' : { // split a-z to improve performance, ensured empty if no data
 "       'a' : [
 "         'a#啊,阿#3,2',
@@ -106,10 +106,7 @@ function! ZFVimIM_dbInit(option)
     while index >= 0 && db['priority'] < g:ZFVimIM_db[index]['priority']
         let index -= 1
     endwhile
-    if index < 0
-        let index = 0
-    endif
-    call insert(g:ZFVimIM_db, db, index)
+    call insert(g:ZFVimIM_db, db, index + 1)
 
     return db
 endfunction
@@ -144,18 +141,18 @@ function! ZFVimIM_dbEditApply(db, dbEdit)
     call ZFVimIM_DEBUG_profileStop()
 endfunction
 
-function! ZFVimIM_wordAdd(word, key)
-    call s:dbEdit('add', a:word, a:key)
+function! ZFVimIM_wordAdd(word, key, ...)
+    call s:dbEdit('add', a:word, a:key, get(a:, 1, {}))
 endfunction
 command! -nargs=+ IMAdd :call ZFVimIM_wordAdd(<f-args>)
 
 function! ZFVimIM_wordRemove(word, ...)
-    call s:dbEditWildKey('remove', a:word, get(a:, 1, ''))
+    call s:dbEditWildKey('remove', a:word, get(a:, 1, ''), get(a:, 2, {}))
 endfunction
 command! -nargs=+ IMRemove :call ZFVimIM_wordRemove(<f-args>)
 
 function! ZFVimIM_wordReorder(word, ...)
-    call s:dbEditWildKey('reorder', a:word, get(a:, 1, ''))
+    call s:dbEditWildKey('reorder', a:word, get(a:, 1, ''), get(a:, 2, {}))
 endfunction
 command! -nargs=+ IMReorder :call ZFVimIM_wordReorder(<f-args>)
 
@@ -428,12 +425,20 @@ function! s:dbSave(db, dbFile, ...)
 endfunction
 
 " ============================================================
-function! s:dbEditWildKey(action, word, key)
-    if g:ZFVimIM_dbIndex >= len(g:ZFVimIM_db)
+function! s:dbEditWildKey(action, word, key, db)
+    if empty(a:db)
+        if g:ZFVimIM_dbIndex >= len(g:ZFVimIM_db)
+            return
+        endif
+        let db = g:ZFVimIM_db[g:ZFVimIM_dbIndex]
+    else
+        let db = a:db
+    endif
+    if !empty(get(a:db, 'dbCallback', ''))
         return
     endif
     if !empty(a:key)
-        call s:dbEdit(a:action, a:word, a:key)
+        call s:dbEdit(a:action, a:word, a:key, db)
         return
     endif
     if empty(a:word)
@@ -441,7 +446,6 @@ function! s:dbEditWildKey(action, word, key)
     endif
 
     let keyToApply = []
-    let db = g:ZFVimIM_db[g:ZFVimIM_dbIndex]
     let dbMap = db['dbMap']
     for c in keys(dbMap)
         let index = match(dbMap[c], ''
@@ -455,15 +459,25 @@ function! s:dbEditWildKey(action, word, key)
     endfor
 
     for key in keyToApply
-        call s:dbEdit(a:action, a:word, key)
+        call s:dbEdit(a:action, a:word, key, db)
     endfor
 endfunction
 
-function! s:dbEdit(action, word, key)
-    if empty(a:key) || empty(a:word) || g:ZFVimIM_dbIndex >= len(g:ZFVimIM_db)
+function! s:dbEdit(action, word, key, db)
+    if empty(a:db)
+        if g:ZFVimIM_dbIndex >= len(g:ZFVimIM_db)
+            return
+        endif
+        let db = g:ZFVimIM_db[g:ZFVimIM_dbIndex]
+    else
+        let db = a:db
+    endif
+    if !empty(get(a:db, 'dbCallback', ''))
         return
     endif
-    let db = g:ZFVimIM_db[g:ZFVimIM_dbIndex]
+    if empty(a:key) || empty(a:word)
+        return
+    endif
     if !exists("db['dbEdit']")
         let db['dbEdit'] = []
     endif

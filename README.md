@@ -317,7 +317,7 @@ it's recommended to clean up it occasionally, by:
             'key' : 'matched full key',
             'word' : 'matched word',
             'type' : 'type of completion: sentence/match/predict',
-            'sentenceList' : [ // for sentence type only, list of word that complete as sentence
+            'sentenceList' : [ // (optional) for sentence type only, list of word that complete as sentence
               {
                 'key' : '',
                 'word' : '',
@@ -341,8 +341,10 @@ it's recommended to clean up it occasionally, by:
 
     ```
     {
-      'name' : 'name of your db',
-      'priority' : '100 by default, smaller value means higher priority',
+      'name' : '(required) name of your db',
+      'priority' : '(optional) 100 by default, smaller value means higher priority',
+      'dbCallback' : '(optional) func(key, option), see ZFVimIM_complete',
+                     // when dbCallback supplied, words would be fetched from this callback instead
       'implData' : { // extra data for impl
       },
     }

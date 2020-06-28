@@ -17,11 +17,12 @@
 " return : [
 "   {
 "     'dbId' : 'match from which db',
+"     'priority' : 'priority of the db, smaller value has higher priority, when empty, use db's priority by default',
 "     'len' : 'match count in key',
 "     'key' : 'matched full key',
 "     'word' : 'matched word',
-"     'type' : 'type of completion: sentence/match/predict',
-"     'sentenceList' : [ // for sentence type only, list of word that complete as sentence
+"     'type' : 'type of completion: sentence/predict/match',
+"     'sentenceList' : [ // (optional) for sentence type only, list of word that complete as sentence
 "       {
 "         'key' : '',
 "         'word' : '',
@@ -48,8 +49,16 @@ function! ZFVimIM_completeDefault(key, ...)
         let option = copy(option)
         let option['db'] = db
         call ZFVimIM_DEBUG_profileStart('dbCallback')
-        let ret = ZFJobFuncCall(db['dbCallback'], [a:key, option])
+        silent! let ret = ZFJobFuncCall(db['dbCallback'], [a:key, option])
         call ZFVimIM_DEBUG_profileStop()
+        for item in ret
+            if !exists("item['dbId']")
+                let item['dbId'] = db['dbId']
+            endif
+            if !exists("item['priority']")
+                let item['priority'] = db['priority']
+            endif
+        endfor
         return ret
     endif
 
@@ -76,6 +85,7 @@ function! s:complete_sentence(ret, key, option, db)
 
     let sentence = {
                 \   'dbId' : a:db['dbId'],
+                \   'priority' : a:db['priority'],
                 \   'len' : 0,
                 \   'key' : '',
                 \   'word' : '',
@@ -190,6 +200,7 @@ function! s:complete_predict(ret, key, option, db)
         while len(a:ret) < predictLimit
             call add(a:ret, {
                         \   'dbId' : a:db['dbId'],
+                        \   'priority' : a:db['priority'],
                         \   'len' : p,
                         \   'key' : dbItem['key'],
                         \   'word' : dbItem['wordList'][wordIndex],
@@ -261,6 +272,7 @@ function! s:complete_match_exact(ret, key, option, db, matchLimit)
         while wordIndex < numToAdd
             call add(a:ret, {
                         \   'dbId' : a:db['dbId'],
+                        \   'priority' : a:db['priority'],
                         \   'len' : keyLen,
                         \   'key' : a:key,
                         \   'word' : dbItem['wordList'][wordIndex],
@@ -309,6 +321,7 @@ function! s:complete_match_allowSubMatch(ret, key, option, db, matchLimit)
         while wordIndex < numToAdd
             call add(a:ret, {
                         \   'dbId' : a:db['dbId'],
+                        \   'priority' : a:db['priority'],
                         \   'len' : p,
                         \   'key' : subKey,
                         \   'word' : dbItem['wordList'][wordIndex],
@@ -319,6 +332,10 @@ function! s:complete_match_allowSubMatch(ret, key, option, db, matchLimit)
 
         let p -= 1
     endwhile
+endfunction
+
+function! s:sortByPriorityFunc(word0, word1)
+    return a:word0['priority'] - a:word1['priority']
 endfunction
 
 " data: {
@@ -334,6 +351,25 @@ function! s:mergeResult(data, key, option, db)
     let crossDbRet = a:data['crossDb']
     let predictRet = a:data['predict']
     let matchRet = a:data['match']
+
+    " crossDb may return different type
+    let iCrossDb = len(crossDbRet) - 1
+    while iCrossDb >= 0
+        if 0
+        elseif crossDbRet[iCrossDb]['type'] == 'sentence'
+            call add(sentenceRet, remove(crossDbRet, iCrossDb))
+        elseif crossDbRet[iCrossDb]['type'] == 'predict'
+            call add(predictRet, remove(crossDbRet, iCrossDb))
+        endif
+        let iCrossDb -= 1
+    endwhile
+
+    " sort by priority
+    let Fn_sortFunc = function('s:sortByPriorityFunc')
+    call sort(sentenceRet, Fn_sortFunc)
+    call sort(crossDbRet, Fn_sortFunc)
+    call sort(predictRet, Fn_sortFunc)
+    call sort(matchRet, Fn_sortFunc)
 
     " limit crossDb if has predict or match
     if len(sentenceRet) + len(predictRet) + len(matchRet) >= 5 && len(crossDbRet) > g:ZFVimIM_crossDbLimitWhenMatch

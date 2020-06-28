@@ -724,7 +724,7 @@ function! s:popupMenuList(complete)
         let labelstring = printf('%2s ', labelstring)
         let left = strpart(s:keyboard, item['len'])
         let complete_items['abbr'] = labelstring . item['word'] . left
-        if item['type'] == 'sentence'
+        if item['type'] == 'sentence' && !empty(get(item, 'sentenceList'))
             let menu = ''
             for word in item['sentenceList']
                 if !empty(menu)
@@ -762,9 +762,11 @@ endfunction
 
 
 function! s:addWord(dbId, key, word)
-    if a:dbId == g:ZFVimIM_db[g:ZFVimIM_dbIndex]['dbId']
-        call ZFVimIM_wordAdd(a:word, a:key)
+    let dbIndex = ZFVimIM_dbIndexForId(a:dbId)
+    if dbIndex < 0
+        return
     endif
+    call ZFVimIM_wordAdd(a:word, a:key, g:ZFVimIM_db[dbIndex])
 
     let g:ZFVimIM_event_OnAddWord = {
                 \   'dbId' : a:dbId,
@@ -796,7 +798,7 @@ function! s:OnCompleteDone()
     endif
 
     if item['type'] == 'sentence'
-        for word in item['sentenceList']
+        for word in get(item, 'sentenceList', [])
             call s:addWord(item['dbId'], word['key'], word['word'])
         endfor
         let s:userWord = []
