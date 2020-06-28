@@ -252,15 +252,15 @@ function! s:uploadAsync(cloudOption, mode)
                 \ }
 
     " download and load to vim
+    if !initOnly && !applyOnly
+        call add(groupJobOption['jobList'], [{
+                    \   'jobCmd' : ZFVimIM_cloud_dbDownloadCmd(a:cloudOption),
+                    \   'onOutputFilter' : function('ZFVimIM_cloudLog_stripSensitiveForJob'),
+                    \   'onOutput' : ZFJobFunc(function('s:UA_dbDownloadOnOutput'), [db['dbId']]),
+                    \ }])
+    endif
     " for performance, we only load if db is empty
     if empty(db['dbMap'])
-        if !initOnly && !applyOnly
-            call add(groupJobOption['jobList'], [{
-                        \   'jobCmd' : ZFVimIM_cloud_dbDownloadCmd(a:cloudOption),
-                        \   'onOutputFilter' : function('ZFVimIM_cloudLog_stripSensitiveForJob'),
-                        \   'onOutput' : ZFJobFunc(function('s:UA_dbDownloadOnOutput'), [db['dbId']]),
-                        \ }])
-        endif
         let dbLoadCmd = ZFVimIM_cloud_dbLoadCmd(a:cloudOption, task['dbLoadCachePath'])
         if empty(dbLoadCmd)
             if initOnly
@@ -325,7 +325,6 @@ function! s:uploadAsync(cloudOption, mode)
                     if get(db['implData'], '_dbCleanupHistory', 0) >= g:ZFVimIM_cloudAsync_autoCleanup
                         call add(groupJobOption['jobList'], [{
                                     \   'jobCmd' : dbCleanupCmd,
-                                    \   'onEnter' : ZFJobFunc(function('s:UA_dbCleanupOnEnter'), [db['dbId']]),
                                     \   'onOutputFilter' : function('ZFVimIM_cloudLog_stripSensitiveForJob'),
                                     \   'onOutput' : ZFJobFunc(function('s:UA_dbCleanupOnOutput'), [db['dbId']]),
                                     \ }])
