@@ -79,6 +79,21 @@ augroup ZFVimIM_event_OnUpdateDb_augroup
 augroup END
 
 " ============================================================
+function! ZFVimIM_funcCallable(func)
+    if exists('*ZFJobFuncCallable')
+        return ZFJobFuncCallable(a:func)
+    else
+        return type(a:func) == type(function('function'))
+    endif
+endfunction
+function! ZFVimIM_funcCall(func, argList)
+    if exists('*ZFJobFuncCall')
+        return ZFJobFuncCall(a:func, a:argList)
+    else
+        return call(a:func, a:argList)
+    endif
+endfunction
+
 function! ZFVimIM_dbInit(option)
     let db = extend({
                 \   'dbId' : -1,

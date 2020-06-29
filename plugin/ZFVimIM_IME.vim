@@ -832,8 +832,8 @@ function! s:addWordFromUserWord()
         if !empty(g:ZFVimIM_autoAddWordChecker)
             let needAdd = 1
             for Checker in g:ZFVimIM_autoAddWordChecker
-                if ZFJobFuncCallable(Checker)
-                    let needAdd = ZFJobFuncCall(Checker, [s:userWord])
+                if ZFVimIM_funcCallable(Checker)
+                    let needAdd = ZFVimIM_funcCall(Checker, [s:userWord])
                     if !needAdd
                         break
                     endif
