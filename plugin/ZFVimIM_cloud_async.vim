@@ -282,7 +282,7 @@ function! s:uploadAsync(cloudOption, mode)
             for c_ in range(char2nr('a'), char2nr('z'))
                 let c = nr2char(c_)
                 call add(dbLoadPartTasks, {
-                            \   'jobCmd' : 'sleep 1',
+                            \   'jobCmd' : 'echo ZFVimIM_dbLoadPart_' . c,
                             \   'onExit' : ZFJobFunc(function('s:UA_dbLoadPartOnExit'), [db['dbId'], c]),
                             \ })
             endfor
@@ -335,6 +335,7 @@ function! s:uploadAsync(cloudOption, mode)
         endif
     endif
 
+    call s:cloudAsyncLog(ZFGroupJobStatus(task['jobId']), ZFVimIM_cloud_logInfo(a:cloudOption) . 'updating...')
     let task['jobId'] = ZFGroupJobStart(groupJobOption)
     if task['jobId'] == -1
         if exists("s:UA_taskMap[db['dbId']]")
@@ -342,8 +343,6 @@ function! s:uploadAsync(cloudOption, mode)
         endif
         return
     endif
-
-    call s:cloudAsyncLog(ZFGroupJobStatus(task['jobId']), ZFVimIM_cloud_logInfo(a:cloudOption) . 'updating...')
 endfunction
 
 function! s:UA_dbDownloadOnOutput(dbId, jobStatus, text, type)
