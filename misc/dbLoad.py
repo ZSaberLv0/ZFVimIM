@@ -19,7 +19,7 @@ for c_ in range(ord('a'), ord('z') + 1):
         continue
     with io.open(DB_LOAD_CACHE_PATH + c, 'wb') as file:
         lines = []
-        for key,dbItemEncoded in dbFunc.dbMapIter(cMap):
+        for key,dbItemEncoded in sorted(dbFunc.dbMapIter(cMap)):
             lines.append(dbItemEncoded)
             if len(lines) >= dbFunc.DB_FILE_LINE_BUFFER:
                 file.write(('\n'.join(lines) + '\n').encode('utf-8'))
