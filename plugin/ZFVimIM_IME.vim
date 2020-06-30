@@ -139,6 +139,18 @@ function! ZFVimIME_keymap_remove_v()
     return ''
 endfunction
 
+function! ZFVimIME_keymap_update_i()
+    if !s:started || mode() != 'i'
+        return ''
+    endif
+    if pumvisible()
+        call feedkeys("\<c-e>", 'nt')
+    endif
+    call s:resetAfterInsert()
+    call feedkeys("\<c-r>=ZFVimIME_callOmni()\<cr>", 'nt')
+    return ''
+endfunction
+
 if get(g:, 'ZFVimIME_fixCtrlC', 1)
     " <c-c> won't fire InsertLeave, we needs this to reset userWord detection
     inoremap <c-c> <esc>
