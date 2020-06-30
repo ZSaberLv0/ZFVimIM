@@ -282,7 +282,7 @@ def dbEditApplyPy(pyMap, dbEdit):
             if dbItemEncoded == '':
                 continue
             dbItem = dbItemDecode(dbItemEncoded)
-            wordIndex = dbWordIndex(dbItem['wordIndex'], word)
+            wordIndex = dbWordIndex(dbItem['wordList'], word)
             if wordIndex < 0:
                 continue
             del dbItem['wordList'][wordIndex]
@@ -298,7 +298,7 @@ def dbEditApplyPy(pyMap, dbEdit):
             if dbItemEncoded == '':
                 continue
             dbItem = dbItemDecode(dbItemEncoded)
-            wordIndex = dbWordIndex(dbItem['wordIndex'], word)
+            wordIndex = dbWordIndex(dbItem['wordList'], word)
             if wordIndex < 0:
                 continue
             dbItem['countList'][wordIndex] = 0
