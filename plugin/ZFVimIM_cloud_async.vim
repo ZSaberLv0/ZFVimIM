@@ -282,7 +282,8 @@ function! s:uploadAsync(cloudOption, mode)
             for c_ in range(char2nr('a'), char2nr('z'))
                 let c = nr2char(c_)
                 call add(dbLoadPartTasks, {
-                            \   'jobCmd' : 'echo ZFVimIM_dbLoadPart_' . c,
+                            \   'jobCmd' : 'echo dummy',
+                            \   'onOutputFilter' : function('s:UA_dbLoadPartOnOutputFilter'),
                             \   'onExit' : ZFJobFunc(function('s:UA_dbLoadPartOnExit'), [db['dbId'], c]),
                             \ })
             endfor
@@ -401,6 +402,9 @@ function! s:UA_dbLoadOnOutput(dbId, jobStatus, text, type)
     call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'loading: ' . a:text)
 endfunction
 
+function! s:UA_dbLoadPartOnOutputFilter(jobStatus, text, type)
+    return ''
+endfunction
 function! s:UA_dbLoadPartOnExit(dbId, c, jobStatus, exitCode)
     let task = get(s:UA_taskMap, a:dbId, {})
     let db = ZFVimIM_dbForId(a:dbId)
