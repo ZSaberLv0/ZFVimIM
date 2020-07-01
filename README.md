@@ -101,6 +101,7 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     ```
     Plugin 'ZSaberLv0/ZFVimIM'
     Plugin 'YourUserName/ZFVimIM_pinyin_base'
+    Plugin 'ZSaberLv0/ZFVimIM_openapi'
     Plugin 'ZSaberLv0/ZFVimJob'
     Plugin 'ZSaberLv0/ZFVimGitUtil'
     ```
@@ -407,20 +408,25 @@ it's recommended to clean up it occasionally, by:
 
 ### db samples
 
-* [ZSaberLv0/ZFVimIM_pinyin](https://github.com/ZSaberLv0/ZFVimIM_pinyin) :
-    pinyin repo which I personally used,
-    update frequently
+* [ZSaberLv0/ZFVimIM_openapi](https://github.com/ZSaberLv0/ZFVimIM_openapi) :
+    pinyin repo using 3rd openapi, recommended,
+    and it shows the way to achieve complex db logic
 * [ZSaberLv0/ZFVimIM_pinyin_base](https://github.com/ZSaberLv0/ZFVimIM_pinyin_base) :
     base pinyin repo that only contain single word,
     recommended if you care about performance
     or want to create personal user word during usage
+* [ZSaberLv0/ZFVimIM_wubi_base](https://github.com/ZSaberLv0/ZFVimIM_wubi_base) :
+    wubi converted from [ywvim](https://github.com/vim-scripts/ywvim),
+    I'm not familiar with wubi,
+    just put it here in case you want to test
+* [ZSaberLv0/ZFVimIM_pinyin](https://github.com/ZSaberLv0/ZFVimIM_pinyin) :
+    pinyin repo which I personally used,
+    update frequently
 * [ZSaberLv0/ZFVimIM_pinyin_huge](https://github.com/ZSaberLv0/ZFVimIM_pinyin_huge) :
     huge pinyin repo that contains many words,
     it's converted from other IME and haven't been daily used,
     which may contain many useless words,
     I put it here just in case you prefer huge db or want to test huge db's performance
-* [ZSaberLv0/ZFVimIM_wubi_base](https://github.com/ZSaberLv0/ZFVimIM_wubi_base) :
-    wubi converted from [ywvim](https://github.com/vim-scripts/ywvim)
 
 
 ## FAQ
