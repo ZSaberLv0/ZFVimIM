@@ -94,11 +94,21 @@ function! ZFVimIM_funcCall(func, argList)
     endif
 endfunction
 
+" option: {
+"   'name' : '(required) name of your db',
+"   'priority' : '(optional) 100 by default, smaller value means higher priority',
+"   'switchable' : '(optional) 1 by default, when off, won't be enabled by ZFVimIME_keymap_next_n() series',
+"   'dbCallback' : '(optional) func(key, option), see ZFVimIM_complete',
+"                  // when dbCallback supplied, words would be fetched from this callback instead
+"   'implData' : { // extra data for impl
+"   },
+" }
 function! ZFVimIM_dbInit(option)
     let db = extend({
                 \   'dbId' : -1,
                 \   'name' : 'ZFVimIM',
                 \   'priority' : -1,
+                \   'switchable' : 1,
                 \   'dbMap' : {},
                 \   'dbEdit' : [],
                 \   'implData' : {},

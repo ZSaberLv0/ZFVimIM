@@ -204,11 +204,23 @@ function! ZFVimIME_next()
 endfunction
 
 function! ZFVimIME_switchToIndex(dbIndex)
-    let dbIndex = a:dbIndex
-    if dbIndex >= len(g:ZFVimIM_db) || dbIndex < 0
-        let dbIndex = 0
+    if empty(g:ZFVimIM_db)
+        let g:ZFVimIM_dbIndex = 0
+        return
     endif
-    if dbIndex == g:ZFVimIM_dbIndex
+    let len = len(g:ZFVimIM_db)
+    let dbIndex = (a:dbIndex % len)
+
+    if !g:ZFVimIM_db[dbIndex]['switchable']
+        " loop until found a switchable
+        let dbIndexStart = dbIndex
+        let dbIndex = ((dbIndex + 1) % len)
+        while dbIndex != dbIndexStart && !g:ZFVimIM_db[dbIndex]['switchable']
+            let dbIndex = ((dbIndex + 1) % len)
+        endwhile
+    endif
+
+    if dbIndex == g:ZFVimIM_dbIndex || !g:ZFVimIM_db[dbIndex]['switchable']
         return
     endif
     let g:ZFVimIM_dbIndex = dbIndex

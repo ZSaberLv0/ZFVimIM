@@ -343,6 +343,7 @@ it's recommended to clean up it occasionally, by:
     {
       'name' : '(required) name of your db',
       'priority' : '(optional) 100 by default, smaller value means higher priority',
+      'switchable' : '(optional) 1 by default, when off, won't be enabled by ZFVimIME_keymap_next_n() series',
       'dbCallback' : '(optional) func(key, option), see ZFVimIM_complete',
                      // when dbCallback supplied, words would be fetched from this callback instead
       'implData' : { // extra data for impl
