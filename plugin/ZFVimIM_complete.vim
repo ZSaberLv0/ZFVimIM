@@ -49,7 +49,7 @@ function! ZFVimIM_completeDefault(key, ...)
         let option = copy(option)
         let option['db'] = db
         call ZFVimIM_DEBUG_profileStart('dbCallback')
-        silent! let ret = ZFVimIM_funcCall(db['dbCallback'], [a:key, option])
+        let ret = ZFVimIM_funcCall(db['dbCallback'], [a:key, option])
         call ZFVimIM_DEBUG_profileStop()
         for item in ret
             if !exists("item['dbId']")
