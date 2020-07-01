@@ -347,6 +347,7 @@ it's recommended to clean up it occasionally, by:
       'switchable' : '(optional) 1 by default, when off, won't be enabled by ZFVimIME_keymap_next_n() series',
       'dbCallback' : '(optional) func(key, option), see ZFVimIM_complete',
                      // when dbCallback supplied, words would be fetched from this callback instead
+      'menuLabel' : '(optional) string or function(item), when not empty, show label after key hint',
       'implData' : { // extra data for impl
       },
     }

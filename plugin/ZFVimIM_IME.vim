@@ -760,12 +760,24 @@ function! s:popupMenuList(complete)
         else
             let complete_items['menu'] = item['key']
         endif
-        if item['dbId'] != g:ZFVimIM_db[g:ZFVimIM_dbIndex]['dbId']
-            let complete_items['menu'] .= '  <' . ZFVimIM_dbForId(item['dbId'])['name'] . '>'
+
+        let db = ZFVimIM_dbForId(item['dbId'])
+        if type(get(db, 'menuLabel', 0)) == type(0)
+            if item['dbId'] != g:ZFVimIM_db[g:ZFVimIM_dbIndex]['dbId']
+                let complete_items['menu'] .= '  <' . db['name'] . '>'
+            endif
+        else
+            if type(db['menuLabel']) == type('')
+                let complete_items['menu'] .= db['menuLabel']
+            elseif ZFVimIM_funcCallable(db['menuLabel'])
+                let complete_items['menu'] .= ZFVimIM_funcCallable(db['menuLabel'], [item])
+            endif
         endif
+
         if get(g:, 'ZFVimIME_DEBUG', 0)
             let complete_items['menu'] .= '  (' . item['type'] . ')'
         endif
+
         let complete_items['dup'] = 1
         let complete_items['word'] = item['word'] . left
         if s:completeItemAvailable

@@ -100,18 +100,22 @@ endfunction
 "   'switchable' : '(optional) 1 by default, when off, won't be enabled by ZFVimIME_keymap_next_n() series',
 "   'dbCallback' : '(optional) func(key, option), see ZFVimIM_complete',
 "                  // when dbCallback supplied, words would be fetched from this callback instead
+"   'menuLabel' : '(optional) string or function(item), when not empty, show label after key hint',
+"                 // when not set, or set to number `0`, we would show db name if it's completed from crossDb
 "   'implData' : { // extra data for impl
 "   },
 " }
 function! ZFVimIM_dbInit(option)
     let db = extend({
-                \   'dbId' : -1,
                 \   'name' : 'ZFVimIM',
                 \   'priority' : -1,
                 \   'switchable' : 1,
+                \   'dbCallback' : '',
+                \   'menuLabel' : 0,
+                \   'implData' : {},
+                \   'dbId' : -1,
                 \   'dbMap' : {},
                 \   'dbEdit' : [],
-                \   'implData' : {},
                 \ }, a:option)
     if db['priority'] < 0
         let db['priority'] = 100

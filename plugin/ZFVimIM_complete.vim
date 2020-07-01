@@ -338,6 +338,22 @@ function! s:sortByPriorityFunc(word0, word1)
     return a:word0['priority'] - a:word1['priority']
 endfunction
 
+function! s:removeDuplicate(ret, exists)
+    let i = 0
+    let iEnd = len(a:ret)
+    while i < iEnd
+        let item = a:ret[i]
+        let hash = item['key'] . item['word']
+        if exists('a:exists[hash]')
+            call remove(a:ret, i)
+            let iEnd -= 1
+            let i -= 1
+        else
+            let a:exists[hash] = 1
+        endif
+        let i += 1
+    endwhile
+endfunction
 " data: {
 "   'sentence' : [],
 "   'crossDb' : [],
@@ -351,6 +367,14 @@ function! s:mergeResult(data, key, option, db)
     let crossDbRet = a:data['crossDb']
     let predictRet = a:data['predict']
     let matchRet = a:data['match']
+
+    " remove duplicate
+    let exists = {}
+    " ordered from high priority to low
+    call s:removeDuplicate(matchRet, exists)
+    call s:removeDuplicate(predictRet, exists)
+    call s:removeDuplicate(sentenceRet, exists)
+    call s:removeDuplicate(crossDbRet, exists)
 
     " crossDb may return different type
     let iCrossDb = len(crossDbRet) - 1
@@ -386,40 +410,16 @@ function! s:mergeResult(data, key, option, db)
     call extend(ret, predictRet)
     call extend(ret, matchRet)
 
-    " remove duplicate
-    let i = 0
-    let iEnd = len(ret)
-    let exists = {}
-    while i < iEnd
-        let item = ret[i]
-        let hash = item['key'] . item['word']
-        if exists('exists[hash]')
-            call remove(ret, i)
-            let iEnd -= 1
-            let i -= 1
-        else
-            let exists[hash] = 1
-        endif
-        let i += 1
-    endwhile
-
     " crossDb should be placed at lower order,
-    " also, we need duplicate check
     if g:ZFVimIM_crossDbPos >= len(ret)
         for item in crossDbRet
-            let hash = item['key'] . item['word']
-            if !exists('exists[hash]')
-                let exists[hash] = 1
-                call add(ret, item)
-            endif
+            let exists[hash] = 1
+            call add(ret, item)
         endfor
     else
         for item in crossDbRet
-            let hash = item['key'] . item['word']
-            if !exists('exists[hash]')
-                let exists[hash] = 1
-                call insert(ret, item, g:ZFVimIM_crossDbPos)
-            endif
+            let exists[hash] = 1
+            call insert(ret, item, g:ZFVimIM_crossDbPos)
         endfor
     endif
 
