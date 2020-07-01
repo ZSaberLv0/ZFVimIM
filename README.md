@@ -410,8 +410,9 @@ it's recommended to clean up it occasionally, by:
 ### db samples
 
 * [ZSaberLv0/ZFVimIM_openapi](https://github.com/ZSaberLv0/ZFVimIM_openapi) :
-    pinyin repo using 3rd openapi, recommended,
-    and it shows the way to achieve complex db logic
+    pinyin repo using thirdparty's openapi,
+    recommended to install as default,
+    and it shows the way to achieve complex async db logic
 * [ZSaberLv0/ZFVimIM_pinyin_base](https://github.com/ZSaberLv0/ZFVimIM_pinyin_base) :
     base pinyin repo that only contain single word,
     recommended if you care about performance
@@ -451,17 +452,13 @@ it's recommended to clean up it occasionally, by:
         cnoremap <silent><expr> ;; ZF_Setting_cmdEdit()
         ```
 
-* Q: strange complete popup?
+* Q: external db source?
 
-    A: we use `omnifunc` to achieve IM popup,
-    which would conflict with most of complete engines,
-    by default, we would automatically disable complete engines when IM started,
-    if your other plugins conflict with IM,
-    you may disable it manually
-    ([see this](https://github.com/ZSaberLv0/ZFVimIM/blob/master/plugin/ZFVimIM_autoDisable.vim))
+    A: the [ZSaberLv0/ZFVimIM_openapi](https://github.com/ZSaberLv0/ZFVimIM_openapi)
+    is a good example, which achieves:
 
-    also, if any strange behaviors occurred,
-    `:verbose set omnifunc?` to check whether it's changed by other plugins
+    * using external source to supply db contents
+    * async mode
 
 * Q: lazy db load?
 
@@ -495,6 +492,18 @@ it's recommended to clean up it occasionally, by:
                     \ })
         ```
 
+* Q: strange complete popup?
+
+    A: we use `omnifunc` to achieve IM popup,
+    which would conflict with most of complete engines,
+    by default, we would automatically disable complete engines when IM started,
+    if your other plugins conflict with IM,
+    you may disable it manually
+    ([see this](https://github.com/ZSaberLv0/ZFVimIM/blob/master/plugin/ZFVimIM_autoDisable.vim))
+
+    also, if any strange behaviors occurred,
+    `:verbose set omnifunc?` to check whether it's changed by other plugins
+
 * Q: meet some weird problem, how to check log?
 
     A: use `:IMCloudLog` to check first, if not enough:
@@ -511,10 +520,13 @@ it's recommended to clean up it occasionally, by:
 
 * too slow
 
+    check first: `has('python')` and `ZFVimJob` is installed and available,
+    without them, the pure vim script fallback is always very slow
+    (about 2 seconds for 200KB db file)
+
     if your db file is very large,
     it's slow to save and load db even if `has('python')`,
-    because db data are passed as json format between vim and python,
-    it's slow to perform `json_encode`
+    because reading and processing large files also takes a long time
 
     this plugin is designed lightweight that can fallback to pure vimscript,
     so, there's no plan to completely move db data to python side
@@ -527,6 +539,9 @@ it's recommended to clean up it occasionally, by:
     1. `let g:ZFVimIM_DEBUG_profile = 1`
     1. input freely
     1. `call ZFVimIM_DEBUG_profileInfo()` to check which step consumed most time
+
+    PS: you may want to check [ZSaberLv0/ZFVimIM_openapi](https://github.com/ZSaberLv0/ZFVimIM_openapi)
+    for how to use external tool to supply db contents
 
 * use with LSP plugins
 
