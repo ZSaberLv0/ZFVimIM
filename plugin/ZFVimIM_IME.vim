@@ -33,6 +33,9 @@ augroup ZFVimIME_augroup
 
     " current db can be accessed by g:ZFVimIM_db[g:ZFVimIM_dbIndex]
     autocmd User ZFVimIM_event_OnDbChange silent
+
+    " called when update by ZFVimIME_keymap_update_i, typically by async update callback
+    autocmd User ZFVimIM_event_OnUpdate silent
 augroup END
 
 function! ZFVimIME_init()
@@ -148,6 +151,7 @@ function! ZFVimIME_keymap_update_i()
     endif
     call s:resetAfterInsert()
     call feedkeys("\<c-r>=ZFVimIME_callOmni()\<cr>", 'nt')
+    doautocmd User ZFVimIM_event_OnUpdate
     return ''
 endfunction
 

@@ -78,6 +78,27 @@ function! ZFVimIM_completeDefault(key, ...)
 endfunction
 
 
+" complete exact match only
+function! ZFVimIM_completeExact(key, ...)
+    let max = get(a:, 1, 10)
+    let ret = []
+    let keyLen = len(a:key)
+    for word in ZFVimIM_complete(a:key, {
+                \   'sentence' : 0,
+                \   'predict' : 0,
+                \   'match' : 10,
+                \ })
+        if len(ret) >= max
+            break
+        endif
+        if word['len'] == keyLen
+            call add(ret, word)
+        endif
+    endfor
+    return ret
+endfunction
+
+
 function! s:complete_sentence(ret, key, option, db)
     if !get(a:option, 'sentence', 1)
         return
