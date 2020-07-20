@@ -367,24 +367,11 @@ function! ZFVimIME_enter()
         call feedkeys("\<cr>", 'nt')
         return ''
     endif
-    let s:omni = 0
-    let key = ''
     if pumvisible()
         let key = "\<c-e>"
-        let s:smart_enter = 1
-    elseif s:hasLeftChar()
-        let s:smart_enter = 1
-        if s:seamless_positions == getpos('.')
-            let s:smart_enter += 1
-        endif
-    else
-        let s:smart_enter = 0
-    endif
-    if s:smart_enter == 1
-        let s:seamless_positions = getpos('.')
     else
         let key = "\<cr>"
-        let s:smart_enter = 0
+        let s:seamless_positions = getpos('.')
     endif
     call s:resetAfterInsert()
     call feedkeys(key, 'nt')
@@ -396,7 +383,6 @@ function! ZFVimIME_backspace()
         call feedkeys("\<bs>", 'nt')
         return ''
     endif
-    let s:omni = 0
     let key = "\<bs>"
     if pumvisible()
         let key .= "\<c-r>=ZFVimIME_callOmni()\<cr>"
@@ -439,14 +425,12 @@ function! ZFVimIME_symbol(key)
 endfunction
 
 function! ZFVimIME_callOmni()
-    let s:omni = s:omni < 0 ? -1 : 0
     let s:keyboard = empty(s:pageup_pagedown) ? '' : s:keyboard
     let key = s:hasLeftChar() ? "\<c-x>\<c-o>\<c-r>=ZFVimIME_fixOmni()\<cr>" : ''
     execute 'return "' . key . '"'
 endfunction
 
 function! ZFVimIME_fixOmni()
-    let s:omni = s:omni < 0 ? 0 : 1
     let key = pumvisible() ? "\<c-p>\<down>" : ''
     execute 'return "' . key . '"'
 endfunction
@@ -616,8 +600,6 @@ endfunction
 function! s:resetState()
     call s:resetAfterInsert()
     let s:keyboard = ''
-    let s:omni = 0
-    let s:smart_enter = 0
     let s:userWord = []
     let s:confirmFlag = 0
 endfunction
@@ -711,15 +693,10 @@ function! s:omnifunc(start, keyboard)
         endif
         let len = cursor_positions[2]-1 - start_column
         let keyboard = strpart(current_line, start_column, len)
-        if s:keyboard !~ '\S\s\S'
-            let s:keyboard = keyboard
-        endif
+        let s:keyboard = keyboard
         let s:start_column = start_column
         return start_column
     else
-        if s:omni < 0
-            return []
-        endif
         let results = s:omniCache()
         if !empty(results)
             return s:popupMenuList(results)
