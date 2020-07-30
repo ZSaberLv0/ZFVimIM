@@ -109,3 +109,36 @@ function! s:joinAligned(list)
     return ret
 endfunction
 
+function! ZFVimIM_DEBUG_start(logFile)
+    if exists('s:ZFVimIM_DEBUG_start_logFile')
+        return
+    endif
+    let s:ZFVimIM_DEBUG_start_logFile = a:logFile
+    let g:ZFVimIM_DEBUG_profile = 1
+endfunction
+
+function! ZFVimIM_DEBUG_stop()
+    if !exists('s:ZFVimIM_DEBUG_start_logFile')
+        return
+    endif
+    execute 'redir! > ' . s:ZFVimIM_DEBUG_start_logFile
+
+    silent echo '==================== profileInfo ===================='
+    silent call ZFVimIM_DEBUG_profileInfo()
+
+    silent echo '==================== cloud log ===================='
+    silent IMCloudLog
+
+    if exists('*ZFGroupJobTaskMap')
+        silent echo '==================== jobs ===================='
+        silent echo ZFGroupJobTaskMap()
+    endif
+
+    silent echo '==================== db ===================='
+    silent echo g:ZFVimIM_db
+
+    execute 'redir END'
+    unlet s:ZFVimIM_DEBUG_start_logFile
+    let g:ZFVimIM_DEBUG_profile = 0
+endfunction
+
