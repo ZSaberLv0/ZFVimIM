@@ -534,14 +534,23 @@ it's recommended to clean up it occasionally, by:
     and require features like LSP plugins,
     no plan to achieve this too)
 
+    PS: you may want to check [ZSaberLv0/ZFVimIM_openapi](https://github.com/ZSaberLv0/ZFVimIM_openapi)
+    for how to use external tool to supply db contents
+
     if you want to benchmark:
 
     1. `let g:ZFVimIM_DEBUG_profile = 1`
     1. input freely
     1. `call ZFVimIM_DEBUG_profileInfo()` to check which step consumed most time
 
-    PS: you may want to check [ZSaberLv0/ZFVimIM_openapi](https://github.com/ZSaberLv0/ZFVimIM_openapi)
-    for how to use external tool to supply db contents
+    if issue still occurs, please supply log file before opening issue:
+
+    1. `call ZFVimIM_DEBUG_start('/path/to/log')`
+    1. input freely
+    1. `call ZFVimIM_DEBUG_stop()`
+    1. [open issue](https://github.com/ZSaberLv0/ZFVimIM/issues/new/choose)
+        and supply the log file
+
 
 * use with LSP plugins
 
