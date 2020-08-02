@@ -507,15 +507,24 @@ function! s:dbEdit(action, word, key, db)
     if empty(a:key) || empty(a:word)
         return
     endif
-    if !exists("db['dbEdit']")
-        let db['dbEdit'] = []
-    endif
-    call add(db['dbEdit'], {
+
+    let dbEditItem = {
                 \   'action' : a:action,
                 \   'key' : a:key,
                 \   'word' : a:word,
-                \ })
-    call s:dbEditApply(db, db['dbEdit'])
+                \ }
+
+    if !exists("db['dbEdit']")
+        let db['dbEdit'] = []
+    endif
+    call add(db['dbEdit'], dbEditItem)
+
+    let dbEditLimit = get(g:, 'ZFVimIM_dbEditLimit', 500)
+    if dbEditLimit > 0 && len(db['dbEdit']) > dbEditLimit
+        call remove(db['dbEdit'], 0, len(db['dbEdit']) - dbEditLimit - 1)
+    endif
+
+    call s:dbEditApply(db, [dbEditItem])
     doautocmd User ZFVimIM_event_OnUpdateDb
 endfunction
 
