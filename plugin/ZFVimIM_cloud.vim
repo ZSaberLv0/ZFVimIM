@@ -100,8 +100,13 @@ endfunction
 function! ZFVimIM_cloudLog_stripSensitive(text)
     return substitute(a:text, ':[^:]*@', '@', 'g')
 endfunction
-function! ZFVimIM_cloudLog_stripSensitiveForJob(jobStatus, text, type)
-    return ZFVimIM_cloudLog_stripSensitive(a:text)
+function! ZFVimIM_cloudLog_stripSensitiveForJob(jobStatus, textList, type)
+    let len = len(a:textList)
+    let i = 0
+    while i < len
+        let a:textList[i] = ZFVimIM_cloudLog_stripSensitive(a:textList[i])
+        let i += 1
+    endwhile
 endfunction
 
 

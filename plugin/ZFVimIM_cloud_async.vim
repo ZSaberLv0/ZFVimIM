@@ -346,12 +346,14 @@ function! s:uploadAsync(cloudOption, mode)
     endif
 endfunction
 
-function! s:UA_dbDownloadOnOutput(dbId, jobStatus, text, type)
+function! s:UA_dbDownloadOnOutput(dbId, jobStatus, textList, type)
     let task = get(s:UA_taskMap, a:dbId, {})
     if empty(task)
         return
     endif
-    call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'updating : ' . a:text)
+    for text in a:textList
+        call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'updating : ' . text)
+    endfor
 endfunction
 
 function! s:UA_dbLoadFallback(dbId, jobStatus)
@@ -394,15 +396,17 @@ function! s:UA_dbLoadOnExit(dbId, jobStatus, exitCode)
     endif
     call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'loading parts...')
 endfunction
-function! s:UA_dbLoadOnOutput(dbId, jobStatus, text, type)
+function! s:UA_dbLoadOnOutput(dbId, jobStatus, textList, type)
     let task = get(s:UA_taskMap, a:dbId, {})
     if empty(task)
         return
     endif
-    call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'loading: ' . a:text)
+    for text in a:textList
+        call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'loading: ' . text)
+    endfor
 endfunction
 
-function! s:UA_dbLoadPartOnOutputFilter(jobStatus, text, type)
+function! s:UA_dbLoadPartOnOutputFilter(jobStatus, textList, type)
     return ''
 endfunction
 function! s:UA_dbLoadPartOnExit(dbId, c, jobStatus, exitCode)
@@ -469,12 +473,14 @@ function! s:UA_dbSaveOnEnter(dbId, jobStatus)
     call writefile([dbEditJson], task['dbSaveCachePath'])
     call ZFVimIM_DEBUG_profileStop()
 endfunction
-function! s:UA_dbSaveOnOutput(dbId, jobStatus, text, type)
+function! s:UA_dbSaveOnOutput(dbId, jobStatus, textList, type)
     let task = get(s:UA_taskMap, a:dbId, {})
     if empty(task)
         return
     endif
-    call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'saving: ' . a:text)
+    for text in a:textList
+        call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'saving: ' . text)
+    endfor
 endfunction
 
 function! s:UA_dbUploadOnEnter(dbId, jobStatus)
@@ -484,31 +490,40 @@ function! s:UA_dbUploadOnEnter(dbId, jobStatus)
     endif
     call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'pushing...')
 endfunction
-function! s:UA_dbUploadOnOutput(dbId, jobStatus, text, type)
+function! s:UA_dbUploadOnOutput(dbId, jobStatus, textList, type)
     let task = get(s:UA_taskMap, a:dbId, {})
     if empty(task)
         return
     endif
-    call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'pushing : ' . a:text)
+    for text in a:textList
+        call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'pushing : ' . text)
+    endfor
 endfunction
 
-function! s:UA_dbCleanupCheckOnOutput(dbId, jobStatus, text, type)
+function! s:UA_dbCleanupCheckOnOutput(dbId, jobStatus, textList, type)
     let task = get(s:UA_taskMap, a:dbId, {})
     let db = ZFVimIM_dbForId(a:dbId)
     if empty(task) || empty(db)
         return
     endif
-    let history = substitute(a:text, '[\r\n]', '', 'g')
-    let history = str2nr(history)
-    let db['implData']['_dbCleanupHistory'] = history
-    call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'history : ' . history)
+    for text in a:textList
+        let history = substitute(text, '[\r\n]', '', 'g')
+        if empty(history)
+            continue
+        endif
+        let history = str2nr(history)
+        let db['implData']['_dbCleanupHistory'] = history
+        call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'history : ' . history)
+    endfor
 endfunction
-function! s:UA_dbCleanupOnOutput(dbId, jobStatus, text, type)
+function! s:UA_dbCleanupOnOutput(dbId, jobStatus, textList, type)
     let task = get(s:UA_taskMap, a:dbId, {})
     if empty(task)
         return
     endif
-    call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'cleaning : ' . a:text)
+    for text in a:textList
+        call s:cloudAsyncLog(ZFGroupJobStatus(a:jobStatus['jobImplData']['groupJobId']), ZFVimIM_cloud_logInfo(task['cloudOption']) . 'cleaning : ' . text)
+    endfor
 endfunction
 
 function! s:UA_onExit(dbId, groupJobStatus, exitCode)
