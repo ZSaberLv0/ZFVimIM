@@ -174,7 +174,10 @@ function! ZFVimIM_cloud_file(cloudOption, key)
 endfunction
 
 function! s:realPath(path)
-    if has('win32unix') && executable('cygpath')
+    if !exists('s:isCygwin')
+        let s:isCygwin = has('win32unix') && executable('cygpath')
+    endif
+    if s:isCygwin
         if get(g:, 'ZFVimIM_disableCygpath', 0)
             return substitute(a:path, '\\', '/', 'g')
         else
