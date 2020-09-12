@@ -407,6 +407,9 @@ function! s:UA_dbLoadOnOutput(dbId, jobStatus, textList, type)
 endfunction
 
 function! s:UA_dbLoadPartOnOutputFilter(jobStatus, textList, type)
+    if !empty(a:textList)
+        call remove(a:textList, 0, -1)
+    endif
 endfunction
 function! s:UA_dbLoadPartOnExit(dbId, c, jobStatus, exitCode)
     let task = get(s:UA_taskMap, a:dbId, {})
