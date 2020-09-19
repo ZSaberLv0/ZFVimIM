@@ -498,22 +498,19 @@ function! s:IME_stop()
     endif
 endfunction
 
-function! s:IME_syncBuffer_action()
-    call ZFVimIME_stop()
-    call ZFVimIME_start()
-    set iminsert=1
-endfunction
 function! s:IME_syncBuffer_delay(...)
-    if s:started && !get(b:, 'ZFVimIME_started', 0)
-        call s:IME_syncBuffer_action()
-    endif
+    call s:IME_update()
+    redraw!
 endfunction
 function! s:IME_syncBuffer()
     if s:started && !get(b:, 'ZFVimIME_started', 0)
+        call s:IME_stop()
+        let &iminsert = s:started
+        call s:IME_start()
+        call s:fixIMState()
+
         if has('timers')
             call timer_start(0, function('s:IME_syncBuffer_delay'))
-        else
-            call s:IME_syncBuffer_action()
         endif
     endif
 endfunction
