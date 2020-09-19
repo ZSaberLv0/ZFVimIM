@@ -445,10 +445,9 @@ function! s:IMEEventStart()
         autocmd!
         autocmd InsertLeave * call s:OnInsertLeave()
         autocmd BufEnter,CmdwinEnter * call s:IME_syncBuffer()
-        try
+        if exists('##CompleteDone')
             autocmd CompleteDone * call s:OnCompleteDone()
-        catch
-        endtry
+        endif
     augroup END
 endfunction
 function! s:IMEEventStop()
