@@ -282,7 +282,7 @@ function! s:uploadAsync(cloudOption, mode)
             for c_ in range(char2nr('a'), char2nr('z'))
                 let c = nr2char(c_)
                 call add(dbLoadPartTasks, {
-                            \   'jobCmd' : 'echo dummy',
+                            \   'jobCmd' : 10,
                             \   'onOutputFilter' : function('s:UA_dbLoadPartOnOutputFilter'),
                             \   'onExit' : ZFJobFunc(function('s:UA_dbLoadPartOnExit'), [db['dbId'], c]),
                             \ })
