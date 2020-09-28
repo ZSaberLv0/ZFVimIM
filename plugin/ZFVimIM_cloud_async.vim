@@ -80,6 +80,7 @@ augroup END
 " ============================================================
 " {
 "   'dbId' : {
+"     'mode' : 'init/download/upload/autoUpload',
 "     'cloudOption' : {},
 "     'jobId' : -1,
 "     'dbLoadCachePath' : '',
@@ -232,6 +233,7 @@ function! s:uploadAsync(cloudOption, mode)
     endif
 
     let task = {
+                \   'mode' : a:mode,
                 \   'cloudOption' : a:cloudOption,
                 \   'jobId' : -1,
                 \   'dbLoadCachePath' : ZFVimIM_cloud_dbLoadCachePath(a:cloudOption),
@@ -590,5 +592,9 @@ function! s:UA_onExit(dbId, groupJobStatus, exitCode)
         endif
     endif
     call ZFJobOutputCleanup(a:groupJobStatus)
+
+    if task['mode'] == 'init' && get(task['cloudOption'], 'mode', '') != 'local'
+        call s:uploadAsync(task['cloudOption'], 'download')
+    endif
 endfunction
 
