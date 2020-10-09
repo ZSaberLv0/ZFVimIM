@@ -593,7 +593,7 @@ function! s:UA_onExit(dbId, groupJobStatus, exitCode)
     endif
     call ZFJobOutputCleanup(a:groupJobStatus)
 
-    if task['mode'] == 'init' && get(task['cloudOption'], 'mode', '') != 'local'
+    if !empty(task) && task['mode'] == 'init' && get(task['cloudOption'], 'mode', '') != 'local'
         call s:uploadAsync(task['cloudOption'], 'download')
     endif
 endfunction
