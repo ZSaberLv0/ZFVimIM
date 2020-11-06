@@ -426,6 +426,16 @@ function! s:mergeResult(data, key, option, db)
         call remove(predictRet, g:ZFVimIM_predictLimitWhenMatch, len(predictRet) - 1)
     endif
 
+    " exact match should have highest priority
+    " to prevent some auto-corrected word placed at top
+    let keyLen = len(a:key)
+    let iMatch = len(matchRet) - 1
+    while iMatch >= 0
+        if matchRet[iMatch]['len'] == keyLen
+            call insert(sentenceRet, remove(matchRet, iMatch), 0)
+        endif
+        let iMatch -= 1
+    endwhile
     " sentence > predict > match
     call extend(ret, sentenceRet)
     call extend(ret, predictRet)
