@@ -142,8 +142,17 @@ function! ZFVimIME_keymap_remove_v()
     return ''
 endfunction
 
+if exists('*state')
+    function! s:updateChecker()
+        return !s:started || mode() != 'i' || match(state(), 'm') >= 0
+    endfunction
+else
+    function! s:updateChecker()
+        return !s:started || mode() != 'i'
+    endfunction
+endif
 function! ZFVimIME_keymap_update_i()
-    if !s:started || mode() != 'i'
+    if s:updateChecker()
         return ''
     endif
     if pumvisible()
