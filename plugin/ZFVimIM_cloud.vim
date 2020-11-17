@@ -149,14 +149,14 @@ endfunction
 
 " ============================================================
 if 0
-elseif executable('py')
-    let s:py = 'py'
-elseif executable('python')
-    let s:py = 'python'
 elseif executable('py3')
     let s:py = 'py3'
 elseif executable('python3')
     let s:py = 'python3'
+elseif executable('py')
+    let s:py = 'py'
+elseif executable('python')
+    let s:py = 'python'
 else
     let s:py = ''
 endif
