@@ -467,11 +467,10 @@ endfunction
 
 function! s:init()
     let s:started = 0
-    let s:multibyte = &encoding =~ 'utf-8' ? 3 : 2
     let s:seamless_positions = []
-    let s:start_column = 1
-    let s:valid_keyboard = '[0-9a-z]'
-    let s:valid_keys = split('abcdefghijklmnopqrstuvwxyz', '\zs')
+    let s:start_column = 0
+    let s:all_keys = '[0-9a-z]'
+    let s:input_keys = '[a-z]'
 endfunction
 
 function! s:IME_update()
@@ -553,32 +552,32 @@ endfunction
 function! s:setupKeymap()
     let mapped = {}
 
-    for c in s:valid_keys
+    for c in split('abcdefghijklmnopqrstuvwxyz', '\zs')
         let mapped[c] = 1
         execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_input("' . c . '")'
     endfor
 
     for c in ['-']
-        if c !~ s:valid_keyboard
+        if c !~ s:all_keys
             let mapped[c] = 1
             execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_pageUp("' . c . '")'
         endif
     endfor
     for c in ['=']
-        if c !~ s:valid_keyboard
+        if c !~ s:all_keys
             let mapped[c] = 1
             execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_pageDown("' . c . '")'
         endif
     endfor
 
     for c in ['[']
-        if c !~ s:valid_keyboard
+        if c !~ s:all_keys
             let mapped[c] = 1
             execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_chooseL("' . c . '")'
         endif
     endfor
     for c in [']']
-        if c !~ s:valid_keyboard
+        if c !~ s:all_keys
             let mapped[c] = 1
             execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_chooseR("' . c . '")'
         endif
@@ -644,7 +643,7 @@ function! s:getSeamless(cursor_positions)
         return -1
     endif
     for c in split(snip, '\zs')
-        if c !~ s:valid_keyboard
+        if c !~ s:input_keys
             return -1
         endif
     endfor
@@ -653,50 +652,33 @@ endfunction
 
 function! s:hasLeftChar()
     let key = 0
-    let one_byte_before = getline('.')[col('.')-2]
-    if one_byte_before =~ '\s' || empty(one_byte_before)
+    let before = getline('.')[col('.')-2]
+    if before =~ '\s' || empty(before)
         let key = 0
-    elseif one_byte_before =~# s:valid_keyboard
+    elseif before =~# s:input_keys
         let key = 1
     endif
     return key
 endfunction
 
 function! s:omnifunc(start, keyboard)
-    let valid_keyboard = s:valid_keyboard
     if a:start
         let cursor_positions = getpos('.')
-        let start_row = cursor_positions[1]
-        let start_column = cursor_positions[2]-1
-        let current_line = getline(start_row)
-        let before = current_line[start_column-1]
+        let start_column = cursor_positions[2] - 1
+        let current_line = getline(cursor_positions[1])
+        let current_line = substitute(current_line, '\\[a-z\\]', '  ', 'g')
         let seamless_column = s:getSeamless(cursor_positions)
         if seamless_column < 0
             let s:seamless_positions = []
-            let last_seen_bslash_column = copy(start_column)
-            let last_seen_nonsense_column = copy(start_column)
-            let all_digit = 1
-            while start_column
-                if before =~# valid_keyboard
-                    let start_column -= 1
-                    if before !~# "[0-9']"
-                        let last_seen_nonsense_column = start_column
-                        let all_digit = 0
-                    endif
-                elseif before == '\'
-                    return last_seen_bslash_column
-                else
-                    break
-                endif
-                let before = current_line[start_column-1]
-            endwhile
-            if all_digit < 1 && current_line[start_column] =~ '\d'
-                let start_column = last_seen_nonsense_column
-            endif
-        else
-            let start_column = seamless_column
+            let seamless_column = 0
         endif
+        while start_column > seamless_column && current_line[start_column - 1] =~# s:input_keys
+            let start_column -= 1
+        endwhile
         let len = cursor_positions[2]-1 - start_column
+        if len <= 0
+            return -3
+        endif
         let keyboard = strpart(current_line, start_column, len)
         let s:keyboard = keyboard
         let s:start_column = start_column
@@ -706,17 +688,7 @@ function! s:omnifunc(start, keyboard)
         if !empty(results)
             return s:popupMenuList(results)
         endif
-        let keyboard = a:keyboard
-        if !empty(str2nr(keyboard))
-            let keyboard = get(split(s:keyboard), 0)
-        endif
-        if empty(keyboard) || keyboard !~ valid_keyboard
-            return []
-        endif
-        if empty(results)
-            let results = ZFVimIM_complete(keyboard)
-        endif
-        return s:popupMenuList(results)
+        return s:popupMenuList(ZFVimIM_complete(s:keyboard))
     endif
 endfunction
 
