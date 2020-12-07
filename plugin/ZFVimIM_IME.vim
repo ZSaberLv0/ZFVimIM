@@ -379,9 +379,14 @@ function! ZFVimIME_enter()
     if pumvisible()
         let key = "\<c-e>"
     else
-        let key = "\<cr>"
-        let s:seamless_positions = getpos('.')
+        if s:enter_to_confirm
+            let s:enter_to_confirm = 0
+            let key = ''
+        else
+            let key = "\<cr>"
+        endif
     endif
+    let s:seamless_positions = getpos('.')
     call s:resetAfterInsert()
     call feedkeys(key, 'nt')
     return ''
@@ -452,6 +457,7 @@ augroup END
 function! s:IMEEventStart()
     augroup ZFVimIME_impl_augroup
         autocmd!
+        autocmd InsertEnter * call s:OnInsertEnter()
         autocmd InsertLeave * call s:OnInsertLeave()
         autocmd BufEnter,CmdwinEnter * call s:IME_syncBuffer()
         if exists('##CompleteDone')
@@ -611,6 +617,7 @@ endfunction
 function! s:resetAfterInsert()
     let s:match_list = []
     let s:pageup_pagedown = 0
+    let s:enter_to_confirm = 0
 endfunction
 
 function! s:omniCache()
@@ -639,7 +646,8 @@ function! s:getSeamless(cursor_positions)
     let seamless_column = s:seamless_positions[2]-1
     let len = a:cursor_positions[2]-1 - seamless_column
     let snip = strpart(current_line, seamless_column, len)
-    if empty(len(snip))
+    if len(snip) <= 0
+        let s:seamless_positions = []
         return -1
     endif
     for c in split(snip, '\zs')
@@ -662,6 +670,7 @@ function! s:hasLeftChar()
 endfunction
 
 function! s:omnifunc(start, keyboard)
+    let s:enter_to_confirm = 1
     if a:start
         let cursor_positions = getpos('.')
         let start_column = cursor_positions[2] - 1
@@ -750,6 +759,10 @@ function! s:popupMenuList(complete)
     return popup_list
 endfunction
 
+function! s:OnInsertEnter()
+    let s:seamless_positions = getpos('.')
+    let s:enter_to_confirm = 0
+endfunction
 function! s:OnInsertLeave()
     call s:resetState()
 endfunction
