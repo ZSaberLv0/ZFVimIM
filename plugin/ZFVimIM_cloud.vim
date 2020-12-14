@@ -173,28 +173,33 @@ function! ZFVimIM_cloud_file(cloudOption, key)
     endif
 endfunction
 
-function! s:realPath(path)
-    if !exists('s:isCygwin')
-        let s:isCygwin = has('win32unix') && executable('cygpath')
+function! CygpathFix_absPath(path)
+    if !exists('g:CygpathFix_isCygwin')
+        let g:CygpathFix_isCygwin = has('win32unix') && executable('cygpath')
     endif
-    if s:isCygwin
-        if get(g:, 'ZFVimIM_disableCygpath', 0)
-            return substitute(a:path, '\\', '/', 'g')
+    let path = fnamemodify(a:path, ':p')
+    if g:CygpathFix_isCygwin
+        if 0 " cygpath is really slow
+            let path = substitute(system('cygpath -m "' . path . '"'), '[\r\n]', '', 'g')
         else
-            return substitute(system('cygpath -m "' . a:path . '"'), '[\r\n]', '', 'g')
+            if match(path, '^/cygdrive/') >= 0
+                let path = toupper(strpart(path, len('/cygdrive/'), 1)) . ':' . strpart(path, len('/cygdrive/') + 1)
+            else
+                if !exists('g:CygpathFix_cygwinPrefix')
+                    let g:CygpathFix_cygwinPrefix = substitute(system('cygpath -m /'), '[\r\n]', '', 'g')
+                endif
+                let path = g:CygpathFix_cygwinPrefix . path
+            endif
         endif
-    elseif has('win32')
-        return substitute(a:path, '/', '\\', 'g')
-    else
-        return a:path
     endif
+    return substitute(path, '\\', '/', 'g')
 endfunction
 
 function! s:randName()
     return fnamemodify(tempname(), ':t')
 endfunction
 
-let s:scriptPath = s:realPath(expand('<sfile>:p:h:h') . '/misc/')
+let s:scriptPath = CygpathFix_absPath(expand('<sfile>:p:h:h') . '/misc/')
 
 " for debug or develop only
 " see dbFunc.dbLoadNormalizePy()
@@ -205,7 +210,7 @@ function! ZFVimIM_dbNormalize(dbFile)
     endif
     let result = system(s:py
                 \ . ' "' . s:scriptPath . 'dbNormalize.py' . '"'
-                \ . ' "' . s:realPath(a:dbFile) . '"'
+                \ . ' "' . CygpathFix_absPath(a:dbFile) . '"'
                 \ )
     let error = v:shell_error
     redraw!
@@ -219,13 +224,13 @@ function! ZFVimIM_cloud_dbDownloadCmd(cloudOption)
     if has('unix')
         return 'sh'
                     \ . ' "' . s:scriptPath . 'dbDownload.sh' . '"'
-                    \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
+                    \ . ' "' . CygpathFix_absPath(a:cloudOption['repoPath']) . '"'
                     \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
                     \ . ' "' . a:cloudOption['gitUserToken'] . '"'
     else
         return '"' . s:scriptPath . 'dbDownload.bat' . '"'
-                    \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
+                    \ . ' "' . CygpathFix_absPath(a:cloudOption['repoPath']) . '"'
                     \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
                     \ . ' "' . a:cloudOption['gitUserToken'] . '"'
@@ -235,13 +240,13 @@ function! ZFVimIM_cloud_dbUploadCmd(cloudOption)
     if has('unix')
         return 'sh'
                     \ . ' "' . s:scriptPath . 'dbUpload.sh' . '"'
-                    \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
+                    \ . ' "' . CygpathFix_absPath(a:cloudOption['repoPath']) . '"'
                     \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
                     \ . ' "' . a:cloudOption['gitUserToken'] . '"'
     else
         return '"' . s:scriptPath . 'dbUpload.bat' . '"'
-                    \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
+                    \ . ' "' . CygpathFix_absPath(a:cloudOption['repoPath']) . '"'
                     \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
                     \ . ' "' . a:cloudOption['gitUserToken'] . '"'
@@ -251,14 +256,14 @@ function! ZFVimIM_cloud_dbCleanupCheckCmd(cloudOption)
     if has('unix')
         return 'sh'
                     \ . ' "' . s:scriptPath . 'dbCleanupCheck.sh' . '"'
-                    \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
+                    \ . ' "' . CygpathFix_absPath(a:cloudOption['repoPath']) . '"'
     else
         return '"' . s:scriptPath . 'dbCleanupCheck.bat' . '"'
-                    \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
+                    \ . ' "' . CygpathFix_absPath(a:cloudOption['repoPath']) . '"'
     endif
 endfunction
 function! ZFVimIM_cloud_dbCleanupCachePath(cloudOption)
-    return s:realPath(ZFVimIM_cachePath() . '/ZFVimIM_dbCleanup_' . s:randName())
+    return CygpathFix_absPath(ZFVimIM_cachePath() . '/ZFVimIM_dbCleanup_' . s:randName())
 endfunction
 function! ZFVimIM_cloud_dbCleanupCmd(cloudOption, dbCleanupCachePath)
     if has('unix')
@@ -270,11 +275,11 @@ function! ZFVimIM_cloud_dbCleanupCmd(cloudOption, dbCleanupCachePath)
         let path = fnamemodify(fnamemodify(path, ':.'), ':p')
         return 'sh'
                     \ . ' "' . s:scriptPath . 'dbCleanup.sh' . '"'
-                    \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
+                    \ . ' "' . CygpathFix_absPath(a:cloudOption['repoPath']) . '"'
                     \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
                     \ . ' "' . a:cloudOption['gitUserToken'] . '"'
-                    \ . ' "' . s:realPath(path) . '"'
+                    \ . ' "' . CygpathFix_absPath(path) . '"'
                     \ . ' "' . a:dbCleanupCachePath . '"'
     else
         let path = split(globpath(&rtp, '/misc/git_hard_remove_all_history.bat'), '\n')
@@ -284,17 +289,17 @@ function! ZFVimIM_cloud_dbCleanupCmd(cloudOption, dbCleanupCachePath)
         let path = substitute(path[0], '[\r\n]', '', 'g')
         let path = fnamemodify(fnamemodify(path, ':.'), ':p')
         return '"' . s:scriptPath . 'dbCleanup.bat' . '"'
-                    \ . ' "' . s:realPath(a:cloudOption['repoPath']) . '"'
+                    \ . ' "' . CygpathFix_absPath(a:cloudOption['repoPath']) . '"'
                     \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
                     \ . ' "' . a:cloudOption['gitUserToken'] . '"'
-                    \ . ' "' . s:realPath(path) . '"'
+                    \ . ' "' . CygpathFix_absPath(path) . '"'
                     \ . ' "' . a:dbCleanupCachePath . '"'
     endif
 endfunction
 
 function! ZFVimIM_cloud_dbLoadCachePath(cloudOption)
-    return s:realPath(ZFVimIM_cachePath() . '/ZFVimIM_dbLoad_' . s:randName())
+    return CygpathFix_absPath(ZFVimIM_cachePath() . '/ZFVimIM_dbLoad_' . s:randName())
 endfunction
 function! ZFVimIM_cloud_dbLoadCmd(cloudOption, dbLoadCachePath)
     if empty(s:py)
@@ -302,12 +307,12 @@ function! ZFVimIM_cloud_dbLoadCmd(cloudOption, dbLoadCachePath)
     endif
     return s:py
                 \ . ' "' . s:scriptPath . 'dbLoad.py' . '"'
-                \ . ' "' . s:realPath(ZFVimIM_cloud_file(a:cloudOption, 'dbFile')) . '"'
-                \ . ' "' . s:realPath(ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile')) . '"'
-                \ . ' "' . s:realPath(a:dbLoadCachePath) . '"'
+                \ . ' "' . CygpathFix_absPath(ZFVimIM_cloud_file(a:cloudOption, 'dbFile')) . '"'
+                \ . ' "' . CygpathFix_absPath(ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile')) . '"'
+                \ . ' "' . CygpathFix_absPath(a:dbLoadCachePath) . '"'
 endfunction
 function! ZFVimIM_cloud_dbSaveCachePath(cloudOption)
-    return s:realPath(ZFVimIM_cachePath() . '/ZFVimIM_dbSave_' . s:randName())
+    return CygpathFix_absPath(ZFVimIM_cachePath() . '/ZFVimIM_dbSave_' . s:randName())
 endfunction
 function! ZFVimIM_cloud_dbSaveCmd(cloudOption, dbSaveCachePath)
     if empty(s:py)
@@ -315,9 +320,9 @@ function! ZFVimIM_cloud_dbSaveCmd(cloudOption, dbSaveCachePath)
     endif
     return s:py
                 \ . ' "' . s:scriptPath . 'dbSave.py' . '"'
-                \ . ' "' . s:realPath(ZFVimIM_cloud_file(a:cloudOption, 'dbFile')) . '"'
-                \ . ' "' . s:realPath(ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile')) . '"'
-                \ . ' "' . s:realPath(a:dbSaveCachePath) . '"'
+                \ . ' "' . CygpathFix_absPath(ZFVimIM_cloud_file(a:cloudOption, 'dbFile')) . '"'
+                \ . ' "' . CygpathFix_absPath(ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile')) . '"'
+                \ . ' "' . CygpathFix_absPath(a:dbSaveCachePath) . '"'
 endfunction
 
 function! ZFVimIM_cloud_fixOutputEncoding(msg)
