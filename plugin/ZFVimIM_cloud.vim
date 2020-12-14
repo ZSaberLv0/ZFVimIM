@@ -272,7 +272,7 @@ function! ZFVimIM_cloud_dbCleanupCmd(cloudOption, dbCleanupCachePath)
             return ''
         endif
         let path = substitute(path[0], '[\r\n]', '', 'g')
-        let path = fnamemodify(fnamemodify(path, ':.'), ':p')
+        let path = CygpathFix_absPath(path)
         return 'sh'
                     \ . ' "' . s:scriptPath . 'dbCleanup.sh' . '"'
                     \ . ' "' . CygpathFix_absPath(a:cloudOption['repoPath']) . '"'
@@ -287,7 +287,7 @@ function! ZFVimIM_cloud_dbCleanupCmd(cloudOption, dbCleanupCachePath)
             return ''
         endif
         let path = substitute(path[0], '[\r\n]', '', 'g')
-        let path = fnamemodify(fnamemodify(path, ':.'), ':p')
+        let path = CygpathFix_absPath(path)
         return '"' . s:scriptPath . 'dbCleanup.bat' . '"'
                     \ . ' "' . CygpathFix_absPath(a:cloudOption['repoPath']) . '"'
                     \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
