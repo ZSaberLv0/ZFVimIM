@@ -459,7 +459,6 @@ function! s:IMEEventStart()
         autocmd!
         autocmd InsertEnter * call s:OnInsertEnter()
         autocmd InsertLeave * call s:OnInsertLeave()
-        autocmd BufEnter,CmdwinEnter * call s:IME_syncBuffer()
         if exists('##CompleteDone')
             autocmd CompleteDone * call s:OnCompleteDone()
         endif
@@ -516,17 +515,23 @@ function! s:IME_syncBuffer_delay(...)
     redraw!
 endfunction
 function! s:IME_syncBuffer()
-    if s:started && !get(b:, 'ZFVimIME_started', 0)
+    if s:started != get(b:, 'ZFVimIME_started', 0)
         call s:IME_stop()
         let &iminsert = s:started
-        call s:IME_start()
+        if s:started
+            call s:IME_start()
+        endif
         call s:fixIMState()
-
+        call s:IME_syncBuffer_delay()
         if has('timers')
             call timer_start(0, function('s:IME_syncBuffer_delay'))
         endif
     endif
 endfunction
+augroup ZFVimIME_impl_syncBuffer_augroup
+    autocmd!
+    autocmd BufEnter,CmdwinEnter * call s:IME_syncBuffer()
+augroup END
 
 function! s:vimrcSave()
     let s:saved_omnifunc    = &omnifunc
