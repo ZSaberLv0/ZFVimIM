@@ -27,6 +27,7 @@ Outstanding features / why another remake:
 * predict from multiple db without switching dbs
 * auto create user word and re-order word priority accorrding to your input history
 * cloud input, auto pull and push your db file from/to Github
+* fetch words from 3rd openapi, asynchronously
 * solve many VimIM's issues:
     * better txt db load performance if `has('python')`
     * auto disable and re-enable complete engines when using input method
