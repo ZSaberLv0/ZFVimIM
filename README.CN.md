@@ -1,0 +1,75 @@
+
+<!-- vim-markdown-toc GFM -->
+
+* [简介](#简介)
+* [推荐配置](#推荐配置)
+* [使用](#使用)
+
+<!-- vim-markdown-toc -->
+
+# 简介
+
+vim 上的中文输入法, 特色:
+
+* 支持自动 pull/push 词库到 gayhub 哦不 github
+* 支持异步调用外部云输入法 (目前支持百度输入法)
+* 动态组词, 动态词频, 长句输入
+* 支持挂各种大词库, 支持多词库混输
+* 辣鸡环境可以回退到纯 vim script 版本, 最低支持 vim 7.3
+
+
+![](https://raw.githubusercontent.com/ZSaberLv0/ZFVimIM/master/preview.gif)
+
+如果你喜欢本插件, 给开发者[买个煎饼补补脑](https://github.com/ZSaberLv0/ZSaberLv0)
+
+
+# 推荐配置
+
+1. 推荐环境:
+
+    * (可选) vim8 或 neovim, 用于支持异步更新词库
+    * (可选) `executable('python')` 或者 `executable('python3')`, 用于提升词库加载性能
+
+1. 参照 [db samples](https://github.com/ZSaberLv0/ZFVimIM#db-samples) 创建自己的词库,
+    或 fork 以下词库:
+
+    * 拼音: [ZSaberLv0/ZFVimIM_pinyin_base](https://github.com/ZSaberLv0/ZFVimIM_pinyin_base)
+    * 五笔: [ZSaberLv0/ZFVimIM_wubi_base](https://github.com/ZSaberLv0/ZFVimIM_wubi_base)
+
+1. 到 [access tokens](https://github.com/settings/tokens) 配置一个合适的 token,
+    并确保对词库 repo 有 push 权限 (`Select scopes` 中勾选 `repo`)
+1. 根据你的词库, 配置相应的 access token, 例如上述词库可以用:
+
+    ```
+    let g:zf_git_user_email='YourEmail'
+    let g:zf_git_user_name='YourUserName'
+    let g:zf_git_user_token='YourGithubAccessToken'
+    ```
+
+    具体请查看词库的说明或源码
+
+1. 安装:
+
+    ```
+    Plugin 'ZSaberLv0/ZFVimIM'
+    Plugin 'ZSaberLv0/ZFVimJob' " 可选, 如果你需要支持异步更新
+    Plugin 'ZSaberLv0/ZFVimGitUtil' " 可选, 如果你希望定期自动清理词库 push 历史
+    Plugin 'YourUserName/ZFVimIM_pinyin_base' " 你的词库
+    Plugin 'ZSaberLv0/ZFVimIM_openapi' " 可选, 百度云输入法
+    ```
+
+# 使用
+
+* `;;` 开启或关闭输入法, `;:` 切换词库
+* `-` 和 `=` 翻页
+* `空格` 和 `0~9` 选词或组词
+* `[` 和 `]` 快速从词组选字
+* 输入过程中会自动组自造词, 也可以用 `;,` 或 `:IMAdd` 手动添加自造词,
+    `;.` 或 `:IMRemove` 删除自造词
+* 觉得好用, 记得给开发者[买个煎饼](https://github.com/ZSaberLv0/ZSaberLv0),
+    贫穷码农在线乞讨 `_(:з」∠)_`
+
+
+中文帮助只列举推荐配置和基本操作, 详细配置请移步 [README](https://github.com/ZSaberLv0/ZFVimIM/blob/master/README.CN.md)
+(别问为啥, 问就是懒)
+

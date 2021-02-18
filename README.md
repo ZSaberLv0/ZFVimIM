@@ -29,7 +29,7 @@ Outstanding features / why another remake:
 * cloud input, auto pull and push your db file from/to Github
 * fetch words from 3rd openapi, asynchronously
 * solve many VimIM's issues:
-    * better txt db load performance if `has('python')`
+    * better txt db load performance if `executable('python')`
     * auto disable and re-enable complete engines when using input method
     * sync input method state acrossing buffers
 
@@ -41,12 +41,14 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
 
 # how to use
 
+[中文用户请戳我](https://github.com/ZSaberLv0/ZFVimIM/blob/master/README.CN.md)
+
 1. requirement:
 
     * `v:version >= 703`, older version may work, but not tested
     * (optional) `git`, for db update
     * (optional) `vim8` with `job` or `neovim`, and `Plug 'ZSaberLv0/ZFVimJob'`, for async db update
-    * (optional) `has('python')` or `has('python3')`, for better db load performance
+    * (optional) `executable('python')` or `executable('python3')`, for better db load performance
 
 1. use [Vundle](https://github.com/VundleVim/Vundle.vim) or any other plugin manager you like to install
 
@@ -127,7 +129,7 @@ requirement:
     * [functions (for db repo)](#functions-for-db-repo)
 * (optional) have [ZSaberLv0/ZFVimJob](https://github.com/ZSaberLv0/ZFVimJob) installed and `ZFJobAvailable()`,
     for async pull and push
-* (optional) have `has('python')` or `has('python3')` support for better save/load performance
+* (optional) have `executable('python')` or `executable('python3')` support for better save/load performance
 
 
 if it's hard to support async mode, you may also:
@@ -522,12 +524,13 @@ it's recommended to clean up it occasionally, by:
 
 * too slow
 
-    check first: `has('python')` and `ZFVimJob` is installed and available,
+    check first: `executable('python')` or `executable('python3')`
+    and `ZFVimJob` is installed and available,
     without them, the pure vim script fallback is always very slow
     (about 2 seconds for 200KB db file)
 
     if your db file is very large,
-    it's slow to save and load db even if `has('python')`,
+    it's slow to save and load db even if `executable('python')`,
     because reading and processing large files also takes a long time
 
     this plugin is designed lightweight that can fallback to pure vimscript,
