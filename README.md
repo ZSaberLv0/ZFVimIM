@@ -1,4 +1,6 @@
 
+[中文用户请戳我](https://github.com/ZSaberLv0/ZFVimIM/blob/master/README.CN.md)
+
 <!-- vim-markdown-toc GFM -->
 
 * [introduction](#introduction)
@@ -40,8 +42,6 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
 
 
 # how to use
-
-[中文用户请戳我](https://github.com/ZSaberLv0/ZFVimIM/blob/master/README.CN.md)
 
 1. requirement:
 
