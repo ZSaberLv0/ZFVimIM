@@ -5,14 +5,15 @@
 
 * [introduction](#introduction)
 * [how to use](#how-to-use)
-* [cloud input](#cloud-input)
-    * [cloud input (minimal recommend config)](#cloud-input-minimal-recommend-config)
-    * [cloud input (detail config)](#cloud-input-detail-config)
+    * [minimal config (local db)](#minimal-config-local-db)
+    * [recommend config (cloud db)](#recommend-config-cloud-db)
+    * [how to use](#how-to-use-1)
+    * [some tips](#some-tips)
 * [detailed](#detailed)
     * [configs](#configs)
     * [functions](#functions)
     * [functions (for db repo)](#functions-for-db-repo)
-    * [Make your own db](#make-your-own-db)
+    * [make your own db](#make-your-own-db)
         * [db samples](#db-samples)
     * [FAQ](#faq)
     * [known issue](#known-issue)
@@ -27,7 +28,7 @@ Outstanding features / why another remake:
 
 * more friendly long sentence match and better predict logic
 * predict from multiple db without switching dbs
-* auto create user word and re-order word priority accorrding to your input history
+* auto create user word and re-order word priority according to your input history
 * cloud input, auto pull and push your db file from/to Github
 * fetch words from 3rd openapi, asynchronously
 * solve many VimIM's issues:
@@ -43,127 +44,106 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
 
 # how to use
 
-1. requirement:
+## minimal config (local db)
 
-    * `v:version >= 703`, older version may work, but not tested
-    * (optional) `git`, for db update
-    * (optional) `vim8` with `job` or `neovim`, and `Plug 'ZSaberLv0/ZFVimJob'`, for async db update
+1. recommend env:
+
+    * (optional) `vim8` with `job` or `neovim`, for async db load
     * (optional) `executable('python')` or `executable('python3')`, for better db load performance
 
 1. use [Vundle](https://github.com/VundleVim/Vundle.vim) or any other plugin manager you like to install
 
     ```
     Plugin 'ZSaberLv0/ZFVimIM'
-    Plugin 'YourUserName/YourDbRepo' " repo that contain db files, see `cloud input (minimal recommend config)`
-
-    Plugin 'ZSaberLv0/ZFVimJob' " optional, for async db update
-    Plugin 'ZSaberLv0/ZFVimGitUtil' " optional, see `g:ZFVimIM_cloudAsync_autoCleanup`
+    Plugin 'ZSaberLv0/ZFVimJob' " optional, for async db load
     ```
 
-1. use `;;` to toggle input method
-
-    default keymaps:
+1. prepare your db files,
+    you may copy the txt db files from [db samples](https://github.com/ZSaberLv0/ZFVimIM#db-samples)
+    to any location
+1. config
 
     ```
-    nnoremap <expr><silent> ;; ZFVimIME_keymap_toggle_n()
-    inoremap <expr> ;; ZFVimIME_keymap_toggle_i()
-    vnoremap <expr> ;; ZFVimIME_keymap_toggle_v()
-
-    nnoremap <expr><silent> ;: ZFVimIME_keymap_next_n()
-    inoremap <expr> ;: ZFVimIME_keymap_next_i()
-    vnoremap <expr> ;: ZFVimIME_keymap_next_v()
-
-    nnoremap <expr><silent> ;, ZFVimIME_keymap_add_n()
-    inoremap <expr> ;, ZFVimIME_keymap_add_i()
-    xnoremap <expr> ;, ZFVimIME_keymap_add_v()
-
-    nnoremap <expr><silent> ;. ZFVimIME_keymap_remove_n()
-    inoremap <expr> ;. ZFVimIME_keymap_remove_i()
-    xnoremap <expr> ;. ZFVimIME_keymap_remove_v()
+    let db = ZFVimIM_dbInit({
+                \   'name' : 'YourDb',
+                \ })
+    call ZFVimIM_cloudRegister({
+                \   'mode' : 'local',
+                \   'dbId' : db['dbId'],
+                \   'repoPath' : '/path/to/repo', " path to the db
+                \   'dbFile' : '/YourDbFile', " db file, relative to repoPath
+                \   'dbCountFile' : '/YourDbCountFile', " optional, db count file, relative to repoPath
+                \ })
     ```
 
-    you may disable default keymap by `let g:ZFVimIM_keymap = 0`
+## recommend config (cloud db)
 
-1. during input:
+1. recommend env:
 
-    * scroll page by `-` or `=`
-    * input and choose word by `<space>` or `0~9`
-    * choose head or tail word by `[` or `]`
+    * (optional) `git`, for db update
+    * (optional) `vim8` with `job` or `neovim`, for async db load
+    * (optional) `executable('python')` or `executable('python3')`, for better db load performance
 
-1. your input history would be recorded and
-    automatically push to github,
-    see `cloud input` below for more info
+1. prepare your db repo according to [db samples](https://github.com/ZSaberLv0/ZFVimIM#db-samples),
+    or simply fork one of the db samples
+1. go to [access tokens](https://github.com/settings/tokens) to generate your Github access token,
+    and make sure it has push permission to your db repo
+    (check `repo` in `Select scopes`)
+1. config your access token according to your db repo, for example,
+    for the [db samples](https://github.com/ZSaberLv0/ZFVimIM#db-samples):
 
+    ```
+    let g:zf_git_user_email='YourEmail'
+    let g:zf_git_user_name='YourUserName'
+    let g:zf_git_user_token='YourGithubAccessToken'
+    ```
 
-# cloud input
+    please check the README of each db repo for detail
 
-## cloud input (minimal recommend config)
-
-1. fork [ZSaberLv0/ZFVimIM_pinyin_base](https://github.com/ZSaberLv0/ZFVimIM_pinyin_base)
-    to `Plugin 'YourUserName/ZFVimIM_pinyin_base'`
+1. use [Vundle](https://github.com/VundleVim/Vundle.vim) or any other plugin manager you like to install
 
     ```
     Plugin 'ZSaberLv0/ZFVimIM'
-    Plugin 'YourUserName/ZFVimIM_pinyin_base'
-    Plugin 'ZSaberLv0/ZFVimIM_openapi'
-    Plugin 'ZSaberLv0/ZFVimJob'
-    Plugin 'ZSaberLv0/ZFVimGitUtil'
+    Plugin 'ZSaberLv0/ZFVimJob' " optional, for async db load
+    Plugin 'ZSaberLv0/ZFVimGitUtil' " optional, cleanup your db commit history when necessary
+    Plugin 'YourUserName/ZFVimIM_pinyin_base' " your db repo
+    Plugin 'ZSaberLv0/ZFVimIM_openapi' " optional, 3rd IME using Baidu
     ```
 
-1. supply your git info (make sure it has `git push` [permission](https://github.com/settings/tokens))
 
-    ```
-    let g:ZFVimIM_pinyin_gitUserEmail='YourEmail'
-    let g:ZFVimIM_pinyin_gitUserName='YourUserName'
-    let g:ZFVimIM_pinyin_gitUserToken='YourGithubAccessToken'
-    ```
+## how to use
 
-## cloud input (detail config)
-
-once configured properly, your db changes would be pushed to Github automatically
-
-requirement:
-
-* register and supply your db repo and git info, see also:
-    * [ZSaberLv0/ZFVimIM_pinyin_base](https://github.com/ZSaberLv0/ZFVimIM_pinyin_base)
-    * [functions (for db repo)](#functions-for-db-repo)
-* (optional) have [ZSaberLv0/ZFVimJob](https://github.com/ZSaberLv0/ZFVimJob) installed and `ZFJobAvailable()`,
-    for async pull and push
-* (optional) have `executable('python')` or `executable('python3')` support for better save/load performance
+* use `;;` to toggle input method, and `;:` to switch db
+* scroll page by `-` or `=`
+* input and choose word by `<space>` or `0~9`
+* choose head or tail word by `[` or `]`
+* your input history would be recorded locally or
+    push to github automatically,
+    you may use `;,` or `:IMAdd` to add user word,
+    `;.` or `:IMRemove` to remove user word
 
 
-if it's hard to support async mode, you may also:
+## some tips
 
-* pull and push manually by `:call ZFVimIM_download()` and `:call ZFVimIM_upload()`
-* automatically ask you to input git info to push before exit vim,
-    by `let g:ZFVimIM_cloudSync_enable=1`
+* if it's hard to support async mode, you may also:
 
+    * pull and push manually by `:call ZFVimIM_download()` and `:call ZFVimIM_upload()`
+    * automatically ask you to input git info to push before exit vim,
+        by `let g:ZFVimIM_cloudSync_enable=1`
 
-of course, you must have push permission for db repo,
-feel free to fork the default repo (`ZSaberLv0/ZFVimIM_pinyin_base`),
-or supply your own db repo
+* since db files are pretty personal,
+    the default db only contains single word,
+    words would be created during your usage,
+    if you prefer other choices, see [db samples](https://github.com/ZSaberLv0/ZFVimIM#db-samples):
+* your db repo may contain many commits after long time usage,
+    which may cause a huge `.git` dir,
+    it's recommended to clean up it occasionally, by:
 
-
-**NOTE:**
-
-since db files are pretty personal,
-the default db only contains single word,
-words would be created during your usage
-
-if you prefer other choices, see [db samples](https://github.com/ZSaberLv0/ZFVimIM#db-samples):
-
-
-**NOTE:**
-
-your db repo may contain many commits after long time usage,
-which may cause a huge `.git` dir,
-it's recommended to clean up it occasionally, by:
-
-* delete and re-create the repo
-* if you have `push --force` permission,
-    use [ZSaberLv0/ZFVimGitUtil](https://github.com/ZSaberLv0/ZFVimGitUtil)'s
-    `:ZFGitHardRemoveAllHistory` to remove all history commits,
-    or use `g:ZFVimIM_cloudAsync_autoCleanup` for short
+    * delete and re-create the repo
+    * if you have `push --force` permission,
+        use [ZSaberLv0/ZFVimGitUtil](https://github.com/ZSaberLv0/ZFVimGitUtil)'s
+        `:ZFGitHardRemoveAllHistory` to remove all history commits,
+        or use `g:ZFVimIM_cloudAsync_autoCleanup` for short
 
 
 # detailed
@@ -381,7 +361,7 @@ it's recommended to clean up it occasionally, by:
     ```
 
 
-## Make your own db
+## make your own db
 
 1. supply your db file with this format:
 

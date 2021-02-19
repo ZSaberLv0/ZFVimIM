@@ -3,8 +3,9 @@
 
 * [简介](#简介)
 * [推荐配置](#推荐配置)
+    * [纯本地词库](#纯本地词库)
+    * [云词库](#云词库)
 * [使用](#使用)
-* [纯本地词库](#纯本地词库)
 
 <!-- vim-markdown-toc -->
 
@@ -35,6 +36,43 @@ vim 上的中文输入法, 特色:
     当然个人建议还是: 轻量词库 + 自造词 + 百度云输入,
     按照下文推荐配置花点时间即可实现
 
+
+## 纯本地词库
+
+虽然重点功能之一是自动同步词库, 但纯本地跑也是可以的
+
+1. 推荐环境:
+
+    * (可选) vim8 或 neovim, 用于支持异步更新词库
+    * (可选) `executable('python')` 或者 `executable('python3')`, 用于提升词库加载性能
+
+1. 推荐安装
+
+    ```
+    Plugin 'ZSaberLv0/ZFVimIM'
+    Plugin 'ZSaberLv0/ZFVimJob' " 可选, 如果你需要支持异步加载
+    ```
+
+1. 准备你的词库文件,
+    也可以从 [db samples](https://github.com/ZSaberLv0/ZFVimIM#db-samples)
+    中把 txt 词库文件复制到任意目录
+1. 配置
+
+    ```
+    let db = ZFVimIM_dbInit({
+                \   'name' : 'YourDb',
+                \ })
+    call ZFVimIM_cloudRegister({
+                \   'mode' : 'local',
+                \   'dbId' : db['dbId'],
+                \   'repoPath' : '/path/to/repo', " 词库路径
+                \   'dbFile' : '/YourDbFile', " 词库文件, 相对 repoPath 的路径
+                \   'dbCountFile' : '/YourDbCountFile', " 非必须, 词频文件, 相对 repoPath 的路径
+                \ })
+    ```
+
+
+## 云词库
 
 1. 推荐环境:
 
@@ -80,34 +118,4 @@ vim 上的中文输入法, 特色:
     `;.` 或 `:IMRemove` 删除自造词
 * 觉得好用, 记得给开发者[买个煎饼](https://github.com/ZSaberLv0/ZSaberLv0),
     贫穷码农在线乞讨 `_(:з」∠)_`
-
-
-# 纯本地词库
-
-虽然重点功能之一是自动同步词库, 但纯本地跑也是可以的
-
-1. 推荐安装
-
-    ```
-    Plugin 'ZSaberLv0/ZFVimIM'
-    Plugin 'ZSaberLv0/ZFVimJob' " 可选, 如果你需要支持异步加载
-    ```
-
-1. 准备你的词库文件,
-    也可以从 [db samples](https://github.com/ZSaberLv0/ZFVimIM#db-samples)
-    中把 txt 词库文件复制到任意目录
-1. 配置
-
-    ```
-    let db = ZFVimIM_dbInit({
-                \   'name' : 'YourDb',
-                \ })
-    call ZFVimIM_cloudRegister({
-                \   'mode' : 'local',
-                \   'dbId' : db['dbId'],
-                \   'repoPath' : '/path/to/repo', " 词库路径
-                \   'dbFile' : '/YourDbFile', " 词库文件, 相对 repoPath 的路径
-                \   'dbCountFile' : '/YourDbCountFile', " 非必须, 词频文件, 相对 repoPath 的路径
-                \ })
-    ```
 
