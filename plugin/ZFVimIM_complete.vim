@@ -444,12 +444,10 @@ function! s:mergeResult(data, key, option, db)
     " crossDb should be placed at lower order,
     if g:ZFVimIM_crossDbPos >= len(ret)
         for item in crossDbRet
-            let exists[hash] = 1
             call add(ret, item)
         endfor
     else
         for item in crossDbRet
-            let exists[hash] = 1
             call insert(ret, item, g:ZFVimIM_crossDbPos)
         endfor
     endif
