@@ -138,16 +138,14 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
 * since db files are pretty personal,
     the default db only contains single word,
     words would be created during your usage,
-    if you prefer other choices, see [db samples](https://github.com/ZSaberLv0/ZFVimIM#db-samples):
+    if you prefer other choices, see [db samples](https://github.com/ZSaberLv0/ZFVimIM#db-samples)
 * your db repo may contain many commits after long time usage,
     which may cause a huge `.git` dir,
     it's recommended to clean up it occasionally, by:
 
     * delete and re-create the repo
     * if you have `push --force` permission,
-        use [ZSaberLv0/ZFVimGitUtil](https://github.com/ZSaberLv0/ZFVimGitUtil)'s
-        `:ZFGitHardRemoveAllHistory` to remove all history commits,
-        or use `g:ZFVimIM_cloudAsync_autoCleanup` for short
+        search and see the `g:ZFVimIM_cloudAsync_autoCleanup` detail config below
 
 
 # detailed
@@ -241,12 +239,19 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
 
 * `let g:ZFVimIM_cloudAsync_autoCleanup=30`
 
-    for async cloud input only,
+    your db repo may contain many commits after long time usage,
     we would try to remove all history commits if:
 
+    * have these optional plugins installed:
+
+        ```
+        Plugin 'ZSaberLv0/ZFVimJob'
+        Plugin 'ZSaberLv0/ZFVimGitUtil'
+        ```
+
+    * `ZFJobAvailable()` returned 1 (i.e. async mode available)
     * `g:ZFVimIM_cloudAsync_autoCleanup` greater than 0
     * your `git rev-list --count HEAD` exceeds `g:ZFVimIM_cloudAsync_autoCleanup`
-    * have [ZSaberLv0/ZFVimGitUtil](https://github.com/ZSaberLv0/ZFVimGitUtil) installed
 
     NOTE:
 
