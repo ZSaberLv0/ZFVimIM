@@ -1,6 +1,10 @@
 
 [中文用户请戳我](https://github.com/ZSaberLv0/ZFVimIM/blob/master/README.CN.md)
 
+[中文用户请戳我](https://github.com/ZSaberLv0/ZFVimIM/blob/master/README.CN.md)
+
+[中文用户请戳我](https://github.com/ZSaberLv0/ZFVimIM/blob/master/README.CN.md)
+
 <!-- vim-markdown-toc GFM -->
 
 * [introduction](#introduction)
