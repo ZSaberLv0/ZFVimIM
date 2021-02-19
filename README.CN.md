@@ -4,6 +4,7 @@
 * [简介](#简介)
 * [推荐配置](#推荐配置)
 * [使用](#使用)
+* [纯本地词库](#纯本地词库)
 
 <!-- vim-markdown-toc -->
 
@@ -24,6 +25,10 @@ vim 上的中文输入法, 特色:
 
 
 # 推荐配置
+
+中文帮助只列举推荐配置和基本操作 (足够日常使用),
+详细配置等请移步 [README](https://github.com/ZSaberLv0/ZFVimIM/blob/master/README.CN.md)
+(别问为啥, 问就是懒)
 
 1. 推荐环境:
 
@@ -52,11 +57,12 @@ vim 上的中文输入法, 特色:
 
     ```
     Plugin 'ZSaberLv0/ZFVimIM'
-    Plugin 'ZSaberLv0/ZFVimJob' " 可选, 如果你需要支持异步更新
+    Plugin 'ZSaberLv0/ZFVimJob' " 可选, 如果你需要支持异步加载
     Plugin 'ZSaberLv0/ZFVimGitUtil' " 可选, 如果你希望定期自动清理词库 push 历史
     Plugin 'YourUserName/ZFVimIM_pinyin_base' " 你的词库
     Plugin 'ZSaberLv0/ZFVimIM_openapi' " 可选, 百度云输入法
     ```
+
 
 # 使用
 
@@ -70,6 +76,32 @@ vim 上的中文输入法, 特色:
     贫穷码农在线乞讨 `_(:з」∠)_`
 
 
-中文帮助只列举推荐配置和基本操作, 详细配置请移步 [README](https://github.com/ZSaberLv0/ZFVimIM/blob/master/README.CN.md)
-(别问为啥, 问就是懒)
+# 纯本地词库
+
+虽然重点功能之一是自动同步词库, 但纯本地跑也是可以的
+
+1. 推荐安装
+
+    ```
+    Plugin 'ZSaberLv0/ZFVimIM'
+    Plugin 'ZSaberLv0/ZFVimJob' " 可选, 如果你需要支持异步加载
+    ```
+
+1. 准备你的词库文件,
+    也可以从 [db samples](https://github.com/ZSaberLv0/ZFVimIM#db-samples)
+    中把 txt 词库文件复制到任意目录
+1. 配置
+
+    ```
+    let db = ZFVimIM_dbInit({
+                \   'name' : 'YourDb',
+                \ })
+    call ZFVimIM_cloudRegister({
+                \   'mode' : 'local',
+                \   'dbId' : db['dbId'],
+                \   'repoPath' : '/path/to/repo', " 词库路径
+                \   'dbFile' : '/YourDbFile', " 词库文件, 相对 repoPath 的路径
+                \   'dbCountFile' : '/YourDbCountFile', " 非必须, 词频文件, 相对 repoPath 的路径
+                \ })
+    ```
 
