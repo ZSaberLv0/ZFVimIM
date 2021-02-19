@@ -16,7 +16,8 @@ vim 上的中文输入法, 特色:
 * 支持异步调用外部云输入法 (目前支持百度输入法)
 * 动态组词, 动态词频, 长句输入
 * 支持挂各种大词库, 支持多词库混输
-* 辣鸡环境可以回退到纯 vim script 版本, 最低支持 vim 7.3
+* 辣鸡环境可以回退到纯 vim script 版本, 最低支持 vim 7.3,
+    当然也支持无网络纯本地使用
 
 
 ![](https://raw.githubusercontent.com/ZSaberLv0/ZFVimIM/master/preview.gif)
@@ -26,9 +27,14 @@ vim 上的中文输入法, 特色:
 
 # 推荐配置
 
-中文帮助只列举推荐配置和基本操作 (足够日常使用),
-详细配置等请移步 [README](https://github.com/ZSaberLv0/ZFVimIM/blob/master/README.CN.md)
-(别问为啥, 问就是懒)
+* 中文帮助只列举推荐配置和基本操作 (足够日常使用),
+    详细配置等请移步 [README](https://github.com/ZSaberLv0/ZFVimIM/blob/master/README.CN.md)
+    (别问为啥, 问就是懒)
+* 如果你也是个懒人, 只想先快速体验一下,
+    可以先试试[纯本地词库](https://github.com/ZSaberLv0/ZFVimIM/blob/master/README.CN.md#%E7%BA%AF%E6%9C%AC%E5%9C%B0%E8%AF%8D%E5%BA%93),
+    当然个人建议还是: 轻量词库 + 自造词 + 百度云输入,
+    按照下文推荐配置花点时间即可实现
+
 
 1. 推荐环境:
 
