@@ -43,14 +43,14 @@ vim 上的中文输入法, 特色:
 
 1. 推荐环境:
 
-    * (可选) vim8 或 neovim, 用于支持异步更新词库
+    * (可选) vim8 或 neovim, 用于提升词库加载性能
     * (可选) `executable('python')` 或者 `executable('python3')`, 用于提升词库加载性能
 
 1. 推荐安装
 
     ```
     Plugin 'ZSaberLv0/ZFVimIM'
-    Plugin 'ZSaberLv0/ZFVimJob' " 可选, 如果你需要支持异步加载
+    Plugin 'ZSaberLv0/ZFVimJob' " 可选, 用于提升词库加载性能
     ```
 
 1. 准备你的词库文件,
@@ -76,7 +76,7 @@ vim 上的中文输入法, 特色:
 
 1. 推荐环境:
 
-    * (可选) vim8 或 neovim, 用于支持异步更新词库
+    * (可选) vim8 或 neovim, 用于提升词库加载性能
     * (可选) `executable('python')` 或者 `executable('python3')`, 用于提升词库加载性能
 
 1. 参照 [db samples](https://github.com/ZSaberLv0/ZFVimIM#db-samples) 创建自己的词库,
@@ -101,7 +101,7 @@ vim 上的中文输入法, 特色:
 
     ```
     Plugin 'ZSaberLv0/ZFVimIM'
-    Plugin 'ZSaberLv0/ZFVimJob' " 可选, 如果你需要支持异步加载
+    Plugin 'ZSaberLv0/ZFVimJob' " 可选, 用于提升词库加载性能
     Plugin 'ZSaberLv0/ZFVimGitUtil' " 可选, 如果你希望定期自动清理词库 push 历史
     Plugin 'YourUserName/ZFVimIM_pinyin_base' " 你的词库
     Plugin 'ZSaberLv0/ZFVimIM_openapi' " 可选, 百度云输入法

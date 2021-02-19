@@ -52,14 +52,14 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
 
 1. recommend env:
 
-    * (optional) `vim8` with `job` or `neovim`, for async db load
+    * (optional) `vim8` with `job` or `neovim`, for better db load performance
     * (optional) `executable('python')` or `executable('python3')`, for better db load performance
 
 1. use [Vundle](https://github.com/VundleVim/Vundle.vim) or any other plugin manager you like to install
 
     ```
     Plugin 'ZSaberLv0/ZFVimIM'
-    Plugin 'ZSaberLv0/ZFVimJob' " optional, for async db load
+    Plugin 'ZSaberLv0/ZFVimJob' " optional, for better db load performance
     ```
 
 1. prepare your db files,
@@ -85,7 +85,7 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
 1. recommend env:
 
     * (optional) `git`, for db update
-    * (optional) `vim8` with `job` or `neovim`, for async db load
+    * (optional) `vim8` with `job` or `neovim`, for better db load performance
     * (optional) `executable('python')` or `executable('python3')`, for better db load performance
 
 1. prepare your db repo according to [db samples](https://github.com/ZSaberLv0/ZFVimIM#db-samples),
@@ -108,7 +108,7 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
 
     ```
     Plugin 'ZSaberLv0/ZFVimIM'
-    Plugin 'ZSaberLv0/ZFVimJob' " optional, for async db load
+    Plugin 'ZSaberLv0/ZFVimJob' " optional, for better db load performance
     Plugin 'ZSaberLv0/ZFVimGitUtil' " optional, cleanup your db commit history when necessary
     Plugin 'YourUserName/ZFVimIM_pinyin_base' " your db repo
     Plugin 'ZSaberLv0/ZFVimIM_openapi' " optional, 3rd IME using Baidu
