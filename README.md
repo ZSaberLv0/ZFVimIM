@@ -426,6 +426,29 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
 
 ## FAQ
 
+* Q: strange complete popup?
+
+    A: we use `omnifunc` to achieve IM popup,
+    which would conflict with most of complete engines,
+    by default, we would automatically disable complete engines when IM started,
+    if your other plugins conflict with IM,
+    you may disable it manually
+    ([see this](https://github.com/ZSaberLv0/ZFVimIM/blob/master/plugin/ZFVimIM_autoDisable.vim))
+
+    also, if any strange behaviors occurred,
+    `:verbose set omnifunc?` to check whether it's changed by other plugins
+
+* Q: meet some weird problem, how to check log?
+
+    A: use `:IMCloudLog` to check first, if not enough:
+
+    1. put this in your vimrc: `let g:ZFJobVerboseLogEnable = 1`
+    1. restart vim and reproduce your problem
+    1. write log file by: `:call writefile(g:ZFJobVerboseLog, 'log.txt')`
+
+    **WARNING** : the verbose log may contain your git access token or password,
+    please verify before posting the log file to public
+
 * Q: How to use in `Command-line` (search or command) ?
 
     A: ZFVimIM can be used inside `command-line-window`, you may:
@@ -466,47 +489,6 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
             can be called separately for split db,
             new data would be merged to old data
         * `g:ZFVimIM_db` : (not recommended) manually modify internal db data
-
-* Q: apply changes / input history to local files only?
-
-    A: use `mode='local'` option when `ZFVimIM_cloudRegister(...)`,
-        and all changes would be stored to local file only, example:
-
-        ```
-        let db = ZFVimIM_dbInit({
-                    \   'name' : 'YourDb',
-                    \ })
-        call ZFVimIM_cloudRegister({
-                    \   'mode' : 'local',
-                    \   'dbId' : db['dbId'],
-                    \   'repoPath' : '/path/to/repo',
-                    \   'dbFile' : '/YourDbFile',
-                    \   'dbCountFile' : '/YourDbCountFile',
-                    \ })
-        ```
-
-* Q: strange complete popup?
-
-    A: we use `omnifunc` to achieve IM popup,
-    which would conflict with most of complete engines,
-    by default, we would automatically disable complete engines when IM started,
-    if your other plugins conflict with IM,
-    you may disable it manually
-    ([see this](https://github.com/ZSaberLv0/ZFVimIM/blob/master/plugin/ZFVimIM_autoDisable.vim))
-
-    also, if any strange behaviors occurred,
-    `:verbose set omnifunc?` to check whether it's changed by other plugins
-
-* Q: meet some weird problem, how to check log?
-
-    A: use `:IMCloudLog` to check first, if not enough:
-
-    1. put this in your vimrc: `let g:ZFJobVerboseLogEnable = 1`
-    1. restart vim and reproduce your problem
-    1. write log file by: `:call writefile(g:ZFJobVerboseLog, 'log.txt')`
-
-    **WARNING** : the verbose log may contain your git access token or password,
-    please verify before posting the log file to public
 
 
 ## known issue
