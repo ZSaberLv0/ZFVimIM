@@ -10,6 +10,19 @@ augroup END
 
 " ============================================================
 
+" asyncomplete
+function! s:asyncomplete_enable()
+    if get(g:, 'ZFVimIM_autoDisable_asyncomplete', 1) && exists('*asyncomplete#enable_for_buffer')
+        call asyncomplete#enable_for_buffer()
+    endif
+endfunction
+function! s:asyncomplete_disable()
+    if get(g:, 'ZFVimIM_autoDisable_asyncomplete', 1) && exists('*asyncomplete#enable_for_buffer')
+        call asyncomplete#disable_for_buffer()
+    endif
+endfunction
+call add(s:callback, ['s:asyncomplete_enable', 's:asyncomplete_disable'])
+
 " coc
 function! s:coc_enable()
     if get(g:, 'ZFVimIM_autoDisable_coc', 1) && exists(':CocEnable')
