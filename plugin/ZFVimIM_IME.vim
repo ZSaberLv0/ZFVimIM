@@ -183,6 +183,7 @@ endfunction
 
 function! s:fixIMState()
     if mode() == 'i'
+        " :h i_CTRL-^
         call feedkeys(nr2char(30), 'nt')
         if &iminsert != s:started
             call feedkeys(nr2char(30), 'nt')
