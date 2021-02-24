@@ -64,6 +64,25 @@ function! s:ncm2_disable()
 endfunction
 call add(s:callback, ['s:ncm2_enable', 's:ncm2_disable'])
 
+" vim-lsp
+function! s:vimlsp_enable()
+    if get(g:, 'ZFVimIM_autoDisable_vimlsp', 1) && get(g:, 'lsp_loaded', 0)
+        try
+            call lsp#enable()
+        catch
+        endtry
+    endif
+endfunction
+function! s:vimlsp_disable()
+    if get(g:, 'ZFVimIM_autoDisable_vimlsp', 1) && get(g:, 'lsp_loaded', 0)
+        try
+            call lsp#disable()
+        catch
+        endtry
+    endif
+endfunction
+call add(s:callback, ['s:vimlsp_enable', 's:vimlsp_disable'])
+
 " ycm
 function! s:ycm_enable()
     if get(g:, 'ZFVimIM_autoDisable_ycm', 1) && exists(':YcmCompleter')
