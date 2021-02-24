@@ -6,6 +6,7 @@
     * [纯本地词库](#纯本地词库)
     * [云词库](#云词库)
 * [使用](#使用)
+* [疑难杂症](#疑难杂症)
 
 <!-- vim-markdown-toc -->
 
@@ -118,4 +119,17 @@ vim 上的中文输入法, 特色:
     `;.` 或 `:IMRemove` 删除自造词
 * 觉得好用, 记得给开发者[买个煎饼](https://github.com/ZSaberLv0/ZSaberLv0),
     贫穷码农在线乞讨 `_(:з」∠)_`
+
+
+# 疑难杂症
+
+发现各种诡异现象, 请先按如下步骤排查:
+
+1. 本插件依赖于 `lmap` 和 `omnifunc`,
+    `verbose set omnifunc?` 查看是否被其它插件修改了
+1. 本插件没法和大多数补全插件共存,
+    默认会 [自动禁用和恢复](https://github.com/ZSaberLv0/ZFVimIM/blob/master/plugin/ZFVimIM_autoDisable.vim)
+    一些常见的补全插件,
+    如果你用的补全插件不在此列,
+    请先参照进行自动禁用和恢复, 看看是否有效果
 
