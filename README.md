@@ -68,16 +68,19 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
 1. config
 
     ```
-    let db = ZFVimIM_dbInit({
-                \   'name' : 'YourDb',
-                \ })
-    call ZFVimIM_cloudRegister({
-                \   'mode' : 'local',
-                \   'dbId' : db['dbId'],
-                \   'repoPath' : '/path/to/repo', " path to the db
-                \   'dbFile' : '/YourDbFile', " db file, relative to repoPath
-                \   'dbCountFile' : '/YourDbCountFile', " optional, db count file, relative to repoPath
-                \ })
+    function! s:myLocalDb()
+        let db = ZFVimIM_dbInit({
+                    \   'name' : 'YourDb',
+                    \ })
+        call ZFVimIM_cloudRegister({
+                    \   'mode' : 'local',
+                    \   'dbId' : db['dbId'],
+                    \   'repoPath' : '/path/to/repo', " path to the db
+                    \   'dbFile' : '/YourDbFile', " db file, relative to repoPath
+                    \   'dbCountFile' : '/YourDbCountFile', " optional, db count file, relative to repoPath
+                    \ })
+    endfunction
+    autocmd User ZFVimIM_event_OnDbInit call s:myLocalDb()
     ```
 
 ## recommend config (cloud db)
