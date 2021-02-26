@@ -1,4 +1,22 @@
 
+function! ZFVimIM_DEBUG_checkHealth()
+    redraw!
+    echom 'ZFJobAvailable: ' . (exists('*ZFJobAvailable') && ZFJobAvailable())
+    echom '    vim version: ' . v:version
+    echom '    vim job: ' . has('job')
+    echom '    nvim job: ' . exists('*jobstart')
+    echom 'python: ' . (executable('python') || executable('python'))
+    echom '    python: ' . executable('python') . ' ' . (exists('*exepath') ? exepath('python') : 'NA')
+    if executable('python')
+        echom '        ' . substitute(system('python --version'), '[\r\n]', '', 'g')
+    endif
+    echom '    python3: ' . executable('python3') . ' ' . (exists('*exepath') ? exepath('python3') : 'NA')
+    if executable('python3')
+        echom '        ' . substitute(system('python3 --version'), '[\r\n]', '', 'g')
+    endif
+endfunction
+
+" ============================================================
 if !exists('g:ZFVimIM_DEBUG_profile')
     let g:ZFVimIM_DEBUG_profile = 0
 endif

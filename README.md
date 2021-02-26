@@ -499,7 +499,8 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
 * too slow
 
     check first: `executable('python')` or `executable('python3')`
-    and `ZFVimJob` is installed and available,
+    and `ZFVimJob` is installed and available
+    (you may check them by `call ZFVimIM_DEBUG_checkHealth()`),
     without them, the pure vim script fallback is always very slow
     (about 2 seconds for 200KB db file)
 
