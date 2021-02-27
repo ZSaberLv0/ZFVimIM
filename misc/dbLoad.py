@@ -17,7 +17,7 @@ for c_ in range(ord('a'), ord('z') + 1):
     cMap = pyMap.get(c, {})
     if len(cMap) <= 0:
         continue
-    with io.open(DB_LOAD_CACHE_PATH + c, 'wb') as file:
+    with io.open(DB_LOAD_CACHE_PATH + '_' + c, 'wb') as file:
         lines = []
         for key,dbItemEncoded in sorted(dbFunc.dbMapIter(cMap)):
             lines.append(dbItemEncoded)

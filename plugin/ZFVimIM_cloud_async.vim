@@ -83,9 +83,7 @@ augroup END
 "     'mode' : 'init/download/upload/autoUpload',
 "     'cloudOption' : {},
 "     'jobId' : -1,
-"     'dbLoadCachePath' : '',
-"     'dbSaveCachePath' : '',
-"     'dbCleanupCachePath' : '',
+"     'cachePath' : '',
 "     'dbMapNew' : {}, // if update success, change cur db to this
 "     'dbEdit' : [], // dbEdit being uploading
 "   },
@@ -236,12 +234,11 @@ function! s:uploadAsync(cloudOption, mode)
                 \   'mode' : a:mode,
                 \   'cloudOption' : a:cloudOption,
                 \   'jobId' : -1,
-                \   'dbLoadCachePath' : ZFVimIM_cloud_dbLoadCachePath(a:cloudOption),
-                \   'dbSaveCachePath' : ZFVimIM_cloud_dbSaveCachePath(a:cloudOption),
-                \   'dbCleanupCachePath' : '',
+                \   'cachePath' : ZFVimIM_cloud_cachePath(a:cloudOption),
                 \   'dbMapNew' : {},
                 \   'dbEdit' : [],
                 \ }
+    call mkdir(task['cachePath'], 'p')
     let s:UA_taskMap[db['dbId']] = task
     let task['dbEdit'] = db['dbEdit']
     let db['dbEdit'] = []
@@ -263,7 +260,7 @@ function! s:uploadAsync(cloudOption, mode)
     endif
     " for performance, we only load if db is empty
     if empty(db['dbMap'])
-        let dbLoadCmd = ZFVimIM_cloud_dbLoadCmd(a:cloudOption, task['dbLoadCachePath'])
+        let dbLoadCmd = ZFVimIM_cloud_dbLoadCmd(a:cloudOption, task['cachePath'] . '/dbLoadCache')
         if empty(dbLoadCmd)
             if initOnly
                 " load without python takes a long time,
@@ -295,7 +292,7 @@ function! s:uploadAsync(cloudOption, mode)
 
     " save to file and upload
     if !initOnly && !downloadOnly && !empty(task['dbEdit'])
-        let dbSaveCmd = ZFVimIM_cloud_dbSaveCmd(a:cloudOption, task['dbSaveCachePath'])
+        let dbSaveCmd = ZFVimIM_cloud_dbSaveCmd(a:cloudOption, task['cachePath'] . '/dbSaveCache', task['cachePath'])
         if empty(dbSaveCmd)
             call add(groupJobOption['jobList'], [{
                         \   'jobCmd' : ZFJobFunc(function('s:UA_dbSaveFallback'), [db['dbId']]),
@@ -317,8 +314,7 @@ function! s:uploadAsync(cloudOption, mode)
                         \ }])
 
             if g:ZFVimIM_cloudAsync_autoCleanup > 0 && ZFVimIM_cloud_gitInfoSupplied(a:cloudOption)
-                let task['dbCleanupCachePath'] = ZFVimIM_cloud_dbCleanupCachePath(a:cloudOption)
-                let dbCleanupCmd = ZFVimIM_cloud_dbCleanupCmd(a:cloudOption, task['dbCleanupCachePath'])
+                let dbCleanupCmd = ZFVimIM_cloud_dbCleanupCmd(a:cloudOption, task['cachePath'] . 'dbCleanupCache')
                 if !empty(dbCleanupCmd)
                     call add(groupJobOption['jobList'], [{
                                 \   'jobCmd' : ZFVimIM_cloud_dbCleanupCheckCmd(a:cloudOption),
@@ -423,9 +419,9 @@ function! s:UA_dbLoadPartOnExit(dbId, c, jobStatus, exitCode)
         let task['dbMapNew'] = {}
         return
     endif
-    if filereadable(task['dbLoadCachePath'] . a:c)
+    if filereadable(task['cachePath'] . '/dbLoadCache_' . a:c)
         call ZFVimIM_DEBUG_profileStart('dbLoadPart')
-        let task['dbMapNew'][a:c] = readfile(task['dbLoadCachePath'] . a:c)
+        let task['dbMapNew'][a:c] = readfile(task['cachePath'] . '/dbLoadCache_' . a:c)
         call ZFVimIM_DEBUG_profileStop()
         if empty(task['dbMapNew'][a:c])
             unlet task['dbMapNew'][a:c]
@@ -474,7 +470,7 @@ function! s:UA_dbSaveOnEnter(dbId, jobStatus)
     let dbEditJson = json_encode(task['dbEdit'])
     call ZFVimIM_DEBUG_profileStop()
     call ZFVimIM_DEBUG_profileStart('dbSaveDBEditWrite')
-    call writefile([dbEditJson], task['dbSaveCachePath'])
+    call writefile([dbEditJson], task['cachePath'] . '/dbSaveCache')
     call ZFVimIM_DEBUG_profileStop()
 endfunction
 function! s:UA_dbSaveOnOutput(dbId, jobStatus, textList, type)
@@ -574,21 +570,8 @@ function! s:UA_onExit(dbId, groupJobStatus, exitCode)
 
     " final cleanup
     if !empty(task)
-        for c_ in range(char2nr('a'), char2nr('z'))
-            let c = nr2char(c_)
-            if filereadable(task['dbLoadCachePath'] . c)
-                call delete(task['dbLoadCachePath'] . c)
-            endif
-        endfor
-        if filereadable(task['dbSaveCachePath'])
-            call delete(task['dbSaveCachePath'])
-        endif
-        if isdirectory(task['dbCleanupCachePath'])
-            if has('unix')
-                silent execute '!rm -rf "' . task['dbCleanupCachePath'] . '"'
-            elseif has('win32')
-                silent execute '!rmdir /s/q "' . substitute(task['dbCleanupCachePath'], '/', '\', 'g') . '"'
-            endif
+        if isdirectory(task['cachePath'])
+            call ZFVimIM_rm(task['cachePath'])
         endif
     endif
     call ZFJobOutputCleanup(a:groupJobStatus)

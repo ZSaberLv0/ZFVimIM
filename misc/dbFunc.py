@@ -1,6 +1,7 @@
 import io
 import os
 import re
+import shutil
 import sys
 
 
@@ -200,10 +201,10 @@ def dbLoadNormalizePy(dbFile):
     # end of dbLoadNormalizePy
 
 
-def dbSavePy(pyMap, dbFile, dbCountFile):
+def dbSavePy(pyMap, dbFile, dbCountFile, cachePath):
     lines = []
     if len(dbCountFile) == 0:
-        dbFilePtr = io.open(dbFile, 'wb')
+        dbFilePtr = io.open(cachePath + '/dbFileTmp', 'wb')
         for c in pyMap.keys():
             for key, dbItemEncoded in sorted(dbMapIter(pyMap[c])):
                 dbItem = dbItemDecode(dbItemEncoded)
@@ -218,9 +219,10 @@ def dbSavePy(pyMap, dbFile, dbCountFile):
         if len(lines) > 0:
             dbFilePtr.write(('\n'.join(lines) + '\n').encode('utf-8'))
         dbFilePtr.close()
+        shutil.move(cachePath + '/dbFileTmp', dbFile)
     else:
-        dbFilePtr = io.open(dbFile, 'wb')
-        dbCountFilePtr = io.open(dbCountFile, 'wb')
+        dbFilePtr = io.open(cachePath + '/dbFileTmp', 'wb')
+        dbCountFilePtr = io.open(cachePath + '/dbCountFileTmp', 'wb')
         countLines = []
         for c in pyMap.keys():
             for key, dbItemEncoded in sorted(dbMapIter(pyMap[c])):
@@ -249,7 +251,9 @@ def dbSavePy(pyMap, dbFile, dbCountFile):
         if len(countLines) > 0:
             dbCountFilePtr.write(('\n'.join(countLines) + '\n').encode('utf-8'))
         dbFilePtr.close()
+        shutil.move(cachePath + '/dbFileTmp', dbFile)
         dbCountFilePtr.close()
+        shutil.move(cachePath + '/dbCountFileTmp', dbCountFile)
     # end of dbSavePy
 
 

@@ -88,7 +88,56 @@ function! ZFVimIM_cloudLog()
 endfunction
 command! -nargs=0 IMCloudLog :call ZFVimIM_cloudLog()
 
+" for debug or develop only
+" see dbFunc.dbLoadNormalizePy()
+function! ZFVimIM_dbNormalize(dbFile)
+    if empty(s:py)
+        echo '[ZFVimIM] python not available'
+        return
+    endif
+    let result = system(s:py
+                \ . ' "' . CygpathFix_absPath(s:scriptPath . '/dbNormalize.py') . '"'
+                \ . ' "' . CygpathFix_absPath(a:dbFile) . '"'
+                \ )
+    let error = v:shell_error
+    redraw!
+    echo '[ZFVimIM] dbNormalize finish'
+    if error != 0
+        echo result
+    endif
+endfunction
 
+" param:
+" * 0~n : clean g:ZFVimIM_cloudOption[n]
+" * cloudOption
+" * none : clean all
+function! ZFVimIM_dbCleanup(...)
+    let cloudOptionList = []
+    if a:0 > 0
+        if type(a:1) == type(0)
+            call add(cloudOptionList, g:ZFVimIM_cloudOption[a:1])
+        else
+            call add(cloudOptionList, a:1)
+        endif
+    else
+        let cloudOptionList = g:ZFVimIM_cloudOption
+    endif
+
+    call ZFVimIM_cloudLogClear()
+    for cloudOption in cloudOptionList
+        let dbCleanupCachePath = ZFVimIM_cachePath() . '/ZFVimIM_dbCleanup'
+        let dbCleanupCmd = ZFVimIM_cloud_dbCleanupCmd(cloudOption, dbCleanupCachePath)
+        if empty(dbCleanupCmd)
+            continue
+        endif
+        call ZFVimIM_cloudLogAdd(ZFVimIM_cloudLog_stripSensitive(system(dbCleanupCmd)))
+        call ZFVimIM_rm(dbCleanupCachePath)
+    endfor
+    return ZFVimIM_cloudLog()
+endfunction
+
+
+" ============================================================
 if !exists('s:ZFVimIM_cloud_log')
     let s:ZFVimIM_cloud_log = []
 endif
@@ -120,35 +169,6 @@ function! ZFVimIM_cloud_gitInfoSupplied(cloudOption)
 endfunction
 
 
-" param:
-" * 0~n : clean g:ZFVimIM_cloudOption[n]
-" * cloudOption
-" * none : clean all
-function! ZFVimIM_cloud_dbCleanup(...)
-    let cloudOptionList = []
-    if a:0 > 0
-        if type(a:1) == type(0)
-            call add(cloudOptionList, g:ZFVimIM_cloudOption[a:1])
-        else
-            call add(cloudOptionList, a:1)
-        endif
-    else
-        let cloudOptionList = g:ZFVimIM_cloudOption
-    endif
-
-    call ZFVimIM_cloudLogClear()
-    for cloudOption in cloudOptionList
-        let dbCleanupCachePath = ZFVimIM_cloud_dbCleanupCachePath(cloudOption)
-        let dbCleanupCmd = ZFVimIM_cloud_dbCleanupCmd(cloudOption, dbCleanupCachePath)
-        if empty(dbCleanupCmd)
-            continue
-        endif
-        call ZFVimIM_cloudLogAdd(ZFVimIM_cloudLog_stripSensitive(system(dbCleanupCmd)))
-    endfor
-    return ZFVimIM_cloudLog()
-endfunction
-
-
 " ============================================================
 if 0
 elseif executable('py3')
@@ -175,64 +195,22 @@ function! ZFVimIM_cloud_file(cloudOption, key)
     endif
 endfunction
 
-function! CygpathFix_absPath(path)
-    if len(a:path) <= 0|return ''|endif
-    if !exists('g:CygpathFix_isCygwin')
-        let g:CygpathFix_isCygwin = has('win32unix') && executable('cygpath')
-    endif
-    let path = fnamemodify(a:path, ':p')
-    if !empty(path) && g:CygpathFix_isCygwin
-        if 0 " cygpath is really slow
-            let path = substitute(system('cygpath -m "' . path . '"'), '[\r\n]', '', 'g')
-        else
-            if match(path, '^/cygdrive/') >= 0
-                let path = toupper(strpart(path, len('/cygdrive/'), 1)) . ':' . strpart(path, len('/cygdrive/') + 1)
-            else
-                if !exists('g:CygpathFix_cygwinPrefix')
-                    let g:CygpathFix_cygwinPrefix = substitute(system('cygpath -m /'), '[\r\n]', '', 'g')
-                endif
-                let path = g:CygpathFix_cygwinPrefix . path
-            endif
-        endif
-    endif
-    return substitute(substitute(path, '\\', '/', 'g'), '\%(\/\)\@<!\/\+$', '', '') " (?<!\/)\/+$
+function! ZFVimIM_cloud_cachePath(cloudOption)
+    return CygpathFix_absPath(ZFVimIM_cachePath() . '/ZFVimIM_cloud_' . ZFVimIM_randName())
 endfunction
 
-function! s:randName()
-    return fnamemodify(tempname(), ':t')
-endfunction
-
-let s:scriptPath = CygpathFix_absPath(expand('<sfile>:p:h:h') . '/misc')
-
-" for debug or develop only
-" see dbFunc.dbLoadNormalizePy()
-function! ZFVimIM_dbNormalize(dbFile)
-    if empty(s:py)
-        echo '[ZFVimIM] python not available'
-        return
-    endif
-    let result = system(s:py
-                \ . ' "' . s:scriptPath . '/dbNormalize.py' . '"'
-                \ . ' "' . CygpathFix_absPath(a:dbFile) . '"'
-                \ )
-    let error = v:shell_error
-    redraw!
-    echo '[ZFVimIM] dbNormalize finish'
-    if error != 0
-        echo result
-    endif
-endfunction
+let s:scriptPath = expand('<sfile>:p:h:h') . '/misc'
 
 function! ZFVimIM_cloud_dbDownloadCmd(cloudOption)
     if has('unix')
         return 'sh'
-                    \ . ' "' . s:scriptPath . '/dbDownload.sh' . '"'
+                    \ . ' "' . CygpathFix_absPath(s:scriptPath . '/dbDownload.sh') . '"'
                     \ . ' "' . CygpathFix_absPath(a:cloudOption['repoPath']) . '"'
                     \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
                     \ . ' "' . a:cloudOption['gitUserToken'] . '"'
     else
-        return '"' . s:scriptPath . '/dbDownload.bat' . '"'
+        return '"' . CygpathFix_absPath(s:scriptPath . '/dbDownload.bat') . '"'
                     \ . ' "' . CygpathFix_absPath(a:cloudOption['repoPath']) . '"'
                     \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
@@ -242,13 +220,13 @@ endfunction
 function! ZFVimIM_cloud_dbUploadCmd(cloudOption)
     if has('unix')
         return 'sh'
-                    \ . ' "' . s:scriptPath . '/dbUpload.sh' . '"'
+                    \ . ' "' . CygpathFix_absPath(s:scriptPath . '/dbUpload.sh') . '"'
                     \ . ' "' . CygpathFix_absPath(a:cloudOption['repoPath']) . '"'
                     \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
                     \ . ' "' . a:cloudOption['gitUserToken'] . '"'
     else
-        return '"' . s:scriptPath . '/dbUpload.bat' . '"'
+        return '"' . CygpathFix_absPath(s:scriptPath . '/dbUpload.bat') . '"'
                     \ . ' "' . CygpathFix_absPath(a:cloudOption['repoPath']) . '"'
                     \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
@@ -258,15 +236,12 @@ endfunction
 function! ZFVimIM_cloud_dbCleanupCheckCmd(cloudOption)
     if has('unix')
         return 'sh'
-                    \ . ' "' . s:scriptPath . '/dbCleanupCheck.sh' . '"'
+                    \ . ' "' . CygpathFix_absPath(s:scriptPath . '/dbCleanupCheck.sh') . '"'
                     \ . ' "' . CygpathFix_absPath(a:cloudOption['repoPath']) . '"'
     else
-        return '"' . s:scriptPath . '/dbCleanupCheck.bat' . '"'
+        return '"' . CygpathFix_absPath(s:scriptPath . '/dbCleanupCheck.bat') . '"'
                     \ . ' "' . CygpathFix_absPath(a:cloudOption['repoPath']) . '"'
     endif
-endfunction
-function! ZFVimIM_cloud_dbCleanupCachePath(cloudOption)
-    return CygpathFix_absPath(ZFVimIM_cachePath() . '/ZFVimIM_dbCleanup_' . s:randName())
 endfunction
 function! ZFVimIM_cloud_dbCleanupCmd(cloudOption, dbCleanupCachePath)
     if has('unix')
@@ -277,7 +252,7 @@ function! ZFVimIM_cloud_dbCleanupCmd(cloudOption, dbCleanupCachePath)
         let path = substitute(path[0], '[\r\n]', '', 'g')
         let path = CygpathFix_absPath(path)
         return 'sh'
-                    \ . ' "' . s:scriptPath . '/dbCleanup.sh' . '"'
+                    \ . ' "' . CygpathFix_absPath(s:scriptPath . '/dbCleanup.sh') . '"'
                     \ . ' "' . CygpathFix_absPath(a:cloudOption['repoPath']) . '"'
                     \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
@@ -291,7 +266,7 @@ function! ZFVimIM_cloud_dbCleanupCmd(cloudOption, dbCleanupCachePath)
         endif
         let path = substitute(path[0], '[\r\n]', '', 'g')
         let path = CygpathFix_absPath(path)
-        return '"' . s:scriptPath . '/dbCleanup.bat' . '"'
+        return '"' . CygpathFix_absPath(s:scriptPath . '/dbCleanup.bat') . '"'
                     \ . ' "' . CygpathFix_absPath(a:cloudOption['repoPath']) . '"'
                     \ . ' "' . a:cloudOption['gitUserEmail'] . '"'
                     \ . ' "' . a:cloudOption['gitUserName'] . '"'
@@ -301,31 +276,26 @@ function! ZFVimIM_cloud_dbCleanupCmd(cloudOption, dbCleanupCachePath)
     endif
 endfunction
 
-function! ZFVimIM_cloud_dbLoadCachePath(cloudOption)
-    return CygpathFix_absPath(ZFVimIM_cachePath() . '/ZFVimIM_dbLoad_' . s:randName())
-endfunction
 function! ZFVimIM_cloud_dbLoadCmd(cloudOption, dbLoadCachePath)
     if empty(s:py)
         return ''
     endif
     return s:py
-                \ . ' "' . s:scriptPath . '/dbLoad.py' . '"'
+                \ . ' "' . CygpathFix_absPath(s:scriptPath . '/dbLoad.py') . '"'
                 \ . ' "' . CygpathFix_absPath(ZFVimIM_cloud_file(a:cloudOption, 'dbFile')) . '"'
                 \ . ' "' . CygpathFix_absPath(ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile')) . '"'
                 \ . ' "' . CygpathFix_absPath(a:dbLoadCachePath) . '"'
 endfunction
-function! ZFVimIM_cloud_dbSaveCachePath(cloudOption)
-    return CygpathFix_absPath(ZFVimIM_cachePath() . '/ZFVimIM_dbSave_' . s:randName())
-endfunction
-function! ZFVimIM_cloud_dbSaveCmd(cloudOption, dbSaveCachePath)
+function! ZFVimIM_cloud_dbSaveCmd(cloudOption, dbSaveCachePath, cachePath)
     if empty(s:py)
         return ''
     endif
     return s:py
-                \ . ' "' . s:scriptPath . '/dbSave.py' . '"'
+                \ . ' "' . CygpathFix_absPath(s:scriptPath . '/dbSave.py') . '"'
                 \ . ' "' . CygpathFix_absPath(ZFVimIM_cloud_file(a:cloudOption, 'dbFile')) . '"'
                 \ . ' "' . CygpathFix_absPath(ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile')) . '"'
                 \ . ' "' . CygpathFix_absPath(a:dbSaveCachePath) . '"'
+                \ . ' "' . CygpathFix_absPath(a:cachePath) . '"'
 endfunction
 
 function! ZFVimIM_cloud_fixOutputEncoding(msg)
