@@ -126,7 +126,7 @@ def dbLoadPy(dbFile, dbCountFile):
                     'countList' : [],
                 })
     # load word count
-    if len(dbCountFile) > 0 and os.access(dbCountFile, os.F_OK) and os.access(dbCountFile, os.R_OK):
+    if len(dbCountFile) > 0 and os.path.isfile(dbCountFile) and os.access(dbCountFile, os.R_OK):
         with io.open(dbCountFile, 'r', encoding='utf-8') as dbCountFilePtr:
             for line in dbCountFilePtr:
                 line = line.rstrip('\n')
@@ -202,7 +202,7 @@ def dbLoadNormalizePy(dbFile):
 
 def dbSavePy(pyMap, dbFile, dbCountFile):
     lines = []
-    if len(dbCountFile) == 0 or not (not os.access(dbCountFile, os.F_OK) or os.access(dbCountFile, os.W_OK)):
+    if len(dbCountFile) == 0:
         dbFilePtr = io.open(dbFile, 'wb')
         for c in pyMap.keys():
             for key, dbItemEncoded in sorted(dbMapIter(pyMap[c])):
