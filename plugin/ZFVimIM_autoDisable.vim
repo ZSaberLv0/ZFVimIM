@@ -64,6 +64,19 @@ function! s:ncm2_disable()
 endfunction
 call add(s:callback, ['s:ncm2_enable', 's:ncm2_disable'])
 
+" vim-auto-popup
+function! s:vimautopopup_enable()
+    if get(g:, 'ZFVimIM_autoDisable_vimautopopup', 1) && exists(':ApcEnable') != 0
+        ApcEnable
+    endif
+endfunction
+function! s:vimautopopup_disable()
+    if get(g:, 'ZFVimIM_autoDisable_vimautopopup', 1) && exists(':ApcDisable') != 0
+        ApcDisable
+    endif
+endfunction
+call add(s:callback, ['s:vimautopopup_enable', 's:vimautopopup_disable'])
+
 " vim-lsp
 function! s:vimlsp_enable()
     if get(g:, 'ZFVimIM_autoDisable_vimlsp', 1) && get(g:, 'lsp_loaded', 0)

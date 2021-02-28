@@ -517,11 +517,7 @@ function! s:IME_syncBuffer_delay(...)
 endfunction
 function! s:IME_syncBuffer()
     if s:started != get(b:, 'ZFVimIME_started', 0)
-        call s:IME_stop()
-        let &iminsert = s:started
-        if s:started
-            call s:IME_start()
-        endif
+        call ZFVimIME_start()
         call s:fixIMState()
         call s:IME_syncBuffer_delay()
         if has('timers')
