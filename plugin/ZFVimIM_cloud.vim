@@ -191,7 +191,7 @@ function! ZFVimIM_cloud_file(cloudOption, key)
     if empty(get(a:cloudOption, a:key, ''))
         return ''
     else
-        return a:cloudOption['repoPath'] . a:cloudOption[a:key]
+        return CygpathFix_absPath(a:cloudOption['repoPath'] . '/' . a:cloudOption[a:key])
     endif
 endfunction
 
@@ -282,8 +282,8 @@ function! ZFVimIM_cloud_dbLoadCmd(cloudOption, dbLoadCachePath)
     endif
     return s:py
                 \ . ' "' . CygpathFix_absPath(s:scriptPath . '/dbLoad.py') . '"'
-                \ . ' "' . CygpathFix_absPath(ZFVimIM_cloud_file(a:cloudOption, 'dbFile')) . '"'
-                \ . ' "' . CygpathFix_absPath(ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile')) . '"'
+                \ . ' "' . ZFVimIM_cloud_file(a:cloudOption, 'dbFile') . '"'
+                \ . ' "' . ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile') . '"'
                 \ . ' "' . CygpathFix_absPath(a:dbLoadCachePath) . '"'
 endfunction
 function! ZFVimIM_cloud_dbSaveCmd(cloudOption, dbSaveCachePath, cachePath)
@@ -292,8 +292,8 @@ function! ZFVimIM_cloud_dbSaveCmd(cloudOption, dbSaveCachePath, cachePath)
     endif
     return s:py
                 \ . ' "' . CygpathFix_absPath(s:scriptPath . '/dbSave.py') . '"'
-                \ . ' "' . CygpathFix_absPath(ZFVimIM_cloud_file(a:cloudOption, 'dbFile')) . '"'
-                \ . ' "' . CygpathFix_absPath(ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile')) . '"'
+                \ . ' "' . ZFVimIM_cloud_file(a:cloudOption, 'dbFile') . '"'
+                \ . ' "' . ZFVimIM_cloud_file(a:cloudOption, 'dbCountFile') . '"'
                 \ . ' "' . CygpathFix_absPath(a:dbSaveCachePath) . '"'
                 \ . ' "' . CygpathFix_absPath(a:cachePath) . '"'
 endfunction
