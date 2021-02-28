@@ -10,7 +10,7 @@ augroup END
 
 " ============================================================
 
-" asyncomplete
+" asyncomplete : https://github.com/prabirshrestha/asyncomplete.vim
 function! s:asyncomplete_enable()
     if get(g:, 'ZFVimIM_autoDisable_asyncomplete', 1) && exists('*asyncomplete#enable_for_buffer')
         call asyncomplete#enable_for_buffer()
@@ -23,7 +23,7 @@ function! s:asyncomplete_disable()
 endfunction
 call add(s:callback, ['s:asyncomplete_enable', 's:asyncomplete_disable'])
 
-" coc
+" coc : https://github.com/neoclide/coc.nvim
 function! s:coc_enable()
     if get(g:, 'ZFVimIM_autoDisable_coc', 1) && exists(':CocEnable')
         call coc#config('suggest.autoTrigger', 'always')
@@ -38,7 +38,7 @@ function! s:coc_disable()
 endfunction
 call add(s:callback, ['s:coc_enable', 's:coc_disable'])
 
-" deoplete
+" deoplete : https://github.com/Shougo/deoplete.nvim
 function! s:deoplete_enable()
     if get(g:, 'ZFVimIM_autoDisable_deoplete', 1) && exists('*deoplete#enable')
         call deoplete#enable()
@@ -51,7 +51,7 @@ function! s:deoplete_disable()
 endfunction
 call add(s:callback, ['s:deoplete_enable', 's:deoplete_disable'])
 
-" ncm2
+" ncm2 : https://github.com/ncm2/ncm2
 function! s:ncm2_enable()
     if get(g:, 'ZFVimIM_autoDisable_ncm2', 1) && exists('*ncm2#enable_for_buffer')
         call ncm2#enable_for_buffer()
@@ -64,7 +64,7 @@ function! s:ncm2_disable()
 endfunction
 call add(s:callback, ['s:ncm2_enable', 's:ncm2_disable'])
 
-" vim-auto-popup
+" vim-auto-popup : https://github.com/skywind3000/vim-auto-popmenu
 function! s:vimautopopup_enable()
     if get(g:, 'ZFVimIM_autoDisable_vimautopopup', 1) && exists(':ApcEnable') != 0
         ApcEnable
@@ -77,7 +77,7 @@ function! s:vimautopopup_disable()
 endfunction
 call add(s:callback, ['s:vimautopopup_enable', 's:vimautopopup_disable'])
 
-" vim-lsp
+" vim-lsp : https://github.com/prabirshrestha/vim-lsp
 function! s:vimlsp_enable()
     if get(g:, 'ZFVimIM_autoDisable_vimlsp', 1) && get(g:, 'lsp_loaded', 0)
         try
@@ -96,7 +96,7 @@ function! s:vimlsp_disable()
 endfunction
 call add(s:callback, ['s:vimlsp_enable', 's:vimlsp_disable'])
 
-" ycm
+" ycm : https://github.com/ycm-core/YouCompleteMe
 function! s:ycm_enable()
     if get(g:, 'ZFVimIM_autoDisable_ycm', 1) && exists(':YcmCompleter')
         let g:ycm_auto_trigger = 1
