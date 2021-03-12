@@ -535,7 +535,6 @@ function! s:vimrcSave()
     let s:saved_completeopt = &completeopt
     let s:saved_shortmess   = &shortmess
     let s:saved_pumheight   = &pumheight
-    let s:saved_lazyredraw  = &lazyredraw
 endfunction
 
 function! s:vimrcSetup()
@@ -546,7 +545,6 @@ function! s:vimrcSetup()
         silent! set shortmess+=c
     endtry
     set pumheight=10
-    set nolazyredraw
 endfunction
 
 function! s:vimrcRestore()
@@ -554,7 +552,6 @@ function! s:vimrcRestore()
     let &completeopt = s:saved_completeopt
     let &shortmess   = s:saved_shortmess
     let &pumheight   = s:saved_pumheight
-    let &lazyredraw  = s:saved_lazyredraw
 endfunction
 
 function! s:setupKeymap()
