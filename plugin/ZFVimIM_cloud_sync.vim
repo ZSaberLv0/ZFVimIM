@@ -201,11 +201,15 @@ function! s:uploadSync(cloudOption, mode)
         call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'updating...')
         let result = system(ZFVimIM_cloud_dbDownloadCmd(a:cloudOption))
         if v:shell_error
-            call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . ZFVimIM_cloud_dbDownloadCmd(a:cloudOption))
             let result = ZFVimIM_cloud_fixOutputEncoding(result)
-            call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . result)
+            let result = ZFVimIM_cloudLog_stripSensitive(result)
+            call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'update failed: ' . result)
             return
         endif
+    endif
+
+    if s:uploadSyncWithCmd(a:cloudOption)
+        return
     endif
 
     redraw!
@@ -231,15 +235,7 @@ function! s:uploadSync(cloudOption, mode)
         call ZFVimIM_dbSave(dbNew, dbFile, dbCountFile)
 
         if !localMode
-            redraw!
-            call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'pushing...')
-            let result = system(ZFVimIM_cloud_dbUploadCmd(a:cloudOption))
-            " strip password
-            let result = substitute(result, ':[^:]*@', '@', 'g')
-            if v:shell_error
-                call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . ZFVimIM_cloud_dbUploadCmd(a:cloudOption))
-                let result = ZFVimIM_cloud_fixOutputEncoding(result)
-                call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . result)
+            if !s:uploadSync_push(a:cloudOption)
                 return
             endif
         endif
@@ -250,5 +246,63 @@ function! s:uploadSync(cloudOption, mode)
 
     redraw!
     call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'update success')
+endfunction
+
+function! s:uploadSyncWithCmd(cloudOption)
+    let cachePath = ZFVimIM_cloud_cachePath(a:cloudOption)
+    let dbSaveCmd = ZFVimIM_cloud_dbSaveCmd(a:cloudOption, cachePath . '/dbSaveCache', cachePath)
+    if empty(dbSaveCmd)
+        return 0
+    endif
+    call mkdir(cachePath, 'p')
+    let db = ZFVimIM_dbForId(a:cloudOption['dbId'])
+
+    redraw!
+    call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'merging...')
+    call ZFVimIM_DEBUG_profileStart('dbSaveDBEditEncode')
+    let dbEditJson = json_encode(db['dbEdit'])
+    call ZFVimIM_DEBUG_profileStop()
+    call ZFVimIM_DEBUG_profileStart('dbSaveDBEditWrite')
+    call writefile([dbEditJson], cachePath . '/dbSaveCache')
+    call ZFVimIM_DEBUG_profileStop()
+
+    redraw!
+    call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'saving...')
+    let result = system(dbSaveCmd)
+    let shell_erro_dbSave = v:shell_error
+    if isdirectory(cachePath)
+        call ZFVimIM_rm(cachePath)
+    endif
+    if shell_erro_dbSave
+        let result = ZFVimIM_cloud_fixOutputEncoding(result)
+        let result = ZFVimIM_cloudLog_stripSensitive(result)
+        call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'save done: ' . result)
+        return 1
+    endif
+
+    let localMode = (get(a:cloudOption, 'mode', '') == 'local')
+    if !localMode
+        if !s:uploadSync_push(a:cloudOption)
+            return 1
+        endif
+    endif
+
+    let db['dbEdit'] = []
+    redraw!
+    call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'update success')
+    return 1
+endfunction
+
+function! s:uploadSync_push(cloudOption)
+    redraw!
+    call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'pushing...')
+    let result = system(ZFVimIM_cloud_dbUploadCmd(a:cloudOption))
+    if v:shell_error
+        let result = ZFVimIM_cloud_fixOutputEncoding(result)
+        let result = ZFVimIM_cloudLog_stripSensitive(result)
+        call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'push failed: ' . result)
+        return 0
+    endif
+    return 1
 endfunction
 

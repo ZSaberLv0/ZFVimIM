@@ -103,7 +103,6 @@ endfunction
 function! s:UA_cancel()
     call s:autoUploadAsyncCancel()
     let taskMap = s:UA_taskMap
-    let s:UA_taskMap = {}
     for task in values(taskMap)
         if task['jobId'] > 0
             call ZFGroupJobStop(task['jobId'])
@@ -133,7 +132,6 @@ function! s:autoUploadAsyncCancel()
         let s:autoUploadAsyncDelayTimerId = -1
     endif
     let taskMap = s:UA_taskMap
-    let s:UA_taskMap = {}
     for dbId in keys(taskMap)
         let task = taskMap[dbId]
         if task['jobId'] != -1
@@ -562,9 +560,11 @@ function! s:UA_onExit(dbId, groupJobStatus, exitCode)
         endfor
         call s:cloudAsyncLog(a:groupJobStatus, ZFVimIM_cloud_logInfo(task['cloudOption']) . 'update failed, exitCode: ' . a:exitCode)
 
-        " retry
-        let s:autoUploadAsyncRetryTimeInc = s:autoUploadAsyncRetryTimeInc * 2
-        call s:autoUploadAsync()
+        " auto retry if not stopped by user
+        if a:exitCode != g:ZFJOBSTOP
+            let s:autoUploadAsyncRetryTimeInc = s:autoUploadAsyncRetryTimeInc * 2
+            call s:autoUploadAsync()
+        endif
         break
     endwhile
 
