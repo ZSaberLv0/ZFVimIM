@@ -516,8 +516,13 @@ function! s:IME_syncBuffer_delay(...)
     redraw!
 endfunction
 function! s:IME_syncBuffer()
-    if s:started != get(b:, 'ZFVimIME_started', 0)
-        call ZFVimIME_start()
+    if get(b:, 'ZFVimIME_started', 0) != s:started
+        if s:started
+            call ZFVimIME_start()
+        else
+            let s:started = 1
+            call ZFVimIME_stop()
+        endif
         call s:fixIMState()
         call s:IME_syncBuffer_delay()
         if has('timers')
