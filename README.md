@@ -493,6 +493,10 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
             new data would be merged to old data
         * `g:ZFVimIM_db` : (not recommended) manually modify internal db data
 
+* Q: arrow keys not work?
+
+    A: [see this](https://vim.fandom.com/wiki/Fix_arrow_keys_that_display_A_B_C_D_on_remote_shell)
+
 
 ## known issue
 
