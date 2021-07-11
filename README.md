@@ -224,6 +224,10 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
     or, add autocmd to `ZFVimIM_event_OnStart`
     to setup this value
 
+* `let g:ZFVimIM_showKeyHint = 1`
+
+    whether show key hint after word
+
 * `let g:ZFVimIM_cachePath=$HOME.'/.vim_cache/ZFVimIM'`
 
     cache path for temp files

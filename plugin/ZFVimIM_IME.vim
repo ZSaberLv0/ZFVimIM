@@ -719,17 +719,20 @@ function! s:popupMenuList(complete)
         let labelstring = printf('%2s ', labelstring)
         let left = strpart(s:keyboard, item['len'])
         let complete_items['abbr'] = labelstring . item['word'] . left
-        if item['type'] == 'sentence' && !empty(get(item, 'sentenceList'))
-            let menu = ''
-            for word in item['sentenceList']
-                if !empty(menu)
-                    let menu .= ' '
-                endif
-                let menu .= word['key']
-            endfor
-            let complete_items['menu'] = menu
-        else
-            let complete_items['menu'] = item['key']
+        let complete_items['menu'] = ''
+        if get(g:, 'ZFVimIM_showKeyHint', 1)
+            if item['type'] == 'sentence' && !empty(get(item, 'sentenceList'))
+                let menu = ''
+                for word in item['sentenceList']
+                    if !empty(menu)
+                        let menu .= ' '
+                    endif
+                    let menu .= word['key']
+                endfor
+                let complete_items['menu'] .= menu
+            else
+                let complete_items['menu'] .= item['key']
+            endif
         endif
 
         let db = ZFVimIM_dbForId(item['dbId'])
