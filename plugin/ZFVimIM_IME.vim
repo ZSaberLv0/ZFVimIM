@@ -512,10 +512,6 @@ function! s:IME_stop()
 endfunction
 
 function! s:IME_syncBuffer_delay(...)
-    call s:IME_update()
-    redraw!
-endfunction
-function! s:IME_syncBuffer()
     if get(b:, 'ZFVimIME_started', 0) != s:started
         if s:started
             call ZFVimIME_start()
@@ -524,9 +520,16 @@ function! s:IME_syncBuffer()
             call ZFVimIME_stop()
         endif
         call s:fixIMState()
-        call s:IME_syncBuffer_delay()
+    endif
+    call s:IME_update()
+    redraw!
+endfunction
+function! s:IME_syncBuffer()
+    if get(b:, 'ZFVimIME_started', 0) != s:started
         if has('timers')
             call timer_start(0, function('s:IME_syncBuffer_delay'))
+        else
+            call s:IME_syncBuffer_delay()
         endif
     endif
 endfunction
