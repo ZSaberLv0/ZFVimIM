@@ -270,12 +270,16 @@ function! ZFVimIME_label(n)
         return ''
     endif
     if pumvisible()
+        let curPage = s:curPage()
         let n = a:n < 1 ? 9 : a:n - 1
+        if n >= len(curPage)
+            return ''
+        endif
         let key = repeat("\<down>", n) . "\<c-y>\<c-r>=ZFVimIME_callOmni()\<cr>"
 
         let s:confirmFlag = 1
         if !s:completeItemAvailable
-            let item = s:match_list[n]
+            let item = curPage[n]
             call add(s:userWord, item)
             if item['len'] == len(s:keyboard)
                 call s:addWordFromUserWord()
@@ -621,23 +625,18 @@ endfunction
 
 function! s:resetAfterInsert()
     let s:match_list = []
+    let s:page = 0
     let s:pageup_pagedown = 0
     let s:enter_to_confirm = 0
 endfunction
 
-function! s:omniCache()
-    let results = []
-    if s:pageup_pagedown != 0
-        let length = len(s:match_list)
-        if length > &pumheight
-            let page = s:pageup_pagedown * &pumheight
-            let partition = page ? page : length+page
-            let B = s:match_list[partition :]
-            let A = s:match_list[: partition-1]
-            let results = B + A
-        endif
+function! s:curPage()
+    if !empty(s:match_list) && &pumheight > 0
+        execute 'let results = s:match_list[' . (s:page * &pumheight) . ':' . ((s:page+1) * &pumheight - 1) . ']'
+        return results
+    else
+        return []
     endif
-    return results
 endfunction
 
 function! s:getSeamless(cursor_positions)
@@ -698,22 +697,31 @@ function! s:omnifunc(start, keyboard)
         let s:start_column = start_column
         return start_column
     else
-        let results = s:omniCache()
-        if !empty(results)
-            return s:popupMenuList(results)
+        if s:pageup_pagedown != 0 && !empty(s:match_list) && &pumheight > 0
+            let length = len(s:match_list)
+            let pageCount = (length-1) / &pumheight + 1
+            let s:page += s:pageup_pagedown
+            if s:page >= pageCount
+                let s:page = pageCount - 1
+            endif
+            if s:page < 0
+                let s:page = 0
+            endif
+        else
+            let s:match_list = ZFVimIM_complete(s:keyboard)
+            let s:page = 0
         endif
-        return s:popupMenuList(ZFVimIM_complete(s:keyboard))
+        return s:popupMenuList(s:curPage())
     endif
 endfunction
 
 function! s:popupMenuList(complete)
-    let s:match_list = a:complete
     if empty(a:complete) || type(a:complete) != type([])
         return []
     endif
     let label = 1
     let popup_list = []
-    for item in s:match_list
+    for item in a:complete
         " :h complete-items
         let complete_items = {}
         let labelstring = (label == 10 ? '0' : label)
