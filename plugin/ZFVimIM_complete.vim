@@ -202,19 +202,25 @@ function! s:complete_predict(ret, key, option, db)
 
     let p = len(a:key)
     while p > 0
+        " try to find, ignoring exact match
         let subKey = strpart(a:key, 0, p)
-        let subMatchIndex = ZFVimIM_dbSearch(a:db, a:key[0],
-                    \ '^' . subKey,
-                    \ 0)
+        let subMatchIndex = -1
+        while 1
+            let subMatchIndex = ZFVimIM_dbSearch(a:db, a:key[0],
+                        \ '^' . subKey,
+                        \ subMatchIndex + 1)
+            if subMatchIndex < 0
+                break
+            endif
+            let dbItem = ZFVimIM_dbItemDecode(a:db['dbMap'][a:key[0]][subMatchIndex])
+            if dbItem['key'] != subKey
+                break
+            endif
+        endwhile
         if subMatchIndex < 0
             let p -= 1
             continue
         endif
-        let dbItem = ZFVimIM_dbItemDecode(a:db['dbMap'][a:key[0]][subMatchIndex])
-        if dbItem['key'] == subKey
-            " as for predict, we don't care for exact match
-            break
-        endi
 
         " found things to predict
         let wordIndex = 0
@@ -244,7 +250,7 @@ function! s:complete_predict(ret, key, option, db)
                 if dbItem['key'] != subKey
                     let wordIndex = 0
                     break
-                endi
+                endif
             endwhile
             if subMatchIndex < 0
                 break

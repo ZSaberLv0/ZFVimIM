@@ -296,9 +296,8 @@ function! ZFVimIME_pageUp(key)
         return ''
     endif
     if pumvisible()
-        let page = "\<c-e>\<c-r>=ZFVimIME_callOmni()\<cr>"
-        let s:pageup_pagedown = &pumheight ? -1 : 0
-        let key = &pumheight ? page : "\<pageup>"
+        let key = "\<c-e>\<c-r>=ZFVimIME_callOmni()\<cr>"
+        let s:pageup_pagedown = -1
     else
         let key = s:symbol(a:key)
     endif
@@ -311,9 +310,8 @@ function! ZFVimIME_pageDown(key)
         return ''
     endif
     if pumvisible()
-        let page = "\<c-e>\<c-r>=ZFVimIME_callOmni()\<cr>"
-        let s:pageup_pagedown = &pumheight ? 1 : 0
-        let key = &pumheight ? page : "\<pagedown>"
+        let key = "\<c-e>\<c-r>=ZFVimIME_callOmni()\<cr>"
+        let s:pageup_pagedown = 1
     else
         let key = s:symbol(a:key)
     endif
@@ -440,7 +438,7 @@ function! ZFVimIME_symbol(key)
 endfunction
 
 function! ZFVimIME_callOmni()
-    let s:keyboard = empty(s:pageup_pagedown) ? '' : s:keyboard
+    let s:keyboard = (s:pageup_pagedown == 0) ? '' : s:keyboard
     let key = s:hasLeftChar() ? "\<c-x>\<c-o>\<c-r>=ZFVimIME_fixOmni()\<cr>" : ''
     execute 'return "' . key . '"'
 endfunction
