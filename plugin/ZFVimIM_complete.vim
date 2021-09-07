@@ -2,7 +2,7 @@
 " params:
 "   key : the input key, e.g. `ceshi`
 "   option: {
-"     'sentence' : '0/1',
+"     'sentence' : '0/1, default to g:ZFVimIM_sentence',
 "     'crossDb' : 'maxNum, default to g:ZFVimIM_crossDbLimit',
 "     'predict' : 'maxNum, default to g:ZFVimIM_predictLimit',
 "     'match' : '', // > 0 : limit to this num, allow sub match
@@ -100,7 +100,7 @@ endfunction
 
 
 function! s:complete_sentence(ret, key, option, db)
-    if !get(a:option, 'sentence', 1)
+    if !get(a:option, 'sentence', g:ZFVimIM_sentence)
         return
     endif
 

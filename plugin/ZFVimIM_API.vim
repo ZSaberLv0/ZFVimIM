@@ -7,6 +7,10 @@ if !exists('g:ZFVimIM_predictLimit')
     let g:ZFVimIM_predictLimit = 10
 endif
 
+if !exists('g:ZFVimIM_sentence')
+    let g:ZFVimIM_sentence = 1
+endif
+
 if !exists('g:ZFVimIM_crossDbLimitWhenMatch')
     let g:ZFVimIM_crossDbLimitWhenMatch = 2
 endif
@@ -67,11 +71,15 @@ function! CygpathFix_absPath(path)
 endfunction
 
 " db : [
-"   { // dbId,name,priority,dbMap,dbEdit,implData
+"   {
 "     'dbId' : 'auto generated id',
 "     'name' : 'name of the db, ZFVimIM by default',
 "     'priority' : 'priority of the db, smaller value has higher priority, 100 by default',
+"     'switchable' : '1 by default, when off, won't be enabled by ZFVimIME_keymap_next_n() series',
+"     'editable' : '1 by default, when off, no dbEdit would applied',
 "     'dbCallback' : 'func(key, option), see ZFVimIM_complete',
+"     'menuLabel' : '(optional) string or function(item), when not empty, show label after key hint',
+"                   // when not set, or set to number `0`, we would show db name if it's completed from crossDb
 "     'dbMap' : { // split a-z to improve performance, ensured empty if no data
 "       'a' : [
 "         'a#啊,阿#3,2',
@@ -131,26 +139,20 @@ endfunction
 
 " option: {
 "   'name' : '(required) name of your db',
-"   'priority' : '(optional) 100 by default, smaller value means higher priority',
-"   'switchable' : '(optional) 1 by default, when off, won't be enabled by ZFVimIME_keymap_next_n() series',
-"   'dbCallback' : '(optional) func(key, option), see ZFVimIM_complete',
-"                  // when dbCallback supplied, words would be fetched from this callback instead
-"   'menuLabel' : '(optional) string or function(item), when not empty, show label after key hint',
-"                 // when not set, or set to number `0`, we would show db name if it's completed from crossDb
-"   'implData' : { // extra data for impl
-"   },
+"   ... // see g:ZFVimIM_db for more info
 " }
 function! ZFVimIM_dbInit(option)
     let db = extend({
+                \   'dbId' : -1,
                 \   'name' : 'ZFVimIM',
                 \   'priority' : -1,
                 \   'switchable' : 1,
+                \   'editable' : 1,
                 \   'dbCallback' : '',
                 \   'menuLabel' : 0,
-                \   'implData' : {},
-                \   'dbId' : -1,
                 \   'dbMap' : {},
                 \   'dbEdit' : [],
+                \   'implData' : {},
                 \ }, a:option)
     if db['priority'] < 0
         let db['priority'] = 100
@@ -498,7 +500,7 @@ function! s:dbEditWildKey(action, word, key, db)
     else
         let db = a:db
     endif
-    if !empty(get(a:db, 'dbCallback', ''))
+    if !get(db, 'editable', 1) || !empty(get(db, 'dbCallback', ''))
         return
     endif
     if !empty(a:key)
@@ -536,7 +538,7 @@ function! s:dbEdit(action, word, key, db)
     else
         let db = a:db
     endif
-    if !empty(get(a:db, 'dbCallback', ''))
+    if !get(db, 'editable', 1) || !empty(get(db, 'dbCallback', ''))
         return
     endif
     if empty(a:key) || empty(a:word)

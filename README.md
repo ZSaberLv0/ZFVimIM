@@ -218,11 +218,19 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
                 \ }
     ```
 
-    note, if you want to change this setting at runtime,
-    you should use `call ZFVimIME_stop() | call ZFVimIME_start()`
-    to restart to take effect,
-    or, add autocmd to `ZFVimIM_event_OnStart`
-    to setup this value
+    * if you want to change this setting at runtime,
+        you should use `call ZFVimIME_stop() | call ZFVimIME_start()`
+        to restart to take effect,
+        or, add autocmd to `ZFVimIM_event_OnStart`
+        to setup this value
+
+    * it's recommended to add these configs to make vim recognize chinese chars
+
+        ```
+        set encoding=utf-8
+        set fileencoding=utf-8
+        set fileencodings=utf-8,ucs-bom,chinese
+        ```
 
 * `let g:ZFVimIM_showKeyHint = 1`
 
@@ -300,10 +308,13 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
 
         ```
         {
-          'sentence' : '0/1',
+          'sentence' : '0/1, default to g:ZFVimIM_sentence',
           'crossDb' : 'maxNum, default to g:ZFVimIM_crossDbLimit',
           'predict' : 'maxNum, default to g:ZFVimIM_predictLimit',
-          'match' : 'maxNum, default to -1',
+          'match' : '', // > 0 : limit to this num, allow sub match
+                        // = 0 : disable match
+                        // < 0 : limit to (0-match) num, disallow sub match
+                        // default to 2000
           'db' : {...}, // which db to use, empty for current
         }
         ```
@@ -345,9 +356,11 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
       'name' : '(required) name of your db',
       'priority' : '(optional) 100 by default, smaller value means higher priority',
       'switchable' : '(optional) 1 by default, when off, won't be enabled by ZFVimIME_keymap_next_n() series',
+      'editable' : '(optional) 1 by default, when off, no dbEdit would applied',
       'dbCallback' : '(optional) func(key, option), see ZFVimIM_complete',
                      // when dbCallback supplied, words would be fetched from this callback instead
       'menuLabel' : '(optional) string or function(item), when not empty, show label after key hint',
+                    // when not set, or set to number `0`, we would show db name if it's completed from crossDb
       'implData' : { // extra data for impl
       },
     }
