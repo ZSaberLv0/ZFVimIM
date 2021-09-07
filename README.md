@@ -232,6 +232,13 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
         set fileencodings=utf-8,ucs-bom,chinese
         ```
 
+* keymaps:
+
+    * `let g:ZFVimIM_key_pageUp = ['-']`
+    * `let g:ZFVimIM_key_pageDown = ['=']`
+    * `let g:ZFVimIM_key_chooseL = ['[']`
+    * `let g:ZFVimIM_key_chooseR = [']']`
+
 * `let g:ZFVimIM_showKeyHint = 1`
 
     whether show key hint after word

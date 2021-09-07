@@ -570,26 +570,26 @@ function! s:setupKeymap()
         execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_input("' . c . '")'
     endfor
 
-    for c in ['-']
+    for c in get(g:, 'ZFVimIM_key_pageUp', ['-'])
         if c !~ s:all_keys
             let mapped[c] = 1
             execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_pageUp("' . c . '")'
         endif
     endfor
-    for c in ['=']
+    for c in get(g:, 'ZFVimIM_key_pageDown', ['='])
         if c !~ s:all_keys
             let mapped[c] = 1
             execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_pageDown("' . c . '")'
         endif
     endfor
 
-    for c in ['[']
+    for c in get(g:, 'ZFVimIM_key_chooseL', ['['])
         if c !~ s:all_keys
             let mapped[c] = 1
             execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_chooseL("' . c . '")'
         endif
     endfor
-    for c in [']']
+    for c in get(g:, 'ZFVimIM_key_chooseR', [']'])
         if c !~ s:all_keys
             let mapped[c] = 1
             execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_chooseR("' . c . '")'
