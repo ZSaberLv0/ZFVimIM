@@ -539,10 +539,19 @@ function! s:IME_syncBuffer(...)
 endfunction
 augroup ZFVimIME_impl_syncBuffer_augroup
     autocmd!
-    " sometimes `iminsert` would be changed, reason unknown
-    " try to check after 100ms to ensure state valid
-    autocmd BufEnter,CmdwinEnter * call s:IME_syncBuffer()
-                \| call s:IME_syncBuffer(100)
+    " sometimes `iminsert` would be changed by vim, reason unknown
+    " try to check later to ensure state valid
+    if has('timers')
+        if exists('##OptionSet')
+            autocmd BufEnter,CmdwinEnter * call s:IME_syncBuffer()
+            autocmd OptionSet iminsert call s:IME_syncBuffer()
+        else
+            autocmd BufEnter,CmdwinEnter * call s:IME_syncBuffer()
+                        \| call s:IME_syncBuffer(200)
+        endif
+    else
+        autocmd BufEnter,CmdwinEnter * call s:IME_syncBuffer()
+    endif
 augroup END
 
 function! s:vimrcSave()
