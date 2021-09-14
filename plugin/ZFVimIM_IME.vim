@@ -515,6 +515,7 @@ endfunction
 
 function! s:IME_syncBuffer_delay(...)
     if get(b:, 'ZFVimIME_started', 0) != s:started
+                \ || &iminsert != s:started
         if s:started
             call ZFVimIME_start()
         else
@@ -526,10 +527,11 @@ function! s:IME_syncBuffer_delay(...)
     call s:IME_update()
     redraw!
 endfunction
-function! s:IME_syncBuffer()
+function! s:IME_syncBuffer(...)
     if get(b:, 'ZFVimIME_started', 0) != s:started
+                \ || &iminsert != s:started
         if has('timers')
-            call timer_start(0, function('s:IME_syncBuffer_delay'))
+            call timer_start(get(a:, 1, 0), function('s:IME_syncBuffer_delay'))
         else
             call s:IME_syncBuffer_delay()
         endif
@@ -537,7 +539,10 @@ function! s:IME_syncBuffer()
 endfunction
 augroup ZFVimIME_impl_syncBuffer_augroup
     autocmd!
+    " sometimes `iminsert` would be changed, reason unknown
+    " try to check after 100ms to ensure state valid
     autocmd BufEnter,CmdwinEnter * call s:IME_syncBuffer()
+                \| call s:IME_syncBuffer(100)
 augroup END
 
 function! s:vimrcSave()
