@@ -1,5 +1,9 @@
 
 " ============================================================
+if !exists('g:ZFVimIM_matchLimit')
+    let g:ZFVimIM_matchLimit = 2000
+endif
+
 if !exists('g:ZFVimIM_predictLimitWhenMatch')
     let g:ZFVimIM_predictLimitWhenMatch = 1000
 endif
@@ -305,11 +309,7 @@ function! ZFVimIM_dbItemEncode(dbItem)
 endfunction
 
 function! ZFVimIM_complete(key, ...)
-    let option = get(a:, 1, {})
-    call ZFVimIM_DEBUG_profileStart('complete')
-    let ret = ZFVimIM_completeDefault(a:key, option)
-    call ZFVimIM_DEBUG_profileStop()
-    return ret
+    return ZFVimIM_completeDefault(a:key, get(a:, 1, {}))
 endfunction
 
 

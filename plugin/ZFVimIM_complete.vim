@@ -8,7 +8,7 @@
 "     'match' : '', // > 0 : limit to this num, allow sub match
 "                   // = 0 : disable match
 "                   // < 0 : limit to (0-match) num, disallow sub match
-"                   // default to 2000
+"                   // default to g:ZFVimIM_matchLimit
 "     'db' : {
 "       // db object in g:ZFVimIM_db
 "       // when specified, use the specified db, otherwise use current db
@@ -32,6 +32,13 @@
 "   ...
 " ]
 function! ZFVimIM_completeDefault(key, ...)
+    call ZFVimIM_DEBUG_profileStart('complete')
+    let ret = s:completeDefault(a:key, get(a:, 1, {}))
+    call ZFVimIM_DEBUG_profileStop()
+    return ret
+endfunction
+
+function! s:completeDefault(key, ...)
     let option = get(a:, 1, {})
     let db = get(option, 'db', {})
     if empty(db) && g:ZFVimIM_dbIndex < len(g:ZFVimIM_db)
@@ -262,7 +269,7 @@ function! s:complete_predict(ret, key, option, db)
 endfunction
 
 function! s:complete_match(ret, key, option, db)
-    let matchLimit = get(a:option, 'match', 2000)
+    let matchLimit = get(a:option, 'match', g:ZFVimIM_matchLimit)
     if matchLimit < 0
         call s:complete_match_exact(a:ret, a:key, a:option, a:db, 0 - matchLimit)
     elseif matchLimit > 0

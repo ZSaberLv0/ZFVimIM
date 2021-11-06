@@ -321,7 +321,7 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
           'match' : '', // > 0 : limit to this num, allow sub match
                         // = 0 : disable match
                         // < 0 : limit to (0-match) num, disallow sub match
-                        // default to 2000
+                        // default to g:ZFVimIM_matchLimit
           'db' : {...}, // which db to use, empty for current
         }
         ```
