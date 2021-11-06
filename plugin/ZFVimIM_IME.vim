@@ -36,6 +36,9 @@ augroup ZFVimIME_augroup
 
     " called when update by ZFVimIME_keymap_update_i, typically by async update callback
     autocmd User ZFVimIM_event_OnUpdate silent
+
+    " called when omni popup update, you may obtain current state by ZFVimIME_state()
+    autocmd User ZFVimIM_event_OnUpdateOmni silent
 augroup END
 
 function! ZFVimIME_init()
@@ -240,6 +243,16 @@ function! ZFVimIME_switchToIndex(dbIndex)
     let g:ZFVimIM_dbIndex = dbIndex
     call s:IME_update()
     doautocmd User ZFVimIM_event_OnDbChange
+endfunction
+
+function! ZFVimIME_state()
+    return {
+                \   'key' : s:keyboard,
+                \   'list' : s:match_list,
+                \   'page' : s:page,
+                \   'seamless_positions' : s:seamless_positions,
+                \   'start_column' : s:start_column,
+                \ }
 endfunction
 
 function! ZFVimIME_omnifunc(start, keyboard)
@@ -725,7 +738,9 @@ function! s:omnifunc(start, keyboard)
             let s:match_list = ZFVimIM_complete(s:keyboard)
             let s:page = 0
         endif
-        return s:popupMenuList(s:curPage())
+        let ret = s:popupMenuList(s:curPage())
+        doautocmd User ZFVimIM_event_OnUpdateOmni
+        return ret
     endif
 endfunction
 

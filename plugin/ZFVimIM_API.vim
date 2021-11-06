@@ -118,7 +118,7 @@ let g:ZFVimIM_KEY_SR_SUB = '_ZFVimIM_s_'
 " ============================================================
 augroup ZFVimIM_event_OnUpdateDb_augroup
     autocmd!
-    autocmd User ZFVimIM_event_OnUpdateDb silent! echo ''
+    autocmd User ZFVimIM_event_OnUpdateDb silent
 augroup END
 
 " ============================================================
