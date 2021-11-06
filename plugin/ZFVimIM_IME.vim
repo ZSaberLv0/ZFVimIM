@@ -250,7 +250,6 @@ function! ZFVimIME_state()
                 \   'key' : s:keyboard,
                 \   'list' : s:match_list,
                 \   'page' : s:page,
-                \   'seamless_positions' : s:seamless_positions,
                 \   'start_column' : s:start_column,
                 \ }
 endfunction
@@ -267,7 +266,7 @@ function! ZFVimIME_esc()
         return ''
     endif
     if pumvisible()
-        let range = col('.') - 1 - s:start_column
+        let range = col('.') - s:start_column
         let key = "\<c-e>" . repeat("\<bs>", range)
         call s:resetAfterInsert()
     else
@@ -339,8 +338,8 @@ endfunction
 " note, this func must invoked as `<c-r>=`
 " to ensure `<c-y>` actually transformed popup word
 function! ZFVimIME_choose_fix(offset)
-    let words = split(strpart(getline('.'), s:start_column, col('.') - s:start_column), '\ze')
-    return repeat("\<bs>", len(words) - 1)
+    let words = split(strpart(getline('.'), (s:start_column - 1), col('.') - s:start_column), '\ze')
+    return repeat("\<bs>", len(words) - a:offset)
 endfunction
 function! ZFVimIME_chooseL(key)
     if mode() != 'i'
@@ -348,7 +347,7 @@ function! ZFVimIME_chooseL(key)
         return ''
     endif
     if pumvisible()
-        let key = "\<c-y>\<c-r>=ZFVimIME_choose_fix(0)\<cr>"
+        let key = "\<c-y>\<c-r>=ZFVimIME_choose_fix(1)\<cr>"
         call s:resetAfterInsert()
     else
         let key = s:symbol(a:key)
@@ -362,7 +361,7 @@ function! ZFVimIME_chooseR(key)
         return ''
     endif
     if pumvisible()
-        let key = "\<c-y>\<left>\<c-r>=ZFVimIME_choose_fix(-1)\<cr>\<right>"
+        let key = "\<c-y>\<left>\<c-r>=ZFVimIME_choose_fix(0)\<cr>\<right>"
         call s:resetAfterInsert()
     else
         let key = s:symbol(a:key)
@@ -489,7 +488,7 @@ endfunction
 function! s:init()
     let s:started = 0
     let s:seamless_positions = []
-    let s:start_column = 0
+    let s:start_column = 1
     let s:all_keys = '[0-9a-z]'
     let s:input_keys = '[a-z]'
 endfunction
@@ -674,9 +673,9 @@ function! s:getSeamless(cursor_positions)
         return -1
     endif
     let current_line = getline(a:cursor_positions[1])
-    let seamless_column = s:seamless_positions[2]-1
-    let len = a:cursor_positions[2]-1 - seamless_column
-    let snip = strpart(current_line, seamless_column, len)
+    let seamless_column = s:seamless_positions[2]
+    let len = a:cursor_positions[2] - seamless_column
+    let snip = strpart(current_line, seamless_column - 1, len)
     if len(snip) <= 0
         let s:seamless_positions = []
         return -1
@@ -704,25 +703,25 @@ function! s:omnifunc(start, keyboard)
     let s:enter_to_confirm = 1
     if a:start
         let cursor_positions = getpos('.')
-        let start_column = cursor_positions[2] - 1
+        let start_column = cursor_positions[2]
         let current_line = getline(cursor_positions[1])
         let current_line = substitute(current_line, '\\[a-z\\]', '  ', 'g')
         let seamless_column = s:getSeamless(cursor_positions)
-        if seamless_column < 0
+        if seamless_column <= 0
             let s:seamless_positions = []
-            let seamless_column = 0
+            let seamless_column = 1
         endif
-        while start_column > seamless_column && current_line[start_column - 1] =~# s:input_keys
+        while start_column > seamless_column && current_line[(start_column-1) - 1] =~# s:input_keys
             let start_column -= 1
         endwhile
-        let len = cursor_positions[2]-1 - start_column
+        let len = cursor_positions[2] - start_column
         if len <= 0
             return -3
         endif
-        let keyboard = strpart(current_line, start_column, len)
+        let keyboard = strpart(current_line, (start_column - 1), len)
         let s:keyboard = keyboard
         let s:start_column = start_column
-        return start_column
+        return start_column - 1
     else
         if s:pageup_pagedown != 0 && !empty(s:match_list) && &pumheight > 0
             let length = len(s:match_list)
