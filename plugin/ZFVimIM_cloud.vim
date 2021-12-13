@@ -95,11 +95,17 @@ function! ZFVimIM_dbNormalize(dbFile)
         echo '[ZFVimIM] python not available'
         return
     endif
+    let cachePath = CygpathFix_absPath(ZFVimIM_cachePath() . '/ZFVimIM_dbNormalize_' . ZFVimIM_randName())
+    call mkdir(cachePath, 'p')
     let result = system(s:py
                 \ . ' "' . CygpathFix_absPath(s:scriptPath . '/dbNormalize.py') . '"'
                 \ . ' "' . CygpathFix_absPath(a:dbFile) . '"'
+                \ . ' "' . cachePath . '"'
                 \ )
     let error = v:shell_error
+    if isdirectory(cachePath)
+        call ZFVimIM_rm(cachePath)
+    endif
     redraw!
     echo '[ZFVimIM] dbNormalize finish'
     if error != 0
