@@ -209,25 +209,16 @@ function! s:complete_predict(ret, key, option, db)
 
     let p = len(a:key)
     while p > 0
-        " try to find, ignoring exact match
+        " try to find
         let subKey = strpart(a:key, 0, p)
-        let subMatchIndex = -1
-        while 1
-            let subMatchIndex = ZFVimIM_dbSearch(a:db, a:key[0],
-                        \ '^' . subKey,
-                        \ subMatchIndex + 1)
-            if subMatchIndex < 0
-                break
-            endif
-            let dbItem = ZFVimIM_dbItemDecode(a:db['dbMap'][a:key[0]][subMatchIndex])
-            if dbItem['key'] != subKey
-                break
-            endif
-        endwhile
+        let subMatchIndex = ZFVimIM_dbSearch(a:db, a:key[0],
+                    \ '^' . subKey,
+                    \ 0)
         if subMatchIndex < 0
             let p -= 1
             continue
         endif
+        let dbItem = ZFVimIM_dbItemDecode(a:db['dbMap'][a:key[0]][subMatchIndex])
 
         " found things to predict
         let wordIndex = 0
@@ -246,22 +237,14 @@ function! s:complete_predict(ret, key, option, db)
             endif
 
             " find next predict
-            while 1
-                let subMatchIndex = ZFVimIM_dbSearch(a:db, a:key[0],
-                            \ '^' . subKey,
-                            \ subMatchIndex + 1)
-                if subMatchIndex < 0
-                    break
-                endif
-                let dbItem = ZFVimIM_dbItemDecode(a:db['dbMap'][a:key[0]][subMatchIndex])
-                if dbItem['key'] != subKey
-                    let wordIndex = 0
-                    break
-                endif
-            endwhile
+            let subMatchIndex = ZFVimIM_dbSearch(a:db, a:key[0],
+                        \ '^' . subKey,
+                        \ subMatchIndex + 1)
             if subMatchIndex < 0
                 break
             endif
+            let dbItem = ZFVimIM_dbItemDecode(a:db['dbMap'][a:key[0]][subMatchIndex])
+            let wordIndex = 0
         endwhile
 
         break
@@ -405,8 +388,8 @@ function! s:mergeResult(data, key, option, db)
     " remove duplicate
     let exists = {}
     " ordered from high priority to low
-    call s:removeDuplicate(matchRet, exists)
     call s:removeDuplicate(predictRet, exists)
+    call s:removeDuplicate(matchRet, exists)
     call s:removeDuplicate(sentenceRet, exists)
     call s:removeDuplicate(crossDbRet, exists)
 
