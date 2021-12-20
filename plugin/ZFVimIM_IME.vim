@@ -753,7 +753,7 @@ function! s:popupMenuList(complete)
         " :h complete-items
         let complete_items = {}
         let labelstring = (label == 10 ? '0' : label)
-        let labelstring = printf('%2s ', labelstring)
+        let labelstring = printf('%s ', labelstring)
         let left = strpart(s:keyboard, item['len'])
         let complete_items['abbr'] = labelstring . item['word'] . left
         let complete_items['menu'] = ''
@@ -766,8 +766,10 @@ function! s:popupMenuList(complete)
                     endif
                     let menu .= word['key']
                 endfor
+                let complete_items['menu'] .= ' '
                 let complete_items['menu'] .= menu
             else
+                let complete_items['menu'] .= ' '
                 let complete_items['menu'] .= item['key']
             endif
         endif
@@ -786,7 +788,7 @@ function! s:popupMenuList(complete)
         endif
 
         if get(g:, 'ZFVimIME_DEBUG', 0)
-            let complete_items['menu'] .= '  (' . item['type'] . ')'
+            let complete_items['menu'] .= '  (' . item['type'] . ') ' . strpart(item['key'], 0, item['len'])
         endif
 
         let complete_items['dup'] = 1

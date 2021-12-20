@@ -5,7 +5,7 @@ if !exists('g:ZFVimIM_matchLimit')
 endif
 
 if !exists('g:ZFVimIM_predictLimitWhenMatch')
-    let g:ZFVimIM_predictLimitWhenMatch = 1000
+    let g:ZFVimIM_predictLimitWhenMatch = 5
 endif
 if !exists('g:ZFVimIM_predictLimit')
     let g:ZFVimIM_predictLimit = 1000

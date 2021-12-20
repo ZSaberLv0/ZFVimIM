@@ -384,12 +384,13 @@ function! s:mergeResult(data, key, option, db)
     let crossDbRet = a:data['crossDb']
     let predictRet = a:data['predict']
     let matchRet = a:data['match']
+    let tailRet = []
 
     " remove duplicate
     let exists = {}
     " ordered from high priority to low
-    call s:removeDuplicate(predictRet, exists)
     call s:removeDuplicate(matchRet, exists)
+    call s:removeDuplicate(predictRet, exists)
     call s:removeDuplicate(sentenceRet, exists)
     call s:removeDuplicate(crossDbRet, exists)
 
@@ -412,14 +413,27 @@ function! s:mergeResult(data, key, option, db)
     call sort(predictRet, Fn_sortFunc)
     call sort(matchRet, Fn_sortFunc)
 
-    " limit crossDb if has predict or match
-    if len(sentenceRet) + len(predictRet) + len(matchRet) >= 5 && len(crossDbRet) > g:ZFVimIM_crossDbLimitWhenMatch
-        call remove(crossDbRet, g:ZFVimIM_crossDbLimitWhenMatch, len(crossDbRet) - 1)
-    endif
-
     " limit predict if has match
     if len(sentenceRet) + len(matchRet) >= 5 && len(predictRet) > g:ZFVimIM_predictLimitWhenMatch
-        call remove(predictRet, g:ZFVimIM_predictLimitWhenMatch, len(predictRet) - 1)
+        call extend(tailRet, remove(predictRet, g:ZFVimIM_predictLimitWhenMatch, len(predictRet) - 1))
+    endif
+
+    " limit crossDb if has predict or match
+    if len(sentenceRet) + len(predictRet) + len(matchRet) >= 5 && len(crossDbRet) > g:ZFVimIM_crossDbLimitWhenMatch
+        call extend(tailRet, remove(crossDbRet, g:ZFVimIM_crossDbLimitWhenMatch, len(crossDbRet) - 1))
+    endif
+
+    " order:
+    "   exact match
+    "   sentence
+    "   predict(len > match)
+    "   match
+    "   predict(len <= match)
+    "   tail
+
+    let maxMatchLen = 0
+    if !empty(matchRet)
+        let maxMatchLen = matchRet[0]['len']
     endif
 
     " exact match should have highest priority
@@ -428,14 +442,28 @@ function! s:mergeResult(data, key, option, db)
     let iMatch = len(matchRet) - 1
     while iMatch >= 0
         if matchRet[iMatch]['len'] == keyLen
-            call insert(sentenceRet, remove(matchRet, iMatch), 0)
+            call insert(ret, remove(matchRet, iMatch), 0)
         endif
         let iMatch -= 1
     endwhile
-    " sentence > predict > match
+
     call extend(ret, sentenceRet)
-    call extend(ret, predictRet)
+
+    " longer predict should higher than match for smart recommend
+    if maxMatchLen > 0
+        let pPredict = len(ret)
+        let iPredict = len(predictRet) - 1
+        while iPredict >= 0
+            if predictRet[iPredict]['len'] > maxMatchLen
+                call insert(ret, remove(predictRet, iPredict), pPredict)
+            endif
+            let iPredict -= 1
+        endwhile
+    endif
+
     call extend(ret, matchRet)
+    call extend(ret, predictRet)
+    call extend(ret, tailRet)
 
     " crossDb should be placed at lower order,
     if g:ZFVimIM_crossDbPos >= len(ret)
