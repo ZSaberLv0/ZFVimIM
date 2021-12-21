@@ -109,6 +109,9 @@ vim 上的中文输入法, 特色:
     Plugin 'ZSaberLv0/ZFVimGitUtil' " 可选, 如果你希望定期自动清理词库 push 历史
     Plugin 'YourUserName/ZFVimIM_pinyin_base' " 你的词库
     Plugin 'ZSaberLv0/ZFVimIM_openapi' " 可选, 百度云输入法
+
+    " 国内辣鸡网络, 可以尝试用这个镜像, 与 github 互通
+    Plugin 'https://hub.fastgit.org/YourUserName/ZFVimIM_pinyin_base' " 你的词库
     ```
 
 
