@@ -384,9 +384,10 @@ function! ZFVimIME_backspace(...)
         call s:symbolForward(get(a:, 1, '<bs>'))
         return ''
     endif
-    let key = "\<c-e>\<bs>"
     if pumvisible()
-        let key .= "\<c-r>=ZFVimIME_callOmni()\<cr>"
+        let key = "\<c-e>\<bs>\<c-r>=ZFVimIME_callOmni()\<cr>"
+    else
+        let key = "\<bs>"
     endif
     call s:resetAfterInsert()
     call feedkeys(key, 'nt')
