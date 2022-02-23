@@ -45,9 +45,9 @@ endfunction
 
 function! ZFVimIM_rm(path)
     if has('unix')
-        silent call system('rm -rf "' . CygpathFix_absPath(a:path) . '"')
+        silent! call system('rm -rf "' . CygpathFix_absPath(a:path) . '"')
     elseif has('win32')
-        silent call system('rmdir /s/q "' . substitute(CygpathFix_absPath(a:path), '/', '\', 'g') . '"')
+        silent! call system('rmdir /s/q "' . substitute(CygpathFix_absPath(a:path), '/', '\', 'g') . '"')
     endif
 endfunction
 
