@@ -361,9 +361,14 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
     ```
     {
       'name' : '(required) name of your db',
-      'priority' : '(optional) 100 by default, smaller value means higher priority',
+      'priority' : '(optional) priority of the db, smaller value has higher priority, 100 by default',
       'switchable' : '(optional) 1 by default, when off, won't be enabled by ZFVimIME_keymap_next_n() series',
       'editable' : '(optional) 1 by default, when off, no dbEdit would applied',
+      'crossable' : '(optional) 1 by default, whether to show result when inputing in other db',
+                    // 1 : show only when full match
+                    // 2 : show and allow predict
+                    // 3 : show and allow predict and sub match
+                    // -N : show all, but limit max result to N
       'dbCallback' : '(optional) func(key, option), see ZFVimIM_complete',
                      // when dbCallback supplied, words would be fetched from this callback instead
       'menuLabel' : '(optional) string or function(item), when not empty, show label after key hint',

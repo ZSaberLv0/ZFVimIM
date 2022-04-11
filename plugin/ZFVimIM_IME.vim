@@ -890,12 +890,13 @@ function! s:addWordFromUserWord()
         let sentenceKey = ''
         let sentenceWord = ''
         let hasOtherDb = 0
-        let dbIdCur = g:ZFVimIM_db[g:ZFVimIM_dbIndex]['dbId']
+        let dbIdPrev = ''
         for word in s:userWord
             call s:addWord(word['dbId'], word['key'], word['word'])
 
             if !hasOtherDb
-                let hasOtherDb = (dbIdCur != word['dbId'])
+                let hasOtherDb = (dbIdPrev != '' && dbIdPrev != word['dbId'])
+                let dbIdPrev = word['dbId']
             endif
             let sentenceKey .= word['key']
             let sentenceWord .= word['word']

@@ -163,24 +163,36 @@ endfunction
 
 
 function! s:complete_crossDb(ret, key, option, db)
-    let crossDbLimit = get(a:option, 'crossDb', g:ZFVimIM_crossDbLimit)
-    if crossDbLimit <= 0
+    if get(a:option, 'crossDb', g:ZFVimIM_crossDbLimit) <= 0
         return
     endif
 
     let crossDbRetList = []
     for crossDbTmp in g:ZFVimIM_db
         if crossDbTmp['dbId'] == a:db['dbId']
+                    \ || crossDbTmp['crossable'] == 0
             continue
+        endif
+        if crossDbTmp['crossable'] < 0
+            let otherDbRetLimit = 0 - crossDbTmp['crossable']
+            let predict = otherDbRetLimit
+            let match = otherDbRetLimit
+        else
+            let otherDbRetLimit = 9999
+            let predict = ((g:ZFVimIM_crossDbAllowPredict && crossDbTmp['crossable'] >= 2) ? g:ZFVimIM_predictLimit : 0)
+            let match = ((g:ZFVimIM_crossDbAllowSubMatch && crossDbTmp['crossable'] >= 3) ? otherDbRetLimit : (0 - otherDbRetLimit))
         endif
         let otherDbRet = ZFVimIM_complete(a:key, {
                     \   'sentence' : 0,
                     \   'crossDb' : 0,
-                    \   'predict' : 0,
-                    \   'match' : (g:ZFVimIM_crossDbAllowSubMatch ? crossDbLimit : (0 - crossDbLimit)),
+                    \   'predict' : predict,
+                    \   'match' : match,
                     \   'db' : crossDbTmp,
                     \ })
         if !empty(otherDbRet)
+            if len(otherDbRet) > otherDbRetLimit
+                call remove(otherDbRet, otherDbRetLimit, -1)
+            endif
             call add(crossDbRetList, otherDbRet)
         endif
     endfor
@@ -188,8 +200,32 @@ function! s:complete_crossDb(ret, key, option, db)
         return
     endif
 
+    " before g:ZFVimIM_crossDbLimit, take first from each cross db, if match
     let crossDbIndex = 0
-    while !empty(crossDbRetList) && len(a:ret) < crossDbLimit
+    let hasMatch = 0
+    while !empty(crossDbRetList) && len(a:ret) < g:ZFVimIM_crossDbLimit
+        if empty(crossDbRetList[crossDbIndex])
+            call remove(crossDbRetList, crossDbIndex)
+            let crossDbIndex = crossDbIndex % len(crossDbRetList)
+            continue
+        endif
+        if crossDbRetList[crossDbIndex][0]['type'] == 'match'
+            call add(a:ret, crossDbRetList[crossDbIndex][0])
+            call remove(crossDbRetList[crossDbIndex], 0)
+        endif
+        let crossDbIndex = (crossDbIndex + 1) % len(crossDbRetList)
+        if crossDbIndex == 0
+            if !hasMatch
+                break
+            else
+                let hasMatch = 0
+            endif
+        endif
+    endwhile
+
+    " before g:ZFVimIM_crossDbLimit, take first from each cross db, even if not match
+    let crossDbIndex = 0
+    while !empty(crossDbRetList) && len(a:ret) < g:ZFVimIM_crossDbLimit
         if empty(crossDbRetList[crossDbIndex])
             call remove(crossDbRetList, crossDbIndex)
             let crossDbIndex = crossDbIndex % len(crossDbRetList)
@@ -199,6 +235,11 @@ function! s:complete_crossDb(ret, key, option, db)
         call remove(crossDbRetList[crossDbIndex], 0)
         let crossDbIndex = (crossDbIndex + 1) % len(crossDbRetList)
     endwhile
+
+    " after g:ZFVimIM_crossDbLimit, add all to tail, by db index
+    for crossDbRet in crossDbRetList
+        call extend(a:ret, crossDbRet)
+    endfor
 endfunction
 
 function! s:complete_predict(ret, key, option, db)
@@ -418,11 +459,6 @@ function! s:mergeResult(data, key, option, db)
         call extend(tailRet, remove(predictRet, g:ZFVimIM_predictLimitWhenMatch, len(predictRet) - 1))
     endif
 
-    " limit crossDb if has predict or match
-    if len(sentenceRet) + len(predictRet) + len(matchRet) >= 5 && len(crossDbRet) > g:ZFVimIM_crossDbLimitWhenMatch
-        call extend(tailRet, remove(crossDbRet, g:ZFVimIM_crossDbLimitWhenMatch, len(crossDbRet) - 1))
-    endif
-
     " order:
     "   exact match
     "   sentence
@@ -430,6 +466,7 @@ function! s:mergeResult(data, key, option, db)
     "   match
     "   predict(len <= match)
     "   tail
+    "   all crossDb
 
     let maxMatchLen = 0
     if !empty(matchRet)
@@ -465,15 +502,29 @@ function! s:mergeResult(data, key, option, db)
     call extend(ret, predictRet)
     call extend(ret, tailRet)
 
+
     " crossDb should be placed at lower order,
     if g:ZFVimIM_crossDbPos >= len(ret)
-        for item in crossDbRet
-            call add(ret, item)
-        endfor
+        call extend(ret, crossDbRet)
+    elseif len(crossDbRet) > g:ZFVimIM_crossDbLimit
+        let i = 0
+        let iEnd = g:ZFVimIM_crossDbLimit
+        while i < iEnd
+            call insert(ret, crossDbRet[i], g:ZFVimIM_crossDbPos + i)
+            let i += 1
+        endwhile
+        let iEnd = len(crossDbRet)
+        while i < iEnd
+            call insert(ret, crossDbRet[i], g:ZFVimIM_crossDbPos + i)
+            let i += 1
+        endwhile
     else
-        for item in crossDbRet
-            call insert(ret, item, g:ZFVimIM_crossDbPos)
-        endfor
+        let i = 0
+        let iEnd = len(crossDbRet)
+        while i < iEnd
+            call insert(ret, crossDbRet[i], g:ZFVimIM_crossDbPos + i)
+            let i += 1
+        endwhile
     endif
 
     return ret

@@ -15,14 +15,14 @@ if !exists('g:ZFVimIM_sentence')
     let g:ZFVimIM_sentence = 1
 endif
 
-if !exists('g:ZFVimIM_crossDbLimitWhenMatch')
-    let g:ZFVimIM_crossDbLimitWhenMatch = 2
-endif
 if !exists('g:ZFVimIM_crossDbLimit')
-    let g:ZFVimIM_crossDbLimit = 4
+    let g:ZFVimIM_crossDbLimit = 2
+endif
+if !exists('g:ZFVimIM_crossDbAllowPredict')
+    let g:ZFVimIM_crossDbAllowPredict = 1
 endif
 if !exists('g:ZFVimIM_crossDbAllowSubMatch')
-    let g:ZFVimIM_crossDbAllowSubMatch = 0
+    let g:ZFVimIM_crossDbAllowSubMatch = 1
 endif
 if !exists('g:ZFVimIM_crossDbPos')
     let g:ZFVimIM_crossDbPos = 5
@@ -77,13 +77,25 @@ endfunction
 " db : [
 "   {
 "     'dbId' : 'auto generated id',
-"     'name' : 'name of the db, ZFVimIM by default',
-"     'priority' : 'priority of the db, smaller value has higher priority, 100 by default',
-"     'switchable' : '1 by default, when off, won't be enabled by ZFVimIME_keymap_next_n() series',
-"     'editable' : '1 by default, when off, no dbEdit would applied',
-"     'dbCallback' : 'func(key, option), see ZFVimIM_complete',
+"     'name' : '(required) name of the db',
+"     'priority' : '(optional) priority of the db, smaller value has higher priority, 100 by default',
+"     'switchable' : '(optional) 1 by default, when off, won't be enabled by ZFVimIME_keymap_next_n() series',
+"     'editable' : '(optional) 1 by default, when off, no dbEdit would applied',
+"     'crossable' : '(optional) 1 by default, whether to show result when inputing in other db',
+"                   // 0 : disable
+"                   // 1 : show only when full match
+"                   // 2 : show and allow predict
+"                   // 3 : show and allow predict and sub match
+"                   // -N : show all, but limit max result to N
+"     'dbCallback' : '(optional) func(key, option), see ZFVimIM_complete',
+"                    // when dbCallback supplied, words would be fetched from this callback instead
 "     'menuLabel' : '(optional) string or function(item), when not empty, show label after key hint',
 "                   // when not set, or set to number `0`, we would show db name if it's completed from crossDb
+"     'implData' : {
+"       // extra data for impl
+"     },
+"
+"     // generated data:
 "     'dbMap' : { // split a-z to improve performance, ensured empty if no data
 "       'a' : [
 "         'a#啊,阿#3,2',
@@ -101,9 +113,6 @@ endfunction
 "       },
 "       ...
 "     ],
-"     'implData' : {
-"       // extra data for impl
-"     },
 "   },
 "   ...
 " ]
@@ -152,6 +161,7 @@ function! ZFVimIM_dbInit(option)
                 \   'priority' : -1,
                 \   'switchable' : 1,
                 \   'editable' : 1,
+                \   'crossable' : 1,
                 \   'dbCallback' : '',
                 \   'menuLabel' : 0,
                 \   'dbMap' : {},
