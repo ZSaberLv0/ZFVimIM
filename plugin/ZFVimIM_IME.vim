@@ -286,12 +286,7 @@ function! ZFVimIME_label(n, ...)
 
     let s:confirmFlag = 1
     if !s:completeItemAvailable
-        let item = curPage[n]
-        call add(s:userWord, item)
-        if item['len'] == len(s:keyboard)
-            call s:addWordFromUserWord()
-            let s:userWord = []
-        endif
+        call didChoose(curPage[n])
     endif
     call s:resetAfterInsert()
     call feedkeys(key, 'nt')
@@ -353,6 +348,12 @@ function! ZFVimIME_space(...)
     endif
     let s:confirmFlag = 1
     let key = "\<c-y>\<c-r>=ZFVimIME_callOmni()\<cr>"
+    if !s:completeItemAvailable
+        " treat as selected first item
+        " would break if use <down> and <space> to choose
+        " but there seems no other way to detect the choosed index
+        call s:didChoose(s:match_list[s:page * &pumheight])
+    endif
     call s:resetAfterInsert()
     call feedkeys(key, 'nt')
     return ''
@@ -696,7 +697,7 @@ function! s:getSeamless(cursor_positions)
     let seamless_column = s:seamless_positions[2]
     let len = a:cursor_positions[2] - seamless_column
     let snip = strpart(current_line, seamless_column - 1, len)
-    if len(snip) <= 0
+    if len(snip) < 0
         let s:seamless_positions = []
         return -1
     endif
@@ -709,14 +710,12 @@ function! s:getSeamless(cursor_positions)
 endfunction
 
 function! s:hasLeftChar()
-    let key = 0
     let before = getline('.')[col('.')-2]
     if before =~ '\s' || empty(before)
-        let key = 0
+        return 0
     elseif before =~# s:input_keys
-        let key = 1
+        return 1
     endif
-    return key
 endfunction
 
 function! s:omnifunc(start, keyboard)
@@ -728,8 +727,10 @@ function! s:omnifunc(start, keyboard)
         let current_line = substitute(current_line, '\\[a-z\\]', '  ', 'g')
         let seamless_column = s:getSeamless(cursor_positions)
         if seamless_column <= 0
-            let s:seamless_positions = []
             let seamless_column = 1
+        endif
+        if start_column <= seamless_column
+            return -3
         endif
         while start_column > seamless_column && current_line[(start_column-1) - 1] =~# s:input_keys
             let start_column -= 1
@@ -775,7 +776,7 @@ function! s:popupMenuList(complete)
         let labelstring = (label == 10 ? '0' : label)
         let labelstring = printf('%s ', labelstring)
         let left = strpart(s:keyboard, item['len'])
-        let complete_items['abbr'] = labelstring . item['word'] . left
+        let complete_items['abbr'] = labelstring . item['word'] . ' ' . left
         let complete_items['menu'] = ''
         if get(g:, 'ZFVimIM_showKeyHint', 1)
             if item['type'] == 'sentence' && !empty(get(item, 'sentenceList'))
@@ -796,7 +797,8 @@ function! s:popupMenuList(complete)
 
         let db = ZFVimIM_dbForId(item['dbId'])
         if type(get(db, 'menuLabel', 0)) == type(0)
-            if item['dbId'] != g:ZFVimIM_db[g:ZFVimIM_dbIndex]['dbId']
+            if get(g:, 'ZFVimIM_showCrossDbHint', 0)
+                        \ && item['dbId'] != g:ZFVimIM_db[g:ZFVimIM_dbIndex]['dbId']
                 let complete_items['menu'] .= '  <' . db['name'] . '>'
             endif
         else
@@ -851,7 +853,6 @@ endfunction
 
 let s:completeItemAvailable = (exists('v:completed_item') && exists('*json_encode'))
 let s:confirmFlag = 0
-let s:userWord=[]
 function! s:OnCompleteDone()
     if !s:confirmFlag
         return
@@ -869,18 +870,24 @@ function! s:OnCompleteDone()
         let s:userWord = []
         return
     endif
+    call s:didChoose(item)
+endfunction
 
-    if item['type'] == 'sentence'
-        for word in get(item, 'sentenceList', [])
-            call s:addWord(item['dbId'], word['key'], word['word'])
+let s:userWord=[]
+function! s:didChoose(item)
+    let s:seamless_positions[2] += len(a:item['word'])
+
+    if a:item['type'] == 'sentence'
+        for word in get(a:item, 'sentenceList', [])
+            call s:addWord(a:item['dbId'], word['key'], word['word'])
         endfor
         let s:userWord = []
         return
     endif
 
-    call add(s:userWord, item)
+    call add(s:userWord, a:item)
 
-    if item['len'] == len(s:keyboard)
+    if a:item['len'] == len(s:keyboard)
         call s:addWordFromUserWord()
         let s:userWord = []
     endif
