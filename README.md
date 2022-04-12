@@ -446,6 +446,9 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
     wubi converted from [ywvim](https://github.com/vim-scripts/ywvim),
     I'm not familiar with wubi,
     just put it here in case you want to test
+* [ZSaberLv0/ZFVimIM_english_base](https://github.com/ZSaberLv0/ZFVimIM_english_base) :
+    base english repo that only contain common words
+
 * [ZSaberLv0/ZFVimIM_pinyin](https://github.com/ZSaberLv0/ZFVimIM_pinyin) :
     pinyin repo which I personally used,
     update frequently
