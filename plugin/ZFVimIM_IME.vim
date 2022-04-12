@@ -286,7 +286,7 @@ function! ZFVimIME_label(n, ...)
 
     let s:confirmFlag = 1
     if !s:completeItemAvailable
-        call didChoose(curPage[n])
+        call s:didChoose(curPage[n])
     endif
     call s:resetAfterInsert()
     call feedkeys(key, 'nt')
