@@ -875,7 +875,7 @@ endfunction
 
 let s:userWord=[]
 function! s:didChoose(item)
-    let s:seamless_positions[2] += len(a:item['word'])
+    let s:seamless_positions[2] = s:start_column + len(a:item['word'])
 
     if a:item['type'] == 'sentence'
         for word in get(a:item, 'sentenceList', [])
