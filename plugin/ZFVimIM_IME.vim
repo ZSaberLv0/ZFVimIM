@@ -389,6 +389,16 @@ function! ZFVimIME_backspace(...)
         let key = "\<c-e>\<bs>\<c-r>=ZFVimIME_callOmni()\<cr>"
     else
         let key = "\<bs>"
+
+        if !empty(s:seamless_positions)
+            let pos = getpos('.')[2]
+            if pos > 1
+                let pos -= 1
+            endif
+            if pos < s:seamless_positions[2]
+                let s:seamless_positions = []
+            endif
+        endif
     endif
     call s:resetAfterInsert()
     call feedkeys(key, 'nt')
