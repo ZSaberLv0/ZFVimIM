@@ -64,6 +64,41 @@ function! s:ncm2_disable()
 endfunction
 call add(s:callback, ['s:ncm2_enable', 's:ncm2_disable'])
 
+" nvim-cmp : https://github.com/hrsh7th/nvim-cmp
+function! s:nvim_cmp_enable()
+    if get(g:, 'loaded_cmp', 0)
+        try
+lua << EOF
+            local cmp = require('cmp')
+            local config = require('cmp.config')
+            if config.global.enabled_ZFVimIM ~= nil then
+                cmp.setup({
+                    enabled = config.global.enabled_ZFVimIM,
+                })
+                config.global.enabled_ZFVimIM = nil
+            end
+EOF
+        catch
+        endtry
+    endif
+endfunction
+function! s:nvim_cmp_disable()
+    if get(g:, 'loaded_cmp', 0)
+        try
+lua << EOF
+            local cmp = require('cmp')
+            local config = require('cmp.config')
+            config.global.enabled_ZFVimIM = config.global.enabled
+            cmp.setup({
+                enabled = false,
+            })
+EOF
+        catch
+        endtry
+    endif
+endfunction
+call add(s:callback, ['s:nvim_cmp_enable', 's:nvim_cmp_disable'])
+
 " vim-auto-popup : https://github.com/skywind3000/vim-auto-popmenu
 function! s:vimautopopup_enable()
     if get(g:, 'ZFVimIM_autoDisable_vimautopopup', 1) && exists(':ApcEnable') != 0
