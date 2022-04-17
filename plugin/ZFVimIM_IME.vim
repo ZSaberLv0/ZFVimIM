@@ -396,7 +396,7 @@ function! ZFVimIME_backspace(...)
                 let pos -= 1
             endif
             if pos < s:seamless_positions[2]
-                let s:seamless_positions = []
+                let s:seamless_positions[2] = pos
             endif
         endif
     endif
