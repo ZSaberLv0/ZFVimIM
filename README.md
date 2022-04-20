@@ -296,15 +296,15 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
     start or stop, must called during Insert Mode, as
     `<c-r>=ZFVimIME_start()<cr>`
 
-* `:IMAdd word key` or `ZFVimIM_wordAdd(word, key)`
+* `:IMAdd word key` or `ZFVimIM_wordAdd(db, word, key)`
 
     manually add word
 
-* `:IMRemove word [key]` or `ZFVimIM_wordRemove(word [, key])`
+* `:IMRemove word [key]` or `ZFVimIM_wordRemove(db, word [, key])`
 
     manually remove word
 
-* `:IMReorder word [key]` or `ZFVimIM_wordReorder(word [, key])`
+* `:IMReorder word [key]` or `ZFVimIM_wordReorder(db, word [, key])`
 
     manually reorder word priority,
     by reducing it's input history count to a proper value
@@ -332,6 +332,7 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
         [
           {
             'dbId' : 'match from which db',
+            'priority' : 'priority of the db, smaller value has higher priority, when empty, use db's priority by default',
             'len' : 'match count in key',
             'key' : 'matched full key',
             'word' : 'matched word',

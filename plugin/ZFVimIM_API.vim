@@ -221,20 +221,20 @@ function! ZFVimIM_dbEditApply(db, dbEdit)
     call ZFVimIM_DEBUG_profileStop()
 endfunction
 
-function! ZFVimIM_wordAdd(word, key, ...)
-    call s:dbEdit('add', a:word, a:key, get(a:, 1, {}))
+function! ZFVimIM_wordAdd(db, word, key)
+    call s:dbEdit(a:db, a:word, a:key, 'add')
 endfunction
-command! -nargs=+ IMAdd :call ZFVimIM_wordAdd(<f-args>)
+command! -nargs=+ IMAdd :call ZFVimIM_wordAdd({}, <f-args>)
 
-function! ZFVimIM_wordRemove(word, ...)
-    call s:dbEditWildKey('remove', a:word, get(a:, 1, ''), get(a:, 2, {}))
+function! ZFVimIM_wordRemove(db, word, ...)
+    call s:dbEditWildKey(a:db, a:word, get(a:, 1, ''), 'remove')
 endfunction
-command! -nargs=+ IMRemove :call ZFVimIM_wordRemove(<f-args>)
+command! -nargs=+ IMRemove :call ZFVimIM_wordRemove({}, <f-args>)
 
-function! ZFVimIM_wordReorder(word, ...)
-    call s:dbEditWildKey('reorder', a:word, get(a:, 1, ''), get(a:, 2, {}))
+function! ZFVimIM_wordReorder(db, word, ...)
+    call s:dbEditWildKey(a:db, a:word, get(a:, 1, ''), 'reorder')
 endfunction
-command! -nargs=+ IMReorder :call ZFVimIM_wordReorder(<f-args>)
+command! -nargs=+ IMReorder :call ZFVimIM_wordReorder({}, <f-args>)
 
 function! s:dbItemReorderFunc(item1, item2)
     return (a:item2['count'] - a:item1['count'])
@@ -501,7 +501,7 @@ function! s:dbSave(db, dbFile, ...)
 endfunction
 
 " ============================================================
-function! s:dbEditWildKey(action, word, key, db)
+function! s:dbEditWildKey(db, word, key, action)
     if empty(a:db)
         if g:ZFVimIM_dbIndex >= len(g:ZFVimIM_db)
             return
@@ -514,7 +514,7 @@ function! s:dbEditWildKey(action, word, key, db)
         return
     endif
     if !empty(a:key)
-        call s:dbEdit(a:action, a:word, a:key, db)
+        call s:dbEdit(db, a:word, a:key, a:action)
         return
     endif
     if empty(a:word)
@@ -535,11 +535,11 @@ function! s:dbEditWildKey(action, word, key, db)
     endfor
 
     for key in keyToApply
-        call s:dbEdit(a:action, a:word, key, db)
+        call s:dbEdit(db, a:word, key, a:action)
     endfor
 endfunction
 
-function! s:dbEdit(action, word, key, db)
+function! s:dbEdit(db, word, key, action)
     if empty(a:db)
         if g:ZFVimIM_dbIndex >= len(g:ZFVimIM_db)
             return

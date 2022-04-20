@@ -856,7 +856,7 @@ function! s:addWord(dbId, key, word)
     if dbIndex < 0
         return
     endif
-    call ZFVimIM_wordAdd(a:word, a:key, g:ZFVimIM_db[dbIndex])
+    call ZFVimIM_wordAdd(g:ZFVimIM_db[dbIndex], a:word, a:key)
 
     let g:ZFVimIM_event_OnAddWord = {
                 \   'dbId' : a:dbId,
