@@ -901,6 +901,9 @@ function! s:didChoose(item)
         for word in get(a:item, 'sentenceList', [])
             call s:addWord(a:item['dbId'], word['key'], word['word'])
         endfor
+        if has_key(a:item, 'word') && !empty(a:item['word'])
+            call ZFVimIM_wordAdd({}, a:item['word'], a:item['key'])
+        endif
         let s:userWord = []
         return
     endif
