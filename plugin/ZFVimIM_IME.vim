@@ -471,6 +471,7 @@ function! s:IMEEventStart()
         autocmd!
         autocmd InsertEnter * call s:OnInsertEnter()
         autocmd InsertLeave * call s:OnInsertLeave()
+        autocmd CursorMovedI * call s:OnCursorMovedI()
         if exists('##CompleteDone')
             autocmd CompleteDone * call s:OnCompleteDone()
         endif
@@ -848,6 +849,10 @@ function! s:OnInsertEnter()
 endfunction
 function! s:OnInsertLeave()
     call s:resetState()
+endfunction
+function! s:OnCursorMovedI()
+    let s:seamless_positions = getpos('.')
+    let s:enter_to_confirm = 0
 endfunction
 
 
