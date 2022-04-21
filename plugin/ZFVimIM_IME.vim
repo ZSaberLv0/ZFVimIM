@@ -3,8 +3,8 @@
 if !exists('g:ZFVimIM_autoAddWordLen')
     let g:ZFVimIM_autoAddWordLen=3*4
 endif
-" function(userWords)
-" userWords: see ZFVimIM_complete
+" function(userWord)
+" userWord: see ZFVimIM_complete
 " return: 1 if need add word
 if !exists('g:ZFVimIM_autoAddWordChecker')
     let g:ZFVimIM_autoAddWordChecker=[]
@@ -39,6 +39,9 @@ augroup ZFVimIME_augroup
 
     " called when omni popup update, you may obtain current state by ZFVimIME_state()
     autocmd User ZFVimIM_event_OnUpdateOmni silent
+
+    " called when choosed omni popup item, use `g:ZFVimIM_choosedWord` to obtain choosed word
+    autocmd User ZFVimIM_event_OnCompleteDone silent
 augroup END
 
 function! ZFVimIME_init()
@@ -250,7 +253,9 @@ function! ZFVimIME_state()
                 \   'key' : s:keyboard,
                 \   'list' : s:match_list,
                 \   'page' : s:page,
-                \   'start_column' : s:start_column,
+                \   'startColumn' : s:start_column,
+                \   'seamlessPos' : s:seamless_positions,
+                \   'userWord' : s:userWord,
                 \ }
 endfunction
 
@@ -895,6 +900,10 @@ endfunction
 
 let s:userWord=[]
 function! s:didChoose(item)
+    let g:ZFVimIM_choosedWord = a:item
+    doautocmd User ZFVimIM_event_OnCompleteDone
+    unlet g:ZFVimIM_choosedWord
+
     let s:seamless_positions[2] = s:start_column + len(a:item['word'])
 
     if a:item['type'] == 'sentence'
