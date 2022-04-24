@@ -336,7 +336,7 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
             'len' : 'match count in key',
             'key' : 'matched full key',
             'word' : 'matched word',
-            'type' : 'type of completion: sentence/match/predict',
+            'type' : 'type of completion: sentence/match/predict/subMatch',
             'sentenceList' : [ // (optional) for sentence type only, list of word that complete as sentence
               {
                 'key' : '',
@@ -365,11 +365,12 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
       'priority' : '(optional) priority of the db, smaller value has higher priority, 100 by default',
       'switchable' : '(optional) 1 by default, when off, won't be enabled by ZFVimIME_keymap_next_n() series',
       'editable' : '(optional) 1 by default, when off, no dbEdit would applied',
-      'crossable' : '(optional) 1 by default, whether to show result when inputing in other db',
+      'crossable' : '(optional) 2 by default, whether to show result when inputing in other db',
+                    // 0 : disable
                     // 1 : show only when full match
                     // 2 : show and allow predict
                     // 3 : show and allow predict and sub match
-                    // -N : show all, but limit max result to N
+      'crossDbLimit' : '(optional) 2 by default, when crossable, limit max result to this num',
       'dbCallback' : '(optional) func(key, option), see ZFVimIM_complete',
                      // when dbCallback supplied, words would be fetched from this callback instead
       'menuLabel' : '(optional) string or function(item), when not empty, show label after key hint',

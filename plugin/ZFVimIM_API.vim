@@ -81,12 +81,12 @@ endfunction
 "     'priority' : '(optional) priority of the db, smaller value has higher priority, 100 by default',
 "     'switchable' : '(optional) 1 by default, when off, won't be enabled by ZFVimIME_keymap_next_n() series',
 "     'editable' : '(optional) 1 by default, when off, no dbEdit would applied',
-"     'crossable' : '(optional) 1 by default, whether to show result when inputing in other db',
+"     'crossable' : '(optional) 2 by default, whether to show result when inputing in other db',
 "                   // 0 : disable
 "                   // 1 : show only when full match
 "                   // 2 : show and allow predict
 "                   // 3 : show and allow predict and sub match
-"                   // -N : show all, but limit max result to N
+"     'crossDbLimit' : '(optional) 2 by default, when crossable, limit max result to this num',
 "     'dbCallback' : '(optional) func(key, option), see ZFVimIM_complete',
 "                    // when dbCallback supplied, words would be fetched from this callback instead
 "     'menuLabel' : '(optional) string or function(item), when not empty, show label after key hint',
@@ -161,7 +161,8 @@ function! ZFVimIM_dbInit(option)
                 \   'priority' : -1,
                 \   'switchable' : 1,
                 \   'editable' : 1,
-                \   'crossable' : 1,
+                \   'crossable' : 2,
+                \   'crossDbLimit' : 2,
                 \   'dbCallback' : '',
                 \   'menuLabel' : 0,
                 \   'dbMap' : {},

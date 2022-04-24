@@ -818,7 +818,7 @@ function! s:popupMenuList(complete)
 
         let db = ZFVimIM_dbForId(item['dbId'])
         if type(get(db, 'menuLabel', 0)) == type(0)
-            if get(g:, 'ZFVimIM_showCrossDbHint', 0)
+            if get(g:, 'ZFVimIM_showCrossDbHint', 1)
                         \ && item['dbId'] != g:ZFVimIM_db[g:ZFVimIM_dbIndex]['dbId']
                 let complete_items['menu'] .= '  <' . db['name'] . '>'
             endif
@@ -831,7 +831,7 @@ function! s:popupMenuList(complete)
         endif
 
         if get(g:, 'ZFVimIME_DEBUG', 0)
-            let complete_items['menu'] .= '  (' . item['type'] . ') ' . strpart(item['key'], 0, item['len'])
+            let complete_items['menu'] .= printf('  (%s) <%s> %s', item['type'], db['name'], strpart(item['key'], 0, item['len']))
         endif
 
         let complete_items['dup'] = 1

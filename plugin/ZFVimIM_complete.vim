@@ -21,7 +21,7 @@
 "     'len' : 'match count in key',
 "     'key' : 'matched full key',
 "     'word' : 'matched word',
-"     'type' : 'type of completion: sentence/predict/match',
+"     'type' : 'type of completion: sentence/match/predict/subMatch',
 "     'sentenceList' : [ // (optional) for sentence type only, list of word that complete as sentence
 "       {
 "         'key' : '',
@@ -74,12 +74,13 @@ function! s:completeDefault(key, ...)
                 \   'crossDb' : [],
                 \   'predict' : [],
                 \   'match' : [],
+                \   'subMatch' : [],
                 \ }
 
     call s:complete_sentence(data['sentence'], a:key, option, db)
     call s:complete_crossDb(data['crossDb'], a:key, option, db)
     call s:complete_predict(data['predict'], a:key, option, db)
-    call s:complete_match(data['match'], a:key, option, db)
+    call s:complete_match(data['match'], data['subMatch'], a:key, option, db)
 
     return s:mergeResult(data, a:key, option, db)
 endfunction
@@ -87,22 +88,16 @@ endfunction
 
 " complete exact match only
 function! ZFVimIM_completeExact(key, ...)
-    let max = get(a:, 1, 10)
-    let ret = []
-    let keyLen = len(a:key)
-    for word in ZFVimIM_complete(a:key, {
+    let max = get(a:, 1, -1)
+    if max < 0
+        let max = 99999
+    endif
+    return ZFVimIM_complete(a:key, {
                 \   'sentence' : 0,
+                \   'crossDb' : 0,
                 \   'predict' : 0,
-                \   'match' : 10,
+                \   'match' : (0 - max),
                 \ })
-        if len(ret) >= max
-            break
-        endif
-        if word['len'] == keyLen
-            call add(ret, word)
-        endif
-    endfor
-    return ret
 endfunction
 
 
@@ -171,22 +166,16 @@ function! s:complete_crossDb(ret, key, option, db)
     for crossDbTmp in g:ZFVimIM_db
         if crossDbTmp['dbId'] == a:db['dbId']
                     \ || crossDbTmp['crossable'] == 0
+                    \ || crossDbTmp['crossDbLimit'] <= 0
             continue
         endif
-        if crossDbTmp['crossable'] < 0
-            let otherDbRetLimit = 0 - crossDbTmp['crossable']
-            let predict = otherDbRetLimit
-            let match = otherDbRetLimit
-        else
-            let otherDbRetLimit = 9999
-            let predict = ((g:ZFVimIM_crossDbAllowPredict && crossDbTmp['crossable'] >= 2) ? g:ZFVimIM_predictLimit : 0)
-            let match = ((g:ZFVimIM_crossDbAllowSubMatch && crossDbTmp['crossable'] >= 3) ? otherDbRetLimit : (0 - otherDbRetLimit))
-        endif
+
+        let otherDbRetLimit = crossDbTmp['crossDbLimit']
         let otherDbRet = ZFVimIM_complete(a:key, {
                     \   'sentence' : 0,
                     \   'crossDb' : 0,
-                    \   'predict' : predict,
-                    \   'match' : match,
+                    \   'predict' : ((g:ZFVimIM_crossDbAllowPredict && crossDbTmp['crossable'] >= 2) ? otherDbRetLimit : 0),
+                    \   'match' : ((g:ZFVimIM_crossDbAllowSubMatch && crossDbTmp['crossable'] >= 3) ? otherDbRetLimit : (0 - otherDbRetLimit)),
                     \   'db' : crossDbTmp,
                     \ })
         if !empty(otherDbRet)
@@ -292,12 +281,12 @@ function! s:complete_predict(ret, key, option, db)
     endwhile
 endfunction
 
-function! s:complete_match(ret, key, option, db)
+function! s:complete_match(matchRet, subMatchRet, key, option, db)
     let matchLimit = get(a:option, 'match', g:ZFVimIM_matchLimit)
     if matchLimit < 0
-        call s:complete_match_exact(a:ret, a:key, a:option, a:db, 0 - matchLimit)
+        call s:complete_match_exact(a:matchRet, a:key, a:option, a:db, 0 - matchLimit)
     elseif matchLimit > 0
-        call s:complete_match_allowSubMatch(a:ret, a:key, a:option, a:db, matchLimit)
+        call s:complete_match_allowSubMatch(a:matchRet, a:subMatchRet, a:key, a:option, a:db, matchLimit)
     endif
 endfunction
 
@@ -347,9 +336,10 @@ function! s:complete_match_exact(ret, key, option, db, matchLimit)
     endwhile
 endfunction
 
-function! s:complete_match_allowSubMatch(ret, key, option, db, matchLimit)
+function! s:complete_match_allowSubMatch(matchRet, subMatchRet, key, option, db, matchLimit)
     let matchLimit = a:matchLimit
-    let p = len(a:key)
+    let keyLen = len(a:key)
+    let p = keyLen
     while p > 0 && matchLimit > 0
         let subKey = strpart(a:key, 0, p)
         let index = ZFVimIM_dbSearch(a:db, a:key[0],
@@ -377,13 +367,14 @@ function! s:complete_match_allowSubMatch(ret, key, option, db, matchLimit)
         let matchLimit -= numToAdd
         let wordIndex = 0
         while wordIndex < numToAdd
-            call add(a:ret, {
+            let isMatch = (p == keyLen)
+            call add(isMatch ? a:matchRet : a:subMatchRet, {
                         \   'dbId' : a:db['dbId'],
                         \   'priority' : a:db['priority'],
                         \   'len' : p,
                         \   'key' : subKey,
                         \   'word' : dbItem['wordList'][wordIndex],
-                        \   'type' : 'match',
+                        \   'type' : (isMatch ? 'match' : 'subMatch'),
                         \ })
             let wordIndex += 1
         endwhile
@@ -394,6 +385,16 @@ endfunction
 
 function! s:sortByPriorityFunc(word0, word1)
     return a:word0['priority'] - a:word1['priority']
+endfunction
+
+function! s:sortByKeyLenAndPriorityFunc(word0, word1)
+    if a:word0['len'] > a:word1['len']
+        return -1
+    elseif a:word0['len'] < a:word1['len']
+        return 1
+    else
+        return a:word0['priority'] - a:word1['priority']
+    endif
 endfunction
 
 function! s:removeDuplicate(ret, exists)
@@ -425,6 +426,7 @@ function! s:mergeResult(data, key, option, db)
     let crossDbRet = a:data['crossDb']
     let predictRet = a:data['predict']
     let matchRet = a:data['match']
+    let subMatchRet = a:data['subMatch']
     let tailRet = []
 
     " remove duplicate
@@ -433,6 +435,7 @@ function! s:mergeResult(data, key, option, db)
     call s:removeDuplicate(matchRet, exists)
     call s:removeDuplicate(predictRet, exists)
     call s:removeDuplicate(sentenceRet, exists)
+    call s:removeDuplicate(subMatchRet, exists)
     call s:removeDuplicate(crossDbRet, exists)
 
     " crossDb may return different type
@@ -443,19 +446,21 @@ function! s:mergeResult(data, key, option, db)
             call add(sentenceRet, remove(crossDbRet, iCrossDb))
         elseif crossDbRet[iCrossDb]['type'] == 'predict'
             call add(predictRet, remove(crossDbRet, iCrossDb))
+        elseif crossDbRet[iCrossDb]['type'] == 'match'
+            call add(matchRet, remove(crossDbRet, iCrossDb))
         endif
         let iCrossDb -= 1
     endwhile
 
     " sort by priority
-    let Fn_sortFunc = function('s:sortByPriorityFunc')
-    call sort(sentenceRet, Fn_sortFunc)
-    call sort(crossDbRet, Fn_sortFunc)
-    call sort(predictRet, Fn_sortFunc)
-    call sort(matchRet, Fn_sortFunc)
+    call sort(sentenceRet, function('s:sortByPriorityFunc'))
+    call sort(crossDbRet, function('s:sortByPriorityFunc'))
+    call sort(predictRet, function('s:sortByKeyLenAndPriorityFunc'))
+    call sort(matchRet, function('s:sortByPriorityFunc'))
+    call sort(subMatchRet, function('s:sortByKeyLenAndPriorityFunc'))
 
     " limit predict if has match
-    if len(sentenceRet) + len(matchRet) >= 5 && len(predictRet) > g:ZFVimIM_predictLimitWhenMatch
+    if len(sentenceRet) + len(matchRet) + len(subMatchRet) >= 5 && len(predictRet) > g:ZFVimIM_predictLimitWhenMatch
         call extend(tailRet, remove(predictRet, g:ZFVimIM_predictLimitWhenMatch, len(predictRet) - 1))
     endif
 
@@ -463,30 +468,18 @@ function! s:mergeResult(data, key, option, db)
     "   exact match
     "   sentence
     "   predict(len > match)
-    "   match
+    "   subMatch
     "   predict(len <= match)
     "   tail
     "   all crossDb
-
-    let maxMatchLen = 0
-    if !empty(matchRet)
-        let maxMatchLen = matchRet[0]['len']
-    endif
-
-    " exact match should have highest priority
-    " to prevent some auto-corrected word placed at top
-    let keyLen = len(a:key)
-    let iMatch = len(matchRet) - 1
-    while iMatch >= 0
-        if matchRet[iMatch]['len'] == keyLen
-            call insert(ret, remove(matchRet, iMatch), 0)
-        endif
-        let iMatch -= 1
-    endwhile
-
+    call extend(ret, matchRet)
     call extend(ret, sentenceRet)
 
     " longer predict should higher than match for smart recommend
+    let maxMatchLen = 0
+    if !empty(subMatchRet)
+        let maxMatchLen = subMatchRet[0]['len']
+    endif
     if maxMatchLen > 0
         let pPredict = len(ret)
         let iPredict = len(predictRet) - 1
@@ -498,7 +491,7 @@ function! s:mergeResult(data, key, option, db)
         endwhile
     endif
 
-    call extend(ret, matchRet)
+    call extend(ret, subMatchRet)
     call extend(ret, predictRet)
     call extend(ret, tailRet)
 
