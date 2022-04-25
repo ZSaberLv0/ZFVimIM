@@ -439,8 +439,8 @@ function! s:mergeResult(data, key, option, db)
     call s:removeDuplicate(crossDbRet, exists)
 
     " crossDb may return different type
-    let iCrossDb = len(crossDbRet) - 1
-    while iCrossDb >= 0
+    let iCrossDb = 0
+    while iCrossDb < len(crossDbRet)
         if 0
         elseif crossDbRet[iCrossDb]['type'] == 'sentence'
             call add(sentenceRet, remove(crossDbRet, iCrossDb))
@@ -448,8 +448,9 @@ function! s:mergeResult(data, key, option, db)
             call add(predictRet, remove(crossDbRet, iCrossDb))
         elseif crossDbRet[iCrossDb]['type'] == 'match'
             call add(matchRet, remove(crossDbRet, iCrossDb))
+        else
+            let iCrossDb += 1
         endif
-        let iCrossDb -= 1
     endwhile
 
     " sort by priority
@@ -481,13 +482,13 @@ function! s:mergeResult(data, key, option, db)
         let maxMatchLen = subMatchRet[0]['len']
     endif
     if maxMatchLen > 0
-        let pPredict = len(ret)
-        let iPredict = len(predictRet) - 1
-        while iPredict >= 0
+        let iPredict = 0
+        while iPredict < len(predictRet)
             if predictRet[iPredict]['len'] > maxMatchLen
-                call insert(ret, remove(predictRet, iPredict), pPredict)
+                call add(ret, remove(predictRet, iPredict))
+            else
+                let iPredict += 1
             endif
-            let iPredict -= 1
         endwhile
     endif
 
