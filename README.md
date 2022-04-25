@@ -42,6 +42,8 @@ Outstanding features / why another remake:
 
 ![](https://raw.githubusercontent.com/ZSaberLv0/ZFVimIM/master/preview.gif)
 
+![](https://raw.githubusercontent.com/ZSaberLv0/ZFVimIM/master/preview_crossdb.gif)
+
 if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&tab=repositories&q=ZFVim) for a list of my vim plugins,
 or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
 

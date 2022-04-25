@@ -24,6 +24,8 @@ vim 上的中文输入法, 特色:
 
 ![](https://raw.githubusercontent.com/ZSaberLv0/ZFVimIM/master/preview.gif)
 
+![](https://raw.githubusercontent.com/ZSaberLv0/ZFVimIM/master/preview_crossdb.gif)
+
 如果你喜欢本插件, 给开发者[买个煎饼补补脑](https://github.com/ZSaberLv0/ZSaberLv0)
 
 
