@@ -529,6 +529,9 @@ function! s:IME_stop()
 endfunction
 
 function! s:IME_syncBuffer_delay(...)
+    if !get(g:, 'ZFVimIME_syncBuffer', 1)
+        return
+    endif
     if get(b:, 'ZFVimIME_started', 0) != s:started
                 \ || &iminsert != s:started
         if s:started
@@ -543,6 +546,9 @@ function! s:IME_syncBuffer_delay(...)
     redraw!
 endfunction
 function! s:IME_syncBuffer(...)
+    if !get(g:, 'ZFVimIME_syncBuffer', 1)
+        return
+    endif
     if get(b:, 'ZFVimIME_started', 0) != s:started
                 \ || &iminsert != s:started
         if has('timers')
