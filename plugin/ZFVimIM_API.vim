@@ -15,14 +15,11 @@ if !exists('g:ZFVimIM_sentence')
     let g:ZFVimIM_sentence = 1
 endif
 
+if !exists('g:ZFVimIM_crossable')
+    let g:ZFVimIM_crossable = 2
+endif
 if !exists('g:ZFVimIM_crossDbLimit')
     let g:ZFVimIM_crossDbLimit = 2
-endif
-if !exists('g:ZFVimIM_crossDbAllowPredict')
-    let g:ZFVimIM_crossDbAllowPredict = 1
-endif
-if !exists('g:ZFVimIM_crossDbAllowSubMatch')
-    let g:ZFVimIM_crossDbAllowSubMatch = 1
 endif
 if !exists('g:ZFVimIM_crossDbPos')
     let g:ZFVimIM_crossDbPos = 5
@@ -81,12 +78,12 @@ endfunction
 "     'priority' : '(optional) priority of the db, smaller value has higher priority, 100 by default',
 "     'switchable' : '(optional) 1 by default, when off, won't be enabled by ZFVimIME_keymap_next_n() series',
 "     'editable' : '(optional) 1 by default, when off, no dbEdit would applied',
-"     'crossable' : '(optional) 2 by default, whether to show result when inputing in other db',
+"     'crossable' : '(optional) g:ZFVimIM_crossable by default, whether to show result when inputing in other db',
 "                   // 0 : disable
 "                   // 1 : show only when full match
 "                   // 2 : show and allow predict
 "                   // 3 : show and allow predict and sub match
-"     'crossDbLimit' : '(optional) 2 by default, when crossable, limit max result to this num',
+"     'crossDbLimit' : '(optional) g:ZFVimIM_crossDbLimit by default, when crossable, limit max result to this num',
 "     'dbCallback' : '(optional) func(key, option), see ZFVimIM_complete',
 "                    // when dbCallback supplied, words would be fetched from this callback instead
 "     'menuLabel' : '(optional) string or function(item), when not empty, show label after key hint',
@@ -161,8 +158,8 @@ function! ZFVimIM_dbInit(option)
                 \   'priority' : -1,
                 \   'switchable' : 1,
                 \   'editable' : 1,
-                \   'crossable' : 2,
-                \   'crossDbLimit' : 2,
+                \   'crossable' : g:ZFVimIM_crossable,
+                \   'crossDbLimit' : g:ZFVimIM_crossDbLimit,
                 \   'dbCallback' : '',
                 \   'menuLabel' : 0,
                 \   'dbMap' : {},

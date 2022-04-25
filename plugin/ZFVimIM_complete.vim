@@ -174,8 +174,8 @@ function! s:complete_crossDb(ret, key, option, db)
         let otherDbRet = ZFVimIM_complete(a:key, {
                     \   'sentence' : 0,
                     \   'crossDb' : 0,
-                    \   'predict' : ((g:ZFVimIM_crossDbAllowPredict && crossDbTmp['crossable'] >= 2) ? otherDbRetLimit : 0),
-                    \   'match' : ((g:ZFVimIM_crossDbAllowSubMatch && crossDbTmp['crossable'] >= 3) ? otherDbRetLimit : (0 - otherDbRetLimit)),
+                    \   'predict' : ((crossDbTmp['crossable'] >= 2) ? otherDbRetLimit : 0),
+                    \   'match' : ((crossDbTmp['crossable'] >= 3) ? otherDbRetLimit : (0 - otherDbRetLimit)),
                     \   'db' : crossDbTmp,
                     \ })
         if !empty(otherDbRet)
