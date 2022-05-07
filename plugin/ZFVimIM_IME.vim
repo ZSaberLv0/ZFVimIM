@@ -24,6 +24,10 @@ augroup ZFVimIME_augroup
 
     autocmd User ZFVimIM_event_OnStop silent
 
+    autocmd User ZFVimIM_event_OnEnable silent
+
+    autocmd User ZFVimIM_event_OnDisable silent
+
     " added word can be checked by g:ZFVimIM_event_OnAddWord : {
     "   'dbId' : 'add to which db',
     "   'key' : 'matched full key',
@@ -105,21 +109,21 @@ function! ZFVimIME_keymap_next_v()
 endfunction
 
 function! ZFVimIME_keymap_add_n()
-    if !s:started
+    if !ZFVimIME_started()
         call ZFVimIME_start()
     endif
     call feedkeys(":IMAdd\<space>\<c-c>q:kA", 'nt')
     return ''
 endfunction
 function! ZFVimIME_keymap_add_i()
-    if !s:started
+    if !ZFVimIME_started()
         call ZFVimIME_start()
     endif
     call feedkeys("\<esc>:IMAdd\<space>\<c-c>q:kA", 'nt')
     return ''
 endfunction
 function! ZFVimIME_keymap_add_v()
-    if !s:started
+    if !ZFVimIME_started()
         call ZFVimIME_start()
     endif
     call feedkeys("\"ty:IMAdd\<space>\<c-r>t\<space>\<c-c>q:kA", 'nt')
@@ -127,21 +131,21 @@ function! ZFVimIME_keymap_add_v()
 endfunction
 
 function! ZFVimIME_keymap_remove_n()
-    if !s:started
+    if !ZFVimIME_started()
         call ZFVimIME_start()
     endif
     call feedkeys(":IMRemove\<space>\<c-c>q:kA", 'nt')
     return ''
 endfunction
 function! ZFVimIME_keymap_remove_i()
-    if !s:started
+    if !ZFVimIME_started()
         call ZFVimIME_start()
     endif
     call feedkeys("\<esc>:IMRemove\<space>\<c-c>q:kA", 'nt')
     return ''
 endfunction
 function! ZFVimIME_keymap_remove_v()
-    if !s:started
+    if !ZFVimIME_started()
         call ZFVimIME_start()
     endif
     call feedkeys("\"tx:IMRemove\<space>\<c-r>t\<cr>", 'nt')
@@ -150,11 +154,11 @@ endfunction
 
 if exists('*state')
     function! s:updateChecker()
-        return !s:started || mode() != 'i' || match(state(), 'm') >= 0
+        return !ZFVimIME_started() || mode() != 'i' || match(state(), 'm') >= 0
     endfunction
 else
     function! s:updateChecker()
-        return !s:started || mode() != 'i'
+        return !ZFVimIME_started() || mode() != 'i'
     endfunction
 endif
 function! ZFVimIME_keymap_update_i()
@@ -179,45 +183,38 @@ function! ZFVimIME_started()
     return s:started
 endfunction
 
+function! ZFVimIME_enabled()
+    return s:enabled
+endfunction
+
 function! ZFVimIME_toggle()
-    if s:started
+    if ZFVimIME_started()
         call ZFVimIME_stop()
     else
         call ZFVimIME_start()
     endif
 endfunction
 
-function! s:fixIMState()
-    if mode() == 'i'
-        " :h i_CTRL-^
-        call feedkeys(nr2char(30), 'nt')
-        if &iminsert != s:started
-            call feedkeys(nr2char(30), 'nt')
-        endif
-    endif
-endfunction
 function! ZFVimIME_start()
-    call ZFVimIME_stop()
-    doautocmd User ZFVimIM_event_OnStart
+    if s:started
+        return
+    endif
     let s:started = 1
-    let &iminsert = s:started
-    call s:IME_start()
-    call s:fixIMState()
+    doautocmd User ZFVimIM_event_OnStart
+    call s:IME_enableStateUpdate()
 endfunction
 
 function! ZFVimIME_stop()
     if !s:started
-        return ''
+        return
     endif
     let s:started = 0
-    let &iminsert = s:started
-    call s:IME_stop()
-    call s:fixIMState()
+    call s:IME_enableStateUpdate()
     doautocmd User ZFVimIM_event_OnStop
 endfunction
 
 function! ZFVimIME_next()
-    if !s:started
+    if !ZFVimIME_started()
         return ZFVimIME_start()
     endif
     call ZFVimIME_switchToIndex(g:ZFVimIM_dbIndex + 1)
@@ -244,7 +241,7 @@ function! ZFVimIME_switchToIndex(dbIndex)
         return
     endif
     let g:ZFVimIM_dbIndex = dbIndex
-    call s:IME_update()
+    let b:keymap_name = ZFVimIME_IMEName()
     doautocmd User ZFVimIM_event_OnDbChange
 endfunction
 
@@ -490,21 +487,33 @@ endfunction
 
 function! s:init()
     let s:started = 0
+    let s:enabled = 0
     let s:seamless_positions = []
     let s:start_column = 1
     let s:all_keys = '^[0-9a-z]$'
     let s:input_keys = '^[a-z]$'
 endfunction
 
-function! s:IME_update()
-    if g:ZFVimIM_dbIndex < len(g:ZFVimIM_db)
-        let b:keymap_name=g:ZFVimIM_db[g:ZFVimIM_dbIndex]['name']
+function! ZFVimIME_IMEName()
+    if ZFVimIME_started() && g:ZFVimIM_dbIndex < len(g:ZFVimIM_db)
+        return g:ZFVimIM_db[g:ZFVimIM_dbIndex]['name']
     else
-        let b:keymap_name='ZFVimIM'
+        return ''
+    endif
+endfunction
+
+function! s:fixIMState()
+    if mode() == 'i'
+        " :h i_CTRL-^
+        call feedkeys(nr2char(30), 'nt')
+        if &iminsert != ZFVimIME_started()
+            call feedkeys(nr2char(30), 'nt')
+        endif
     endif
 endfunction
 
 function! s:IME_start()
+    let &iminsert = 1
     let cloudInitMode = get(g:, 'ZFVimIM_cloudInitMode', '')
     let g:ZFVimIM_cloudInitMode = 'preferSync'
     call ZFVimIME_init()
@@ -513,44 +522,81 @@ function! s:IME_start()
     call s:vimrcSave()
     call s:vimrcSetup()
     call s:setupKeymap()
-    call s:IME_update()
-    let b:ZFVimIME_started = 1
+    let b:keymap_name = ZFVimIME_IMEName()
 
     let s:seamless_positions = getpos('.')
+    call s:fixIMState()
+
+    let s:enabled = 1
+    let b:ZFVimIME_enabled = 1
+    doautocmd User ZFVimIM_event_OnEnable
 endfunction
 
 function! s:IME_stop()
+    let &iminsert = 0
     lmapclear
     call s:vimrcRestore()
     call s:resetState()
-    if exists('b:ZFVimIME_started')
-        unlet b:ZFVimIME_started
+    call s:fixIMState()
+
+    let s:enabled = 0
+    if exists('b:ZFVimIME_enabled')
+        unlet b:ZFVimIME_enabled
+    endif
+    doautocmd User ZFVimIM_event_OnDisable
+endfunction
+
+function! s:IME_enableStateUpdate(...)
+    if get(g:, 'ZFVimIME_enableOnInsertOnly', 1)
+        let desired = get(a:, 1, -1)
+        if desired == 0
+            let enabled = 0
+        elseif desired == 1
+            let enabled = s:started
+        else
+            let enabled = (s:started && match(mode(), 'i') >= 0)
+        endif
+    else
+        let enabled = s:started
+    endif
+    if enabled != s:enabled
+        if enabled
+            call s:IME_start()
+        else
+            call s:IME_stop()
+        endif
     endif
 endfunction
+
+augroup ZFVimIME_impl_enabledStateUpdate_augroup
+    autocmd!
+    autocmd InsertEnter * call s:IME_enableStateUpdate(1)
+    autocmd InsertLeave * call s:IME_enableStateUpdate(0)
+augroup END
 
 function! s:IME_syncBuffer_delay(...)
     if !get(g:, 'ZFVimIME_syncBuffer', 1)
         return
     endif
-    if get(b:, 'ZFVimIME_started', 0) != s:started
-                \ || &iminsert != s:started
-        if s:started
-            call ZFVimIME_start()
+    if get(b:, 'ZFVimIME_enabled', 0) != s:enabled
+                \ || &iminsert != s:enabled
+        if s:enabled
+            call s:IME_stop()
+            call s:IME_start()
         else
-            let s:started = 1
-            call ZFVimIME_stop()
+            call s:IME_start()
+            call s:IME_stop()
         endif
-        call s:fixIMState()
     endif
-    call s:IME_update()
+    let b:keymap_name = ZFVimIME_IMEName()
     redraw!
 endfunction
 function! s:IME_syncBuffer(...)
     if !get(g:, 'ZFVimIME_syncBuffer', 1)
         return
     endif
-    if get(b:, 'ZFVimIME_started', 0) != s:started
-                \ || &iminsert != s:started
+    if get(b:, 'ZFVimIME_enabled', 0) != s:enabled
+                \ || &iminsert != s:enabled
         if has('timers')
             call timer_start(get(a:, 1, 0), function('s:IME_syncBuffer_delay'))
         else

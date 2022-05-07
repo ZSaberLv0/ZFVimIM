@@ -223,7 +223,7 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
     * if you want to change this setting at runtime,
         you should use `call ZFVimIME_stop() | call ZFVimIME_start()`
         to restart to take effect,
-        or, add autocmd to `ZFVimIM_event_OnStart`
+        or, add autocmd to `ZFVimIM_event_OnEnable`
         to setup this value
 
     * it's recommended to add these configs to make vim recognize chinese chars

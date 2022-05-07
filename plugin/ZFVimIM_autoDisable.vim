@@ -3,8 +3,8 @@
 let s:callback = []
 augroup ZFVimIM_autoDisable_augroup
     autocmd!
-    autocmd User ZFVimIM_event_OnStart for cb in s:callback | let Fn = function(cb[1]) | silent! call Fn() | endfor
-    autocmd User ZFVimIM_event_OnStop for cb in s:callback | let Fn = function(cb[0]) | silent! call Fn() | endfor
+    autocmd User ZFVimIM_event_OnEnable for cb in s:callback | let Fn = function(cb[1]) | silent! call Fn() | endfor
+    autocmd User ZFVimIM_event_OnDisable for cb in s:callback | let Fn = function(cb[0]) | silent! call Fn() | endfor
 augroup END
 
 
