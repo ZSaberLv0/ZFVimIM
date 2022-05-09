@@ -316,9 +316,11 @@ function! ZFVimIM_dbItemEncode(dbItem)
     return dbItemEncoded
 endfunction
 
-function! ZFVimIM_complete(key, ...)
-    return ZFVimIM_completeDefault(a:key, get(a:, 1, {}))
-endfunction
+if !exists('*ZFVimIM_complete')
+    function! ZFVimIM_complete(key, ...)
+        return ZFVimIM_completeDefault(a:key, get(a:, 1, {}))
+    endfunction
+endif
 
 
 " db: {

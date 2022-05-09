@@ -741,6 +741,7 @@ function! s:resetState()
     let s:keyboard = ''
     let s:userWord = []
     let s:confirmFlag = 0
+    let s:hasInput = 0
 endfunction
 
 function! s:resetAfterInsert()
@@ -793,11 +794,11 @@ endfunction
 
 function! s:omnifunc(start, keyboard)
     let s:enter_to_confirm = 1
+    let s:hasInput = 1
     if a:start
         let cursor_positions = getpos('.')
         let start_column = cursor_positions[2]
         let current_line = getline(cursor_positions[1])
-        let current_line = substitute(current_line, '\\[a-z\\]', '  ', 'g')
         let seamless_column = s:getSeamless(cursor_positions)
         if seamless_column <= 0
             let seamless_column = 1
@@ -908,8 +909,12 @@ function! s:OnInsertLeave()
     call s:resetState()
 endfunction
 function! s:OnCursorMovedI()
-    let s:seamless_positions = getpos('.')
-    let s:enter_to_confirm = 0
+    if s:hasInput
+        let s:hasInput = 0
+    else
+        let s:seamless_positions = getpos('.')
+        let s:enter_to_confirm = 0
+    endif
 endfunction
 
 
