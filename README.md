@@ -134,6 +134,12 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
 
 ## some tips
 
+* you may want to add a IME status tip to your `:h 'statusline'`
+
+    ```
+    let &statusline='%{ZFVimIME_IMEStatusline()}'.&statusline
+    ```
+
 * if it's hard to support async mode, you may also:
 
     * pull and push manually by `:call ZFVimIM_download()` and `:call ZFVimIM_upload()`

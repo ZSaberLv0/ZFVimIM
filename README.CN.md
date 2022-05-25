@@ -6,6 +6,7 @@
     * [纯本地词库](#纯本地词库)
     * [云词库](#云词库)
 * [使用](#使用)
+* [一些使用技巧](#一些使用技巧)
 * [疑难杂症](#疑难杂症)
 
 <!-- vim-markdown-toc -->
@@ -127,6 +128,45 @@ vim 上的中文输入法, 特色:
     `;.` 或 `:IMRemove` 删除自造词
 * 觉得好用, 记得给开发者[买个煎饼](https://github.com/ZSaberLv0/ZSaberLv0),
     贫穷码农在线乞讨 `_(:з」∠)_`
+
+
+# 一些使用技巧
+
+* 可以在 `:h 'statusline'` 展示当前 IME 状态
+
+    ```
+    let &statusline='%{ZFVimIME_IMEStatusline()}'.&statusline
+    ```
+
+* 命令行和搜索中没法直接使用, 可以利用 `:h command-line-window`
+
+    ```
+    function! ZF_Setting_cmdEdit()
+        let cmdtype = getcmdtype()
+        if cmdtype != ':' && cmdtype != '/'
+            return ''
+        endif
+        call feedkeys("\<c-c>q" . cmdtype . 'k0' . (getcmdpos() - 1) . 'li', 'nt')
+        return ''
+    endfunction
+    cnoremap <silent><expr> ;; ZF_Setting_cmdEdit()
+    ```
+
+* `:terminal` 中没法使用, 也可以利用 `:h command-line-window`
+
+    ```
+    function! PassToTerm(text)
+        let @t = a:text
+        if has('nvim')
+            call feedkeys('"tpa', 't')
+        else
+            call feedkeys("a\<c-w>\"t", 't')
+        endif
+        redraw!
+    endfunction
+    command! -nargs=* PassToTerm :call PassToTerm(<q-args>)
+    tnoremap ;; <c-\><c-n>q:a:PassToTerm<space>
+    ```
 
 
 # 疑难杂症
