@@ -502,6 +502,15 @@ function! ZFVimIME_IMEName()
     endif
 endfunction
 
+function! ZFVimIME_IMEStatusline()
+    let name = ZFVimIME_IMEName()
+    if empty(name)
+        return ''
+    else
+        return get(g:, 'ZFVimIME_IMEStatus_tagL', ' <') . name . get(g:, 'ZFVimIME_IMEStatus_tagR', '> ')
+    endif
+endfunction
+
 function! s:fixIMState()
     if mode() == 'i'
         " :h i_CTRL-^
