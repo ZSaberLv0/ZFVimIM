@@ -152,21 +152,27 @@ vim 上的中文输入法, 特色:
     cnoremap <silent><expr> ;; ZF_Setting_cmdEdit()
     ```
 
+    用法: 在命令行输入过程中, 按 `;;` 进入 `command-line-window`, 在这里面可以用本插件进行输入
+
 * `:terminal` 中没法使用, 也可以利用 `:h command-line-window`
 
     ```
-    function! PassToTerm(text)
-        let @t = a:text
-        if has('nvim')
-            call feedkeys('"tpa', 't')
-        else
-            call feedkeys("a\<c-w>\"t", 't')
-        endif
-        redraw!
-    endfunction
-    command! -nargs=* PassToTerm :call PassToTerm(<q-args>)
-    tnoremap ;; <c-\><c-n>q:a:PassToTerm<space>
+    if has('terminal') || has('nvim')
+        function! PassToTerm(text)
+            let @t = a:text
+            if has('nvim')
+                call feedkeys('"tpa', 't')
+            else
+                call feedkeys("a\<c-w>\"t", 't')
+            endif
+            redraw!
+        endfunction
+        command! -nargs=* PassToTerm :call PassToTerm(<q-args>)
+        tnoremap ;; <c-\><c-n>q:a:PassToTerm<space>
+    endif
     ```
+
+    用法: 在 `:terminal` window 的 `Insert-mode` 下, 按 `;;` 进入 `command-line-window` 用本插件进行输入
 
 
 # 疑难杂症

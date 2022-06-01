@@ -515,6 +515,8 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
         cnoremap <silent><expr> ;; ZF_Setting_cmdEdit()
         ```
 
+        to use it: press `;;` while editing in `Command-line`
+
 * Q: How to use in `:terminal`?
 
     A: since `terminal` does not support `omnifunc`,
@@ -523,18 +525,22 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
     a workaround by `command-line-window`:
 
     ```
-    function! PassToTerm(text)
-        let @t = a:text
-        if has('nvim')
-            call feedkeys('"tpa', 't')
-        else
-            call feedkeys("a\<c-w>\"t", 't')
-        endif
-        redraw!
-    endfunction
-    command! -nargs=* PassToTerm :call PassToTerm(<q-args>)
-    tnoremap ;; <c-\><c-n>q:a:PassToTerm<space>
+    if has('terminal') || has('nvim')
+        function! PassToTerm(text)
+            let @t = a:text
+            if has('nvim')
+                call feedkeys('"tpa', 't')
+            else
+                call feedkeys("a\<c-w>\"t", 't')
+            endif
+            redraw!
+        endfunction
+        command! -nargs=* PassToTerm :call PassToTerm(<q-args>)
+        tnoremap ;; <c-\><c-n>q:a:PassToTerm<space>
+    endif
     ```
+
+    to use it: press `;;` while inside `:terminal` window's `Insert-mode`
 
 * Q: external db source?
 
