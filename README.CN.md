@@ -161,9 +161,9 @@ vim 上的中文输入法, 特色:
         function! PassToTerm(text)
             let @t = a:text
             if has('nvim')
-                call feedkeys('"tpa', 't')
+                call feedkeys('"tpa', 'nt')
             else
-                call feedkeys("a\<c-w>\"t", 't')
+                call feedkeys("a\<c-w>\"t", 'nt')
             endif
             redraw!
         endfunction
