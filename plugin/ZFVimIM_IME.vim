@@ -762,8 +762,13 @@ endfunction
 
 function! s:curPage()
     if !empty(s:match_list) && &pumheight > 0
-        execute 'let results = s:match_list[' . (s:page * &pumheight) . ':' . ((s:page+1) * &pumheight - 1) . ']'
-        return results
+        if s:completeItemAvailable && get(g:, 'ZFVimIM_freeScroll', 0)
+            execute 'let results = s:match_list[' . (s:page * &pumheight) . ':-1]'
+            return results
+        else
+            execute 'let results = s:match_list[' . (s:page * &pumheight) . ':' . ((s:page+1) * &pumheight - 1) . ']'
+            return results
+        endif
     else
         return []
     endif
@@ -856,10 +861,15 @@ function! s:popupMenuList(complete)
     for item in a:complete
         " :h complete-items
         let complete_items = {}
-        let labelstring = (label == 10 ? '0' : label)
-        let labelstring = printf('%s ', labelstring)
+        if label >= 1 && label <= 9
+            let labelstring = label
+        elseif label == 10
+            let labelstring = '0'
+        else
+            let labelstring = '?'
+        endif
         let left = strpart(s:keyboard, item['len'])
-        let complete_items['abbr'] = labelstring . item['word'] . ' ' . left
+        let complete_items['abbr'] = labelstring . ' ' . item['word'] . ' ' . left
         let complete_items['menu'] = ''
         if get(g:, 'ZFVimIM_showKeyHint', 1)
             if item['type'] == 'sentence' && !empty(get(item, 'sentenceList'))
