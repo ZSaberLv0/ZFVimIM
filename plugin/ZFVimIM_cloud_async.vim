@@ -312,7 +312,7 @@ function! s:uploadAsync(cloudOption, mode)
                         \ }])
 
             if g:ZFVimIM_cloudAsync_autoCleanup > 0 && ZFVimIM_cloud_gitInfoSupplied(a:cloudOption)
-                let dbCleanupCmd = ZFVimIM_cloud_dbCleanupCmd(a:cloudOption, task['cachePath'] . 'dbCleanupCache')
+                let dbCleanupCmd = ZFVimIM_cloud_dbCleanupCmd(a:cloudOption, task['cachePath'] . '/dbCleanupCache')
                 if !empty(dbCleanupCmd)
                     call add(groupJobOption['jobList'], [{
                                 \   'jobCmd' : ZFVimIM_cloud_dbCleanupCheckCmd(a:cloudOption),
