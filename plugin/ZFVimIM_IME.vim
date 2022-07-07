@@ -861,12 +861,16 @@ function! s:popupMenuList(complete)
     for item in a:complete
         " :h complete-items
         let complete_items = {}
-        if label >= 1 && label <= 9
-            let labelstring = label
-        elseif label == 10
-            let labelstring = '0'
+        if get(g:, 'ZFVimIM_freeScroll', 0)
+            let labelstring = printf('%2d', label == 10 ? 0 : label)
         else
-            let labelstring = '?'
+            if label >= 1 && label <= 9
+                let labelstring = label
+            elseif label == 10
+                let labelstring = '0'
+            else
+                let labelstring = '?'
+            endif
         endif
         let left = strpart(s:keyboard, item['len'])
         let complete_items['abbr'] = labelstring . ' ' . item['word'] . ' ' . left
