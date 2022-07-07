@@ -341,14 +341,17 @@ function! ZFVimIM_dbSearch(db, c, pattern, start)
     call ZFVimIM_DEBUG_profileStart('dbSearch')
     let index = match(get(a:db['dbMap'], a:c, []), a:pattern, a:start)
     call ZFVimIM_DEBUG_profileStop()
-    let a:db['dbSearchCache'][patternKey] = index
-    call add(a:db['dbSearchCacheKeys'], patternKey)
 
-    " limit cache size
-    if len(a:db['dbSearchCacheKeys']) >= 300
-        for patternKey in remove(a:db['dbSearchCacheKeys'], 0, 200)
-            unlet a:db['dbSearchCache'][patternKey]
-        endfor
+    if a:start == 0
+        let a:db['dbSearchCache'][patternKey] = index
+        call add(a:db['dbSearchCacheKeys'], patternKey)
+
+        " limit cache size
+        if len(a:db['dbSearchCacheKeys']) >= 300
+            for patternKey in remove(a:db['dbSearchCacheKeys'], 0, 200)
+                unlet a:db['dbSearchCache'][patternKey]
+            endfor
+        endif
     endif
 
     return index

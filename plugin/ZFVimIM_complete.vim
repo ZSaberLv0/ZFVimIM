@@ -17,7 +17,6 @@
 " return : [
 "   {
 "     'dbId' : 'match from which db',
-"     'priority' : 'priority of the db, smaller value has higher priority, when empty, use db's priority by default',
 "     'len' : 'match count in key',
 "     'key' : 'matched full key',
 "     'word' : 'matched word',
@@ -62,9 +61,6 @@ function! s:completeDefault(key, ...)
             if !exists("item['dbId']")
                 let item['dbId'] = db['dbId']
             endif
-            if !exists("item['priority']")
-                let item['priority'] = db['priority']
-            endif
         endfor
         return ret
     endif
@@ -108,7 +104,6 @@ function! s:complete_sentence(ret, key, option, db)
 
     let sentence = {
                 \   'dbId' : a:db['dbId'],
-                \   'priority' : a:db['priority'],
                 \   'len' : 0,
                 \   'key' : '',
                 \   'word' : '',
@@ -255,7 +250,6 @@ function! s:complete_predict(ret, key, option, db)
         while len(a:ret) < predictLimit
             call add(a:ret, {
                         \   'dbId' : a:db['dbId'],
-                        \   'priority' : a:db['priority'],
                         \   'len' : p,
                         \   'key' : dbItem['key'],
                         \   'word' : dbItem['wordList'][wordIndex],
@@ -319,7 +313,6 @@ function! s:complete_match_exact(ret, key, option, db, matchLimit)
         while wordIndex < numToAdd
             call add(a:ret, {
                         \   'dbId' : a:db['dbId'],
-                        \   'priority' : a:db['priority'],
                         \   'len' : keyLen,
                         \   'key' : a:key,
                         \   'word' : dbItem['wordList'][wordIndex],
@@ -370,7 +363,6 @@ function! s:complete_match_allowSubMatch(matchRet, subMatchRet, key, option, db,
             let isMatch = (p == keyLen)
             call add(isMatch ? a:matchRet : a:subMatchRet, {
                         \   'dbId' : a:db['dbId'],
-                        \   'priority' : a:db['priority'],
                         \   'len' : p,
                         \   'key' : subKey,
                         \   'word' : dbItem['wordList'][wordIndex],
@@ -381,20 +373,6 @@ function! s:complete_match_allowSubMatch(matchRet, subMatchRet, key, option, db,
 
         let p -= 1
     endwhile
-endfunction
-
-function! s:sortByPriorityFunc(word0, word1)
-    return a:word0['priority'] - a:word1['priority']
-endfunction
-
-function! s:sortByKeyLenAndPriorityFunc(word0, word1)
-    if a:word0['len'] > a:word1['len']
-        return -1
-    elseif a:word0['len'] < a:word1['len']
-        return 1
-    else
-        return a:word0['priority'] - a:word1['priority']
-    endif
 endfunction
 
 function! s:removeDuplicate(ret, exists)
@@ -452,13 +430,6 @@ function! s:mergeResult(data, key, option, db)
             let iCrossDb += 1
         endif
     endwhile
-
-    " sort by priority
-    call sort(sentenceRet, function('s:sortByPriorityFunc'))
-    call sort(crossDbRet, function('s:sortByPriorityFunc'))
-    call sort(predictRet, function('s:sortByKeyLenAndPriorityFunc'))
-    call sort(matchRet, function('s:sortByPriorityFunc'))
-    call sort(subMatchRet, function('s:sortByKeyLenAndPriorityFunc'))
 
     " limit predict if has match
     if len(sentenceRet) + len(matchRet) + len(subMatchRet) >= 5 && len(predictRet) > g:ZFVimIM_predictLimitWhenMatch

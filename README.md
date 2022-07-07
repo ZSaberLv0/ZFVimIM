@@ -340,7 +340,6 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
         [
           {
             'dbId' : 'match from which db',
-            'priority' : 'priority of the db, smaller value has higher priority, when empty, use db's priority by default',
             'len' : 'match count in key',
             'key' : 'matched full key',
             'word' : 'matched word',
