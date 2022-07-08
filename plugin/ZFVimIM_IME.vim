@@ -77,34 +77,33 @@ endif
 
 function! ZFVimIME_keymap_toggle_n()
     call ZFVimIME_toggle()
-    " redraw to ensure `b:keymap_name` updated
-    redraw!
+    call ZFVimIME_redraw()
     return ''
 endfunction
 function! ZFVimIME_keymap_toggle_i()
     call ZFVimIME_toggle()
-    redraw!
+    call ZFVimIME_redraw()
     return ''
 endfunction
 function! ZFVimIME_keymap_toggle_v()
     call ZFVimIME_toggle()
-    redraw!
+    call ZFVimIME_redraw()
     return ''
 endfunction
 
 function! ZFVimIME_keymap_next_n()
     call ZFVimIME_next()
-    redraw!
+    call ZFVimIME_redraw()
     return ''
 endfunction
 function! ZFVimIME_keymap_next_i()
     call ZFVimIME_next()
-    redraw!
+    call ZFVimIME_redraw()
     return ''
 endfunction
 function! ZFVimIME_keymap_next_v()
     call ZFVimIME_next()
-    redraw!
+    call ZFVimIME_redraw()
     return ''
 endfunction
 
@@ -177,6 +176,28 @@ endfunction
 if get(g:, 'ZFVimIME_fixCtrlC', 1)
     " <c-c> won't fire InsertLeave, we needs this to reset userWord detection
     inoremap <c-c> <esc>
+endif
+
+if !exists('*ZFVimIME_redraw')
+    function! ZFVimIME_redraw()
+        " redraw to ensure `b:keymap_name` updated
+        " but redraw! would cause entire screen forced update
+        " typically b:keymap_name used only in statusline, update it instead of redraw!
+        if 0
+            redraw!
+        else
+            if 0
+                        \ || match(&statusline, '%k') >= 0
+                        \ || match(&statusline, 'ZFVimIME_IMEStatusline') >= 0
+                let &statusline = &statusline
+            endif
+            if 0
+                        \ || match(&l:statusline, '%k') >= 0
+                        \ || match(&l:statusline, 'ZFVimIME_IMEStatusline') >= 0
+                let &l:statusline = &l:statusline
+            endif
+        endif
+    endfunction
 endif
 
 function! ZFVimIME_started()
@@ -598,7 +619,7 @@ function! s:IME_syncBuffer_delay(...)
         endif
     endif
     let b:keymap_name = ZFVimIME_IMEName()
-    redraw!
+    call ZFVimIME_redraw()
 endfunction
 function! s:IME_syncBuffer(...)
     if !get(g:, 'ZFVimIME_syncBuffer', 1)
