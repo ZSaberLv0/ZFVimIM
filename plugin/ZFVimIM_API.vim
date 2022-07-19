@@ -41,10 +41,10 @@ function! ZFVimIM_randName()
 endfunction
 
 function! ZFVimIM_rm(path)
-    if has('unix')
-        silent! call system('rm -rf "' . CygpathFix_absPath(a:path) . '"')
-    elseif has('windows')
+    if (has('win32') || has('win64')) && !has('unix')
         silent! call system('rmdir /s/q "' . substitute(CygpathFix_absPath(a:path), '/', '\', 'g') . '"')
+    else
+        silent! call system('rm -rf "' . CygpathFix_absPath(a:path) . '"')
     endif
 endfunction
 
