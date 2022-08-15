@@ -761,7 +761,8 @@ function! s:setupKeymap()
 
     for c in keys(g:ZFVimIM_symbolMap)
         if !exists("mapped[c]")
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_symbol("' . substitute(c, '"', '\\"', 'g') . '")'
+            let escaped_c = escape(c, '"\')
+            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_symbol("' . escaped_c . '")'
         endif
     endfor
 endfunction
