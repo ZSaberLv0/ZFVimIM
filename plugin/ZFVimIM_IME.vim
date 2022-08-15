@@ -680,32 +680,32 @@ function! s:setupKeymap()
 
     for c in split('abcdefghijklmnopqrstuvwxyz', '\zs')
         let mapped[c] = 1
-        execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_input("' . substitute(c, '"', '\\"', 'g') . '")'
+        execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_input("' . escape(c, '"\') . '")'
     endfor
 
     for c in get(g:, 'ZFVimIM_key_pageUp', ['-'])
         if c !~ s:all_keys
             let mapped[c] = 1
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_pageUp("' . substitute(c, '"', '\\"', 'g') . '")'
+            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_pageUp("' . escape(c, '"\') . '")'
         endif
     endfor
     for c in get(g:, 'ZFVimIM_key_pageDown', ['='])
         if c !~ s:all_keys
             let mapped[c] = 1
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_pageDown("' . substitute(c, '"', '\\"', 'g') . '")'
+            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_pageDown("' . escape(c, '"\') . '")'
         endif
     endfor
 
     for c in get(g:, 'ZFVimIM_key_chooseL', ['['])
         if c !~ s:all_keys
             let mapped[c] = 1
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_chooseL("' . substitute(c, '"', '\\"', 'g') . '")'
+            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_chooseL("' . escape(c, '"\') . '")'
         endif
     endfor
     for c in get(g:, 'ZFVimIM_key_chooseR', [']'])
         if c !~ s:all_keys
             let mapped[c] = 1
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_chooseR("' . substitute(c, '"', '\\"', 'g') . '")'
+            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_chooseR("' . escape(c, '"\') . '")'
         endif
     endfor
 
@@ -717,28 +717,28 @@ function! s:setupKeymap()
     for c in get(g:, 'ZFVimIM_key_backspace', ['<bs>'])
         if c !~ s:all_keys
             let mapped[c] = 1
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_backspace("' . substitute(c, '"', '\\"', 'g') . '")'
+            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_backspace("' . escape(c, '"\') . '")'
         endif
     endfor
 
     for c in get(g:, 'ZFVimIM_key_esc', ['<esc>'])
         if c !~ s:all_keys
             let mapped[c] = 1
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_esc("' . substitute(c, '"', '\\"', 'g') . '")'
+            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_esc("' . escape(c, '"\') . '")'
         endif
     endfor
 
     for c in get(g:, 'ZFVimIM_key_enter', ['<cr>'])
         if c !~ s:all_keys
             let mapped[c] = 1
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_enter("' . substitute(c, '"', '\\"', 'g') . '")'
+            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_enter("' . escape(c, '"\') . '")'
         endif
     endfor
 
     for c in get(g:, 'ZFVimIM_key_space', ['<space>'])
         if c !~ s:all_keys
             let mapped[c] = 1
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_space("' . substitute(c, '"', '\\"', 'g') . '")'
+            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_space("' . escape(c, '"\') . '")'
         endif
     endfor
 
@@ -753,7 +753,7 @@ function! s:setupKeymap()
         for c in cs
             if c !~ s:all_keys
                 let mapped[c] = 1
-                execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_label(' . (iCandidate + 2) . ', "' . substitute(c, '"', '\\"', 'g') . '")'
+                execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_label(' . (iCandidate + 2) . ', "' . escape(c, '"\') . '")'
             endif
         endfor
         let iCandidate += 1
@@ -761,8 +761,7 @@ function! s:setupKeymap()
 
     for c in keys(g:ZFVimIM_symbolMap)
         if !exists("mapped[c]")
-            let escaped_c = escape(c, '"\')
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_symbol("' . escaped_c . '")'
+            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_symbol("' . escape(c, '"\') . '")'
         endif
     endfor
 endfunction
