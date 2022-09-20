@@ -923,7 +923,7 @@ function! s:popupMenuList(complete)
             if type(db['menuLabel']) == type('')
                 let complete_items['menu'] .= db['menuLabel']
             elseif ZFVimIM_funcCallable(db['menuLabel'])
-                let complete_items['menu'] .= ZFVimIM_funcCallable(db['menuLabel'], [item])
+                let complete_items['menu'] .= ZFVimIM_funcCall(db['menuLabel'], [item])
             endif
         endif
 
