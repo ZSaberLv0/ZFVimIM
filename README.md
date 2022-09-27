@@ -40,6 +40,13 @@ Outstanding features / why another remake:
     * auto disable and re-enable complete engines when using input method
     * sync input method state acrossing buffers
 
+
+Why VimIM? Why not system IME?
+
+* it's a pain to input CJK in ssh env
+* I love `inoremap jk <esc>` `:)`
+
+
 ![](https://raw.githubusercontent.com/ZSaberLv0/ZFVimIM/master/preview.gif)
 
 ![](https://raw.githubusercontent.com/ZSaberLv0/ZFVimIM/master/preview_crossdb.gif)

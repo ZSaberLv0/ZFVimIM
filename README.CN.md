@@ -13,19 +13,31 @@
 
 # 简介
 
-vim 上的中文输入法, 特色:
+vim 上的输入法, 特色:
 
 * 支持自动 pull/push 词库到 gayhub 哦不 github
 * 支持异步调用外部云输入法 (目前支持百度输入法)
 * 动态组词, 动态词频, 长句输入
-* 支持挂各种大词库, 支持多词库混输
+* 支持挂各种大词库, 支持多词库混输, 中英日甚至颜文字都行, 只要能按格式提供词库
 * 辣鸡环境可以回退到纯 vim script 版本, 最低支持 vim 7.3,
     当然也支持无网络纯本地使用
 
 
+(防杠补丁) Why not 系统输入法:
+
+* vim 的一大优势就是 ssh 到处都能用, 至少大多数 ssh 环境用系统输入法都很蛋疼
+* `inoremap jk <esc>` 流派的福音
+
+
+词库同步及长句输入:
+
 ![](https://raw.githubusercontent.com/ZSaberLv0/ZFVimIM/master/preview.gif)
 
+
+多词库混输: (不卡, gif 图的问题, 懒得重新搞了 `(- -b)`)
+
 ![](https://raw.githubusercontent.com/ZSaberLv0/ZFVimIM/master/preview_crossdb.gif)
+
 
 如果你喜欢本插件, 给开发者[买个煎饼补补脑](https://github.com/ZSaberLv0/ZSaberLv0)
 
@@ -113,8 +125,9 @@ vim 上的中文输入法, 特色:
     Plugin 'YourUserName/ZFVimIM_pinyin_base' " 你的词库
     Plugin 'ZSaberLv0/ZFVimIM_openapi' " 可选, 百度云输入法
 
-    " 国内辣鸡网络, 可以尝试用这个镜像, 与 github 互通
-    Plugin 'https://hub.fastgit.org/YourUserName/ZFVimIM_pinyin_base' " 你的词库
+    " 国内辣鸡网络, 可以尝试用这个镜像, 与 github 直接互通
+    " 或者干脆用 gitee 等国内站点
+    Plugin 'https://hub.fastgit.xyz/YourUserName/ZFVimIM_pinyin_base' " 你的词库
     ```
 
 
@@ -179,6 +192,14 @@ vim 上的中文输入法, 特色:
 
 * 卡顿/加载慢? 请先检查 `call ZFVimIM_DEBUG_checkHealth()`,
     需要 `ZFJobAvailable: 1` 以及 `python: 1`
+
+    * 1M 左右的词库正常配置的话应该几秒内能加载完成
+    * 10M 左右的大词库大约需要 5~30秒
+    * Windows 或 Cygwin 上相比于 Linux/Mac 可能会尤其慢, 建议排查:
+        * 看看是否有 360 等杀毒软件, 词库加载涉及很多 job 多线程操作,
+            杀毒软件可能每次都会扫描引起严重拖慢, 亲测加信任也无效
+        * 检查 `PATH` 是否有过多内容
+
 * 发现各种诡异现象, 请先按如下步骤排查:
 
     1. 本插件依赖于 `lmap` 和 `omnifunc`,
