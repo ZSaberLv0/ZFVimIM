@@ -101,8 +101,19 @@ vim 上的输入法, 特色:
 1. 参照 [db samples](https://github.com/ZSaberLv0/ZFVimIM#db-samples) 创建自己的词库,
     或 fork 以下词库:
 
-    * 拼音: [ZSaberLv0/ZFVimIM_pinyin_base](https://github.com/ZSaberLv0/ZFVimIM_pinyin_base)
+    * 拼音 (单字词库): [ZSaberLv0/ZFVimIM_pinyin_base](https://github.com/ZSaberLv0/ZFVimIM_pinyin_base)
+        : 仅包含单字, 无词组, 由于词库和个人使用有关, 本插件的自动组词算法毕竟比不上专业的输入法,
+        用大词库容易一堆废词, 因此比较建议从单字词库慢慢组词使用
+    * 拼音 (大词库): [ZSaberLv0/ZFVimIM_pinyin_huge](https://github.com/ZSaberLv0/ZFVimIM_pinyin_huge)
+        : 大词库, 可能包含一堆废词, 主要丢这边给各位测测使用体验和性能
+    * 拼音: [ZSaberLv0/ZFVimIM_pinyin](https://github.com/ZSaberLv0/ZFVimIM_pinyin)
+        : 个人在用词库, 时不时 `git push --force`
     * 五笔: [ZSaberLv0/ZFVimIM_wubi_base](https://github.com/ZSaberLv0/ZFVimIM_wubi_base)
+        : [ywvim](https://github.com/vim-scripts/ywvim) 转换来的词库, 我对五笔不熟, 各位自行尝试
+    * 英语: [ZSaberLv0/ZFVimIM_english_base](https://github.com/ZSaberLv0/ZFVimIM_english_base)
+        : 一些基本的英语单词
+    * 日语: [ZSaberLv0/ZFVimIM_english_base](https://github.com/ZSaberLv0/ZFVimIM_english_base)
+        : 一些基本的日语单词
 
 1. 到 [access tokens](https://github.com/settings/tokens) 配置一个合适的 token,
     并确保对词库 repo 有 push 权限 (`Select scopes` 中勾选 `repo`)
