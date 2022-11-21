@@ -303,6 +303,18 @@ function! ZFVimIM_cloud_dbSaveCmd(cloudOption, dbSaveCachePath, cachePath)
                 \ . ' "' . CygpathFix_absPath(a:dbSaveCachePath) . '"'
                 \ . ' "' . CygpathFix_absPath(a:cachePath) . '"'
 endfunction
+function! ZFVimIM_cloud_dbEditToFile(cloudOption, dbSaveCachePath, dbEdit)
+    let path = CygpathFix_absPath(a:dbSaveCachePath)
+    let contents = []
+    for item in a:dbEdit
+        call add(contents, printf('%s %s %s'
+                    \ , item['action']
+                    \ , substitute(item['key'], ' ', '\\ ', 'g')
+                    \ , substitute(item['word'], ' ', '\\ ', 'g')
+                    \ ))
+    endfor
+    call writefile(contents, a:dbSaveCachePath)
+endfunction
 
 function! ZFVimIM_cloud_fixOutputEncoding(msg)
     if has('unix')

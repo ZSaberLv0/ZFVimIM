@@ -259,11 +259,8 @@ function! s:uploadSyncWithCmd(cloudOption)
 
     redraw!
     call s:cloudSyncLog(ZFVimIM_cloud_logInfo(a:cloudOption) . 'merging...')
-    call ZFVimIM_DEBUG_profileStart('dbSaveDBEditEncode')
-    let dbEditJson = json_encode(db['dbEdit'])
-    call ZFVimIM_DEBUG_profileStop()
     call ZFVimIM_DEBUG_profileStart('dbSaveDBEditWrite')
-    call writefile([dbEditJson], cachePath . '/dbSaveCache')
+    call ZFVimIM_cloud_dbEditToFile(a:cloudOption, cachePath . '/dbSaveCache', db['dbEdit'])
     call ZFVimIM_DEBUG_profileStop()
 
     redraw!

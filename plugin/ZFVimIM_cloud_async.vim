@@ -28,10 +28,10 @@ endif
 
 " ============================================================
 function! ZFVimIM_cloudAsyncAvailable()
-    if !exists('s:uploadAsyncAvailableCache')
-        let s:uploadAsyncAvailableCache = exists('*ZFJobAvailable') && ZFJobAvailable()
+    if !exists('s:cloudAsyncAvailable')
+        let s:cloudAsyncAvailable = exists('*ZFJobAvailable') && ZFJobAvailable()
     endif
-    return s:uploadAsyncAvailableCache
+    return s:cloudAsyncAvailable
 endfunction
 
 
@@ -464,11 +464,8 @@ function! s:UA_dbSaveOnEnter(dbId, jobStatus)
     endfor
 
     " prepare to save
-    call ZFVimIM_DEBUG_profileStart('dbSaveDBEditEncode')
-    let dbEditJson = json_encode(task['dbEdit'])
-    call ZFVimIM_DEBUG_profileStop()
     call ZFVimIM_DEBUG_profileStart('dbSaveDBEditWrite')
-    call writefile([dbEditJson], task['cachePath'] . '/dbSaveCache')
+    call ZFVimIM_cloud_dbEditToFile(task['cloudOption'], task['cachePath'] . '/dbSaveCache', task['dbEdit'])
     call ZFVimIM_DEBUG_profileStop()
 endfunction
 function! s:UA_dbSaveOnOutput(dbId, jobStatus, textList, type)
