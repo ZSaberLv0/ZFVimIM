@@ -287,6 +287,9 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
         ```
 
     * `ZFJobAvailable()` returned 1 (i.e. async mode available)
+        * by default, we have bundled a default fallback for job,
+            which may cause some unexpected lag,
+            you may disable it by `let g:ZFVimIM_cloudAsync_jobFallback = 0`
     * `g:ZFVimIM_cloudAsync_autoCleanup` greater than 0
     * your `git rev-list --count HEAD` exceeds `g:ZFVimIM_cloudAsync_autoCleanup`
 

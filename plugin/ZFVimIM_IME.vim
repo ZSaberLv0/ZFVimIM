@@ -934,7 +934,7 @@ function! s:popupMenuList(complete)
         let complete_items['dup'] = 1
         let complete_items['word'] = item['word'] . left
         if s:completeItemAvailable
-            let complete_items['info'] = json_encode(item)
+            let complete_items['info'] = ZFVimIM_json_encode(item)
         endif
         call add(popup_list, complete_items)
         let label += 1
@@ -977,7 +977,7 @@ function! s:addWord(dbId, key, word)
     doautocmd User ZFVimIM_event_OnAddWord
 endfunction
 
-let s:completeItemAvailable = (exists('v:completed_item') && exists('*json_encode'))
+let s:completeItemAvailable = (exists('v:completed_item') && ZFVimIM_json_available())
 let s:confirmFlag = 0
 function! s:OnCompleteDone()
     if !s:confirmFlag
@@ -988,7 +988,7 @@ function! s:OnCompleteDone()
         return
     endif
     try
-        let item = json_decode(v:completed_item['info'])
+        let item = ZFVimIM_json_decode(v:completed_item['info'])
     catch
         let item = ''
     endtry

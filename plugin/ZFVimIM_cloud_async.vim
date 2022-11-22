@@ -29,7 +29,8 @@ endif
 " ============================================================
 function! ZFVimIM_cloudAsyncAvailable()
     if !exists('s:cloudAsyncAvailable')
-        let s:cloudAsyncAvailable = exists('*ZFJobAvailable') && ZFJobAvailable()
+        let s:cloudAsyncAvailable = (exists('*ZFJobAvailable') && ZFJobAvailable())
+                    \ || (exists('*ZFJobTimerAvailable') && ZFJobTimerAvailable() && get(g:, 'ZFVimIM_cloudAsync_jobFallback', 1))
     endif
     return s:cloudAsyncAvailable
 endfunction

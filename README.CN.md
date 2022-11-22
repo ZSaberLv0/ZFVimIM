@@ -204,6 +204,8 @@ vim 上的输入法, 特色:
 * 卡顿/加载慢? 请先检查 `call ZFVimIM_DEBUG_checkHealth()`,
     需要 `ZFJobAvailable: 1` 以及 `python: 1`
 
+    * 为方便在旧环境使用, 默认启用了使用 timer 模拟的 job, 使用时可能会有顿挫感,
+        如不希望启用, 可以 `let g:ZFVimIM_cloudAsync_jobFallback = 0`
     * 1M 左右的词库正常配置的话应该几秒内能加载完成
     * 10M 左右的大词库大约需要 5~30秒
     * Windows 或 Cygwin 上相比于 Linux/Mac 可能会尤其慢, 建议排查:

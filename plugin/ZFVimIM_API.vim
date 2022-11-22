@@ -48,6 +48,39 @@ function! ZFVimIM_rm(path)
     endif
 endfunction
 
+if !exists('*ZFVimIM_json_available')
+    " fallback to `retorillo/json-ponyfill.vim` if installed
+    function! ZFVimIM_json_available()
+        if !exists('s:ZFVimIM_json_available')
+            if exists('*json_decode')
+                let s:ZFVimIM_json_available = 1
+            else
+                let s:ZFVimIM_json_available = 0
+                try
+                    call json_ponyfill#json_decode('{}')
+                    let s:ZFVimIM_json_available = 1
+                catch
+                endtry
+            endif
+        endif
+        return s:ZFVimIM_json_available
+    endfunction
+    function! ZFVimIM_json_encode(expr)
+        if exists('*json_encode')
+            return json_encode(a:expr)
+        else
+            return json_ponyfill#json_encode(a:expr)
+        endif
+    endfunction
+    function! ZFVimIM_json_decode(expr)
+        if exists('*json_decode')
+            return json_decode(a:expr)
+        else
+            return json_ponyfill#json_decode(a:expr)
+        endif
+    endfunction
+endif
+
 function! CygpathFix_absPath(path)
     if len(a:path) <= 0|return ''|endif
     if !exists('g:CygpathFix_isCygwin')
