@@ -237,7 +237,7 @@ function! s:uploadAsync(cloudOption, mode)
                 \   'dbMapNew' : {},
                 \   'dbEdit' : [],
                 \ }
-    call mkdir(task['cachePath'], 'p')
+    silent! call mkdir(task['cachePath'], 'p')
     let s:UA_taskMap[db['dbId']] = task
     let task['dbEdit'] = db['dbEdit']
     let db['dbEdit'] = []
