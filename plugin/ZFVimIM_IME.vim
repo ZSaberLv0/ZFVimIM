@@ -946,20 +946,20 @@ function! s:popupMenuList(complete)
 endfunction
 
 function! s:OnInsertEnter()
-    if g:ZFJobTimerFallbackCursorMoving > 0
+    if get(g:, 'ZFJobTimerFallbackCursorMoving', 0) > 0
         return
     endif
     let s:seamless_positions = getpos('.')
     let s:enter_to_confirm = 0
 endfunction
 function! s:OnInsertLeave()
-    if g:ZFJobTimerFallbackCursorMoving > 0
+    if get(g:, 'ZFJobTimerFallbackCursorMoving', 0) > 0
         return
     endif
     call s:resetState()
 endfunction
 function! s:OnCursorMovedI()
-    if g:ZFJobTimerFallbackCursorMoving > 0
+    if get(g:, 'ZFJobTimerFallbackCursorMoving', 0) > 0
         return
     endif
     if s:hasInput
