@@ -152,16 +152,16 @@ function! ZFVimIME_keymap_remove_v()
 endfunction
 
 if exists('*state')
-    function! s:updateChecker()
+    function! s:updateDisabled()
         return !ZFVimIME_started() || mode() != 'i' || match(state(), 'm') >= 0
     endfunction
 else
-    function! s:updateChecker()
+    function! s:updateDisabled()
         return !ZFVimIME_started() || mode() != 'i'
     endfunction
 endif
 function! ZFVimIME_keymap_update_i()
-    if s:updateChecker()
+    if s:updateDisabled()
         return ''
     endif
     if pumvisible()
@@ -946,13 +946,22 @@ function! s:popupMenuList(complete)
 endfunction
 
 function! s:OnInsertEnter()
+    if g:ZFJobTimerFallbackCursorMoving > 0
+        return
+    endif
     let s:seamless_positions = getpos('.')
     let s:enter_to_confirm = 0
 endfunction
 function! s:OnInsertLeave()
+    if g:ZFJobTimerFallbackCursorMoving > 0
+        return
+    endif
     call s:resetState()
 endfunction
 function! s:OnCursorMovedI()
+    if g:ZFJobTimerFallbackCursorMoving > 0
+        return
+    endif
     if s:hasInput
         let s:hasInput = 0
     else
