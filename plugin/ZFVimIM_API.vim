@@ -267,8 +267,15 @@ function! ZFVimIM_wordReorder(db, word, ...)
 endfunction
 command! -nargs=+ IMReorder :call ZFVimIM_wordReorder({}, <f-args>)
 
+let s:ZFVimIM_dbItemReorderThreshold = 1
 function! s:dbItemReorderFunc(item1, item2)
-    return (a:item2['count'] - a:item1['count'])
+    if (a:item2['count'] - a:item1['count']) - s:ZFVimIM_dbItemReorderThreshold > 0
+        return 1
+    elseif (a:item1['count'] - a:item2['count']) - s:ZFVimIM_dbItemReorderThreshold > 0
+        return -1
+    else
+        return 0
+    endif
 endfunction
 function! ZFVimIM_dbItemReorder(dbItem)
     call ZFVimIM_DEBUG_profileStart('ItemReorder')
