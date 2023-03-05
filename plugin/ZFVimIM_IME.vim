@@ -896,7 +896,8 @@ function! s:popupMenuList(complete)
         let left = strpart(s:keyboard, item['len'])
         let complete_items['abbr'] = labelstring . ' ' . item['word'] . ' ' . left
         let complete_items['menu'] = ''
-        if get(g:, 'ZFVimIM_showKeyHint', 1)
+        let showKeyHint = get(g:, 'ZFVimIM_showKeyHint', 16)
+        if showKeyHint
             if item['type'] == 'sentence' && !empty(get(item, 'sentenceList'))
                 let menu = ''
                 for word in item['sentenceList']
@@ -905,12 +906,20 @@ function! s:popupMenuList(complete)
                     endif
                     let menu .= word['key']
                 endfor
-                let complete_items['menu'] .= ' '
-                let complete_items['menu'] .= menu
+                let menuWordKey = menu
             else
-                let complete_items['menu'] .= ' '
-                let complete_items['menu'] .= item['key']
+                let menuWordKey = item['key']
             endif
+
+            if showKeyHint > 1 && len(menuWordKey) > showKeyHint - 2
+                if showKeyHint < 3
+                    let menuWordKey = menuWordKey[0] . '..'
+                else
+                    let menuWordKey = strpart(menuWordKey, 0, showKeyHint - 2) . '..'
+                endif
+            endif
+            let complete_items['menu'] .= ' '
+            let complete_items['menu'] .= menuWordKey
         endif
 
         let db = ZFVimIM_dbForId(item['dbId'])

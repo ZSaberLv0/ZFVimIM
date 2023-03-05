@@ -254,9 +254,13 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
     * `let g:ZFVimIM_key_chooseL = ['[']`
     * `let g:ZFVimIM_key_chooseR = [']']`
 
-* `let g:ZFVimIM_showKeyHint = 1`
+* `let g:ZFVimIM_showKeyHint = 16`
 
     whether show key hint after word
+
+    * `0` : do not show
+    * `1` : show without length limit
+    * `>1` : show with specified length limit
 
 * `let g:ZFVimIM_cachePath=$HOME.'/.vim_cache/ZFVimIM'`
 
