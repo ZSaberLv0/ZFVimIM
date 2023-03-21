@@ -165,10 +165,10 @@ function! ZFVimIME_keymap_update_i()
         return ''
     endif
     if pumvisible()
-        call feedkeys("\<c-e>", 'nt')
+        silent call feedkeys("\<c-e>", 'nt')
     endif
     call s:resetAfterInsert()
-    call feedkeys("\<c-r>=ZFVimIME_callOmni()\<cr>", 'nt')
+    silent call feedkeys("\<c-r>=ZFVimIME_callOmni()\<cr>", 'nt')
     doautocmd User ZFVimIM_event_OnUpdate
     return ''
 endfunction
@@ -291,7 +291,7 @@ function! ZFVimIME_esc(...)
     let range = col('.') - s:start_column
     let key = "\<c-e>" . repeat("\<bs>", range)
     call s:resetAfterInsert()
-    call feedkeys(key, 'nt')
+    silent call feedkeys(key, 'nt')
     return ''
 endfunction
 
@@ -312,7 +312,7 @@ function! ZFVimIME_label(n, ...)
         call s:didChoose(curPage[n])
     endif
     call s:resetAfterInsert()
-    call feedkeys(key, 'nt')
+    silent call feedkeys(key, 'nt')
     return ''
 endfunction
 
@@ -323,7 +323,7 @@ function! ZFVimIME_pageUp(key, ...)
     endif
     let key = "\<c-e>\<c-r>=ZFVimIME_callOmni()\<cr>"
     let s:pageup_pagedown = -1
-    call feedkeys(key, 'nt')
+    silent call feedkeys(key, 'nt')
     return ''
 endfunction
 function! ZFVimIME_pageDown(key, ...)
@@ -333,7 +333,7 @@ function! ZFVimIME_pageDown(key, ...)
     endif
     let key = "\<c-e>\<c-r>=ZFVimIME_callOmni()\<cr>"
     let s:pageup_pagedown = 1
-    call feedkeys(key, 'nt')
+    silent call feedkeys(key, 'nt')
     return ''
 endfunction
 
@@ -350,7 +350,7 @@ function! ZFVimIME_chooseL(key, ...)
     endif
     let key = "\<c-y>\<c-r>=ZFVimIME_choose_fix(1)\<cr>"
     call s:resetAfterInsert()
-    call feedkeys(key, 'nt')
+    silent call feedkeys(key, 'nt')
     return ''
 endfunction
 function! ZFVimIME_chooseR(key, ...)
@@ -360,7 +360,7 @@ function! ZFVimIME_chooseR(key, ...)
     endif
     let key = "\<c-y>\<left>\<c-r>=ZFVimIME_choose_fix(0)\<cr>\<right>"
     call s:resetAfterInsert()
-    call feedkeys(key, 'nt')
+    silent call feedkeys(key, 'nt')
     return ''
 endfunction
 
@@ -378,7 +378,7 @@ function! ZFVimIME_space(...)
         call s:didChoose(s:match_list[s:page * &pumheight])
     endif
     call s:resetAfterInsert()
-    call feedkeys(key, 'nt')
+    silent call feedkeys(key, 'nt')
     return ''
 endfunction
 
@@ -399,7 +399,7 @@ function! ZFVimIME_enter(...)
     endif
     let s:seamless_positions = getpos('.')
     call s:resetAfterInsert()
-    call feedkeys(key, 'nt')
+    silent call feedkeys(key, 'nt')
     return ''
 endfunction
 
@@ -429,7 +429,7 @@ function! ZFVimIME_backspace(...)
         endif
     endif
     call s:resetAfterInsert()
-    call feedkeys(key, 'nt')
+    silent call feedkeys(key, 'nt')
     return ''
 endfunction
 
@@ -465,7 +465,7 @@ endfunction
 function! s:symbolForward(key)
     let key = s:symbol(a:key)
     " (<[a-z]+>)
-    execute 'call feedkeys("' . substitute(key, '\(<[a-z]\+>\)', '\\\1', 'g') . '", "nt")'
+    execute 'silent call feedkeys("' . substitute(key, '\(<[a-z]\+>\)', '\\\1', 'g') . '", "nt")'
 endfunction
 
 function! ZFVimIME_symbol(key, ...)
@@ -535,9 +535,9 @@ endfunction
 function! s:fixIMState()
     if mode() == 'i'
         " :h i_CTRL-^
-        call feedkeys(nr2char(30), 'nt')
+        silent call feedkeys(nr2char(30), 'nt')
         if &iminsert != ZFVimIME_started()
-            call feedkeys(nr2char(30), 'nt')
+            silent call feedkeys(nr2char(30), 'nt')
         endif
     endif
 endfunction
@@ -680,65 +680,65 @@ function! s:setupKeymap()
 
     for c in split('abcdefghijklmnopqrstuvwxyz', '\zs')
         let mapped[c] = 1
-        execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_input("' . escape(c, '"\') . '")'
+        execute 'lnoremap <buffer><expr><silent> ' . c . ' ZFVimIME_input("' . escape(c, '"\') . '")'
     endfor
 
     for c in get(g:, 'ZFVimIM_key_pageUp', ['-'])
         if c !~ s:all_keys
             let mapped[c] = 1
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_pageUp("' . escape(c, '"\') . '")'
+            execute 'lnoremap <buffer><expr><silent> ' . c . ' ZFVimIME_pageUp("' . escape(c, '"\') . '")'
         endif
     endfor
     for c in get(g:, 'ZFVimIM_key_pageDown', ['='])
         if c !~ s:all_keys
             let mapped[c] = 1
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_pageDown("' . escape(c, '"\') . '")'
+            execute 'lnoremap <buffer><expr><silent> ' . c . ' ZFVimIME_pageDown("' . escape(c, '"\') . '")'
         endif
     endfor
 
     for c in get(g:, 'ZFVimIM_key_chooseL', ['['])
         if c !~ s:all_keys
             let mapped[c] = 1
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_chooseL("' . escape(c, '"\') . '")'
+            execute 'lnoremap <buffer><expr><silent> ' . c . ' ZFVimIME_chooseL("' . escape(c, '"\') . '")'
         endif
     endfor
     for c in get(g:, 'ZFVimIM_key_chooseR', [']'])
         if c !~ s:all_keys
             let mapped[c] = 1
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_chooseR("' . escape(c, '"\') . '")'
+            execute 'lnoremap <buffer><expr><silent> ' . c . ' ZFVimIME_chooseR("' . escape(c, '"\') . '")'
         endif
     endfor
 
     for n in range(10)
         let mapped['' . n] = 1
-        execute 'lnoremap <buffer><expr> ' . n . ' ZFVimIME_label(' . n . ')'
+        execute 'lnoremap <buffer><expr><silent> ' . n . ' ZFVimIME_label(' . n . ')'
     endfor
 
     for c in get(g:, 'ZFVimIM_key_backspace', ['<bs>'])
         if c !~ s:all_keys
             let mapped[c] = 1
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_backspace("' . escape(c, '"\') . '")'
+            execute 'lnoremap <buffer><expr><silent> ' . c . ' ZFVimIME_backspace("' . escape(c, '"\') . '")'
         endif
     endfor
 
     for c in get(g:, 'ZFVimIM_key_esc', ['<esc>'])
         if c !~ s:all_keys
             let mapped[c] = 1
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_esc("' . escape(c, '"\') . '")'
+            execute 'lnoremap <buffer><expr><silent> ' . c . ' ZFVimIME_esc("' . escape(c, '"\') . '")'
         endif
     endfor
 
     for c in get(g:, 'ZFVimIM_key_enter', ['<cr>'])
         if c !~ s:all_keys
             let mapped[c] = 1
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_enter("' . escape(c, '"\') . '")'
+            execute 'lnoremap <buffer><expr><silent> ' . c . ' ZFVimIME_enter("' . escape(c, '"\') . '")'
         endif
     endfor
 
     for c in get(g:, 'ZFVimIM_key_space', ['<space>'])
         if c !~ s:all_keys
             let mapped[c] = 1
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_space("' . escape(c, '"\') . '")'
+            execute 'lnoremap <buffer><expr><silent> ' . c . ' ZFVimIME_space("' . escape(c, '"\') . '")'
         endif
     endfor
 
@@ -753,7 +753,7 @@ function! s:setupKeymap()
         for c in cs
             if c !~ s:all_keys
                 let mapped[c] = 1
-                execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_label(' . (iCandidate + 2) . ', "' . escape(c, '"\') . '")'
+                execute 'lnoremap <buffer><expr><silent> ' . c . ' ZFVimIME_label(' . (iCandidate + 2) . ', "' . escape(c, '"\') . '")'
             endif
         endfor
         let iCandidate += 1
@@ -761,7 +761,7 @@ function! s:setupKeymap()
 
     for c in keys(g:ZFVimIM_symbolMap)
         if !exists("mapped[c]")
-            execute 'lnoremap <buffer><expr> ' . c . ' ZFVimIME_symbol("' . escape(c, '"\') . '")'
+            execute 'lnoremap <buffer><expr><silent> ' . c . ' ZFVimIME_symbol("' . escape(c, '"\') . '")'
         endif
     endfor
 endfunction
