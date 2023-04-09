@@ -112,7 +112,7 @@ vim 上的输入法, 特色:
         : [ywvim](https://github.com/vim-scripts/ywvim) 转换来的词库, 我对五笔不熟, 各位自行尝试
     * 英语: [ZSaberLv0/ZFVimIM_english_base](https://github.com/ZSaberLv0/ZFVimIM_english_base)
         : 一些基本的英语单词
-    * 日语: [ZSaberLv0/ZFVimIM_english_base](https://github.com/ZSaberLv0/ZFVimIM_english_base)
+    * 日语: [ZSaberLv0/ZFVimIM_japanese_base](https://github.com/ZSaberLv0/ZFVimIM_japanese_base)
         : 一些基本的日语单词
 
 1. 到 [access tokens](https://github.com/settings/tokens) 配置一个合适的 token,
