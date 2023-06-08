@@ -342,17 +342,23 @@ function! ZFVimIM_dbItemEncode(dbItem)
                     \   g:ZFVimIM_KEY_S_SUB, g:ZFVimIM_KEY_SR_SUB, 'g'
                     \ )
     endfor
-    for i in range(len(a:dbItem['countList']))
-        if a:dbItem['countList'][i] <= 0
+    let iEnd = len(a:dbItem['countList']) - 1
+    while iEnd >= 0
+        if a:dbItem['countList'][iEnd] > 0
             break
         endif
+        let iEnd -= 1
+    endwhile
+    let i = 0
+    while i <= iEnd
         if i == 0
             let dbItemEncoded .= g:ZFVimIM_KEY_S_MAIN
         else
             let dbItemEncoded .= g:ZFVimIM_KEY_S_SUB
         endif
         let dbItemEncoded .= a:dbItem['countList'][i]
-    endfor
+        let i += 1
+    endwhile
     return dbItemEncoded
 endfunction
 
@@ -696,7 +702,7 @@ function! s:dbEditMap(db, dbEdit)
             for cnt in dbItem['countList']
                 let sum += cnt
             endfor
-            let dbItem['countList'][wordIndex] = float2nr(sum / 2)
+            let dbItem['countList'][wordIndex] = float2nr(floor(sum / 3))
             call ZFVimIM_dbItemReorder(dbItem)
             let dbMap[key[0]][index] = ZFVimIM_dbItemEncode(dbItem)
         endif
