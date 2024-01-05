@@ -337,3 +337,92 @@ function! ZFVimIM_cloud_logInfo(cloudOption)
     endif
 endfunction
 
+
+" ============================================================
+" cloud lock logic
+" since multiple vim instance may processing same db repo,
+" which would cause modify race,
+" we use a global lock file to prevent it,
+" when the global lock file exists (and not timeout),
+" it's considered there's other vim instance modifying the db repo,
+" then we would delay to wait
+" the lock timeout is used to fix that,
+" if other vim instance crash during modifying db repo,
+" the global lock file would remain on the disk causing
+" other vim instance can never get updated
+"
+" possible values:
+" <= 0 : disable lock
+" > 0 : lock timeout after specified time
+if !exists('g:ZFVimIM_cloud_lockTimeout')
+    let g:ZFVimIM_cloud_lockTimeout=1*60*60*1000
+endif
+function! ZFVimIM_cloud_lockAcquired()
+    return get(s:, 'ZFVimIM_cloud_lockAcquired', 0)
+endfunction
+" ZFVimIM_cloud_lockAcquire() and ZFVimIM_cloud_lockRelease() must be paired
+function! ZFVimIM_cloud_lockAcquire()
+    let s:ZFVimIM_cloud_lockAcquiredFlag = get(s:, 'ZFVimIM_cloud_lockAcquiredFlag', 0) + 1
+    if s:ZFVimIM_cloud_lockAcquiredFlag != 1
+        return
+    endif
+
+    if g:ZFVimIM_cloud_lockTimeout <= 0
+        let s:ZFVimIM_cloud_lockAcquired = 1
+        return
+    endif
+
+    let lockInfo = s:lockFileRead()
+    let curTime = localtime() * 1000
+    if empty(lockInfo) || curTime > lockInfo['timestamp'] + g:ZFVimIM_cloud_lockTimeout
+        call s:lockFileWrite()
+        let s:ZFVimIM_cloud_lockAcquired = 1
+    else
+        let s:ZFVimIM_cloud_lockAcquired = 0
+    endif
+endfunction
+function! ZFVimIM_cloud_lockRelease()
+    let s:ZFVimIM_cloud_lockAcquiredFlag = s:ZFVimIM_cloud_lockAcquiredFlag - 1
+    if s:ZFVimIM_cloud_lockAcquiredFlag != 0
+        return
+    endif
+    if s:ZFVimIM_cloud_lockAcquired
+        let s:ZFVimIM_cloud_lockAcquired = 0
+        let lockInfo = s:lockFileRead()
+        if !empty(lockInfo) && lockInfo['pid'] == getpid()
+            call delete(s:lockFile())
+        endif
+    endif
+endfunction
+function! s:lockFile()
+    return ZFVimIM_cachePath() . '/ZFVimIM_cloud.lock'
+endfunction
+" return: {
+"   'pid' : xx,
+"   'timestamp' : xx,
+" }
+function! s:lockFileRead()
+    let lockFile = s:lockFile()
+    if !filereadable(lockFile)
+        return {}
+    endif
+    let contents = readfile(lockFile)
+    let pid = str2nr(get(contents, 0, 0))
+    let timestamp = str2nr(get(contents, 1, 0))
+    if pid > 0 && timestamp > 0
+        return {
+                    \   'pid' : pid,
+                    \   'timestamp' : timestamp,
+                    \ }
+    else
+        return {}
+    endif
+endfunction
+function! s:lockFileWrite()
+    let lockFile = s:lockFile()
+    call writefile([
+                \   getpid(),
+                \   localtime() * 1000,
+                \ ], lockFile)
+endfunction
+
