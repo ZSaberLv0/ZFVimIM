@@ -56,6 +56,10 @@ function! ZFVimIME_init()
     endif
 endfunction
 
+function! ZFVimIME_initFlag()
+    return get(s:, 'dbInitFlag', 0)
+endfunction
+
 " ============================================================
 if get(g:, 'ZFVimIM_keymap', 1)
     nnoremap <expr><silent> ;; ZFVimIME_keymap_toggle_n()
