@@ -89,7 +89,11 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
                     \   'dbCountFile' : '/YourDbCountFile', " optional, db count file, relative to repoPath
                     \ })
     endfunction
-    autocmd User ZFVimIM_event_OnDbInit call s:myLocalDb()
+    if exists('*ZFVimIME_initFlag') && ZFVimIME_initFlag()
+        call s:myLocalDb()
+    else
+        autocmd User ZFVimIM_event_OnDbInit call s:myLocalDb()
+    endif
     ```
 
 ## recommend config (cloud db)

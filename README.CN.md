@@ -87,7 +87,11 @@ vim 上的输入法, 特色:
                     \   'dbCountFile' : '/YourDbCountFile', " 非必须, 词频文件, 相对 repoPath 的路径
                     \ })
     endfunction
-    autocmd User ZFVimIM_event_OnDbInit call s:myLocalDb()
+    if exists('*ZFVimIME_initFlag') && ZFVimIME_initFlag()
+        call s:myLocalDb()
+    else
+        autocmd User ZFVimIM_event_OnDbInit call s:myLocalDb()
+    endif
     ```
 
 
