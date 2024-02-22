@@ -71,6 +71,16 @@ endfunction
 
 
 " ============================================================
+augroup ZFVimIM_cloud_async_augroup
+    autocmd!
+    autocmd User ZFVimIM_event_OnUpdateDb
+                \  if g:ZFVimIM_cloudAsync_enable > 0 && ZFVimIM_cloudAsyncAvailable()
+                \|     call s:autoUploadAsync()
+                \| endif
+    autocmd VimEnter * call s:UA_autoInit()
+augroup END
+
+" ============================================================
 " {
 "   'dbId' : {
 "     'mode' : 'init/download/upload/autoUpload',
@@ -597,18 +607,4 @@ function! s:UA_lockCleanupJob(groupJobStatus)
                     \ }
     endif
 endfunction
-
-" ============================================================
-" auto init to improve first time loading
-augroup ZFVimIM_cloud_async_augroup
-    autocmd!
-    autocmd User ZFVimIM_event_OnUpdateDb
-                \  if g:ZFVimIM_cloudAsync_enable > 0 && ZFVimIM_cloudAsyncAvailable()
-                \|     call s:autoUploadAsync()
-                \| endif
-    autocmd VimEnter * call s:UA_autoInit()
-augroup END
-if exists('v:vim_did_enter') && v:vim_did_enter
-    call s:UA_autoInit()
-endif
 
