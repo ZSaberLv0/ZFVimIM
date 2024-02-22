@@ -340,12 +340,6 @@ function! s:uploadAsync(cloudOption, mode)
         endif
     endif
 
-    " lock logic
-    " generate a dummy job, always treat as failed if lock not acquired, to schedule a delay auto update
-    call add(groupJobOption['jobList'], [{
-                \   'jobCmd' : function('s:UA_lockCleanupJob'),
-                \ }])
-
     " finally, start the job
     call s:cloudAsyncLog(ZFGroupJobStatus(task['jobId']), ZFVimIM_cloud_logInfo(a:cloudOption) . 'updating...')
     let task['jobId'] = ZFGroupJobStart(groupJobOption)
@@ -589,6 +583,7 @@ function! s:UA_onExit(dbId, groupJobStatus, exitCode)
         endif
     endif
     call ZFJobOutputCleanup(a:groupJobStatus)
+    call s:UA_lockCleanupJob(a:groupJobStatus)
 
     if !empty(task) && task['mode'] == 'init' && get(task['cloudOption'], 'mode', '') != 'local'
         call s:uploadAsync(task['cloudOption'], 'download')
