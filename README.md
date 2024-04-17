@@ -361,7 +361,7 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
             'len' : 'match count in key',
             'key' : 'matched full key',
             'word' : 'matched word',
-            'type' : 'type of completion: sentence/match/predict/subMatch',
+            'type' : 'type of completion: sentence/match/predict/subMatchLongest/subMatch',
             'sentenceList' : [ // (optional) for sentence type only, list of word that complete as sentence
               {
                 'key' : '',
