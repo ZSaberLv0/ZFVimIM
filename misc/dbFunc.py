@@ -262,7 +262,7 @@ def dbSavePy(pyMap, dbFile, dbCountFile, cachePath):
                     countLines.append(countLine)
                 if len(countLines) >= DB_FILE_LINE_BUFFER:
                     dbCountFilePtr.write(('\n'.join(countLines) + '\n').encode('utf-8'))
-                    lines = []
+                    countLines = []
         if len(lines) > 0:
             dbFilePtr.write(('\n'.join(lines) + '\n').encode('utf-8'))
         if len(countLines) > 0:
