@@ -294,9 +294,9 @@ function! IMReorder(bang, db, word, ...)
         let g:ZFVimIM_dbEditApplyFlag -= 1
     endif
 endfunction
-command! -nargs=+ IMAdd :call IMAdd(<q-bang>, {}, <f-args>)
-command! -nargs=+ IMRemove :call IMRemove(<q-bang>, {}, <f-args>)
-command! -nargs=+ IMReorder :call IMReorder(<q-bang>, {}, <f-args>)
+command! -nargs=+ -bang IMAdd :call IMAdd(<q-bang>, {}, <f-args>)
+command! -nargs=+ -bang IMRemove :call IMRemove(<q-bang>, {}, <f-args>)
+command! -nargs=+ -bang IMReorder :call IMReorder(<q-bang>, {}, <f-args>)
 
 let s:ZFVimIM_dbItemReorderThreshold = 1
 function! s:dbItemReorderFunc(item1, item2)
