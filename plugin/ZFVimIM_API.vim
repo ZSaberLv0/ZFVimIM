@@ -654,6 +654,8 @@ function! s:dbEdit(db, word, key, action)
     if g:ZFVimIM_dbEditApplyFlag == 0
         call s:dbEditApply(db, [dbEditItem])
         doautocmd User ZFVimIM_event_OnUpdateDb
+    else
+        let db['implData']['_dbLoadRequired'] = 1
     endif
 endfunction
 
