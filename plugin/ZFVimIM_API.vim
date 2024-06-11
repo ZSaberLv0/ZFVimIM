@@ -252,20 +252,51 @@ function! ZFVimIM_dbEditApply(db, dbEdit)
     call ZFVimIM_DEBUG_profileStop()
 endfunction
 
+if !exists('g:ZFVimIM_dbEditApplyFlag')
+    let g:ZFVimIM_dbEditApplyFlag = 0
+endif
 function! ZFVimIM_wordAdd(db, word, key)
     call s:dbEdit(a:db, a:word, a:key, 'add')
 endfunction
-command! -nargs=+ IMAdd :call ZFVimIM_wordAdd({}, <f-args>)
 
 function! ZFVimIM_wordRemove(db, word, ...)
     call s:dbEditWildKey(a:db, a:word, get(a:, 1, ''), 'remove')
 endfunction
-command! -nargs=+ IMRemove :call ZFVimIM_wordRemove({}, <f-args>)
 
 function! ZFVimIM_wordReorder(db, word, ...)
     call s:dbEditWildKey(a:db, a:word, get(a:, 1, ''), 'reorder')
 endfunction
-command! -nargs=+ IMReorder :call ZFVimIM_wordReorder({}, <f-args>)
+
+function! IMAdd(bang, db, word, key)
+    if a:bang == '!'
+        let g:ZFVimIM_dbEditApplyFlag += 1
+    endif
+    call ZFVimIM_wordAdd(a:db, a:word, a:key)
+    if a:bang == '!'
+        let g:ZFVimIM_dbEditApplyFlag -= 1
+    endif
+endfunction
+function! IMRemove(bang, db, word, ...)
+    if a:bang == '!'
+        let g:ZFVimIM_dbEditApplyFlag += 1
+    endif
+    call ZFVimIM_wordRemove(a:db, a:word, get(a:, 1, ''))
+    if a:bang == '!'
+        let g:ZFVimIM_dbEditApplyFlag -= 1
+    endif
+endfunction
+function! IMReorder(bang, db, word, ...)
+    if a:bang == '!'
+        let g:ZFVimIM_dbEditApplyFlag += 1
+    endif
+    call ZFVimIM_wordReorder(a:db, a:word, get(a:, 1, ''))
+    if a:bang == '!'
+        let g:ZFVimIM_dbEditApplyFlag -= 1
+    endif
+endfunction
+command! -nargs=+ IMAdd :call IMAdd(<q-bang>, {}, <f-args>)
+command! -nargs=+ IMRemove :call IMRemove(<q-bang>, {}, <f-args>)
+command! -nargs=+ IMReorder :call IMReorder(<q-bang>, {}, <f-args>)
 
 let s:ZFVimIM_dbItemReorderThreshold = 1
 function! s:dbItemReorderFunc(item1, item2)
@@ -620,8 +651,10 @@ function! s:dbEdit(db, word, key, action)
         call remove(db['dbEdit'], 0, len(db['dbEdit']) - dbEditLimit - 1)
     endif
 
-    call s:dbEditApply(db, [dbEditItem])
-    doautocmd User ZFVimIM_event_OnUpdateDb
+    if g:ZFVimIM_dbEditApplyFlag == 0
+        call s:dbEditApply(db, [dbEditItem])
+        doautocmd User ZFVimIM_event_OnUpdateDb
+    endif
 endfunction
 
 function! s:dbEditApply(db, dbEdit)

@@ -15,7 +15,7 @@ dbEdit = []
 with io.open(DB_SAVE_CACHE_PATH, 'r', encoding='utf-8') as file:
     for line in file:
         line = line.rstrip('\n')
-        line = line.replace('\ ', '_ZFVimIM_space_')
+        line = line.replace('\\ ', '_ZFVimIM_space_')
         items = line.split(' ')
         if len(items) != 3:
             continue

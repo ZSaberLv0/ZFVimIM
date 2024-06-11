@@ -122,8 +122,8 @@ def dbLoadPy(dbFile, dbCountFile):
     with io.open(dbFile, 'r', encoding='utf-8') as dbFilePtr:
         for line in dbFilePtr:
             line = line.rstrip('\n')
-            if line.find('\ ') >= 0:
-                wordListTmp = line.replace('\ ', '_ZFVimIM_space_').split(' ')
+            if line.find('\\ ') >= 0:
+                wordListTmp = line.replace('\\ ', '_ZFVimIM_space_').split(' ')
                 if len(wordListTmp) > 0:
                     key = wordListTmp[0]
                     del wordListTmp[0]
@@ -182,8 +182,8 @@ def dbLoadNormalizePy(dbFile):
     with io.open(dbFile, 'r', encoding='utf-8') as dbFilePtr:
         for line in dbFilePtr:
             line = line.rstrip('\n')
-            if line.find('\ ') >= 0:
-                wordListTmp = line.replace('\ ', '_ZFVimIM_space_').split(' ')
+            if line.find('\\ ') >= 0:
+                wordListTmp = line.replace('\\ ', '_ZFVimIM_space_').split(' ')
                 if len(wordListTmp) > 0:
                     key = wordListTmp[0]
                     del wordListTmp[0]
@@ -228,7 +228,7 @@ def dbSavePy(pyMap, dbFile, dbCountFile, cachePath):
                 line = dbItem['key']
                 for word in dbItem['wordList']:
                     line += ' '
-                    line += word.replace(' ', '\ ')
+                    line += word.replace(' ', '\\ ')
                 lines.append(line)
                 if len(lines) >= DB_FILE_LINE_BUFFER:
                     dbFilePtr.write(('\n'.join(lines) + '\n').encode('utf-8'))
@@ -248,7 +248,7 @@ def dbSavePy(pyMap, dbFile, dbCountFile, cachePath):
                 countLine = dbItem['key']
                 for word in dbItem['wordList']:
                     line += ' '
-                    line += word.replace(' ', '\ ')
+                    line += word.replace(' ', '\\ ')
                 lines.append(line)
                 if len(lines) >= DB_FILE_LINE_BUFFER:
                     dbFilePtr.write(('\n'.join(lines) + '\n').encode('utf-8'))
