@@ -480,11 +480,13 @@ endfunction
 function! ZFVimIME_callOmni()
     let s:keyboard = (s:pageup_pagedown == 0) ? '' : s:keyboard
     let key = s:hasLeftChar() ? "\<c-x>\<c-o>\<c-r>=ZFVimIME_fixOmni()\<cr>" : ''
+    echo ''
     execute 'return "' . key . '"'
 endfunction
 
 function! ZFVimIME_fixOmni()
     let key = pumvisible() ? "\<c-p>\<down>" : ''
+    echo ''
     execute 'return "' . key . '"'
 endfunction
 
