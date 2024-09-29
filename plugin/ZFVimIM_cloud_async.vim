@@ -146,6 +146,7 @@ endfunction
 function! s:cloudAsyncLog(groupJobStatus, msg)
     call ZFVimIM_cloudLogAdd(a:msg)
     if !empty(a:groupJobStatus)
+        call add(a:groupJobStatus['jobOutput'], a:msg)
         call ZFJobOutput(a:groupJobStatus, a:msg)
     endif
 endfunction
@@ -592,7 +593,6 @@ function! s:UA_onExit(dbId, groupJobStatus, exitCode)
             call ZFVimIM_rm(task['cachePath'])
         endif
     endif
-    call ZFJobOutputCleanup(a:groupJobStatus)
     call s:UA_lockCleanupJob(a:groupJobStatus)
 
     if !empty(task) && task['mode'] == 'init' && get(task['cloudOption'], 'mode', '') != 'local'
