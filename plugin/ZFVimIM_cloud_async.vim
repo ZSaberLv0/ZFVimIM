@@ -277,6 +277,9 @@ function! s:uploadAsync(cloudOption, mode)
     endif
 
     " finally, start the job
+    if empty(groupJobOption['jobList'])
+        return
+    endif
     call s:cloudAsyncLog(ZFGroupJobStatus(task['jobId']), ZFVimIM_cloud_logInfo(a:cloudOption) . 'updating...')
     let task['jobId'] = ZFGroupJobStart(groupJobOption)
     if task['jobId'] == -1
