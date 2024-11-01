@@ -276,10 +276,20 @@ function! s:uploadAsync(cloudOption, mode)
         call s:UATask_dbLoad(a:cloudOption, task, groupJobOption, db)
     endif
 
-    " final lock check and cleanup job
-    call add(groupJobOption['jobList'], [{
-                \   'jobCmd' : ZFJobFunc(function('s:UA_lockCleanupJob')),
-                \ }])
+    " lock check
+    if !ZFVimIM_cloud_lockAcquired() && empty(groupJobOption['jobList'])
+        call add(groupJobOption['jobList'], [{
+                    \   'jobCmd' : 1000,
+                    \ }])
+        call add(groupJobOption['jobList'], [{
+                    \   'jobCmd' : [
+                    \     printf('return %s', json_encode({
+                    \       'output' : 'failed: locked by other vim process',
+                    \       'exitCode' : 'ZFVimIM_cloud_lockUnavailable',
+                    \     })),
+                    \   ],
+                    \ }])
+    endif
 
     " finally, start the job
     call s:cloudAsyncLog(ZFGroupJobStatus(task['jobId']), ZFVimIM_cloud_logInfo(a:cloudOption) . 'updating...')
@@ -574,11 +584,6 @@ function! s:UA_onExit(dbId, groupJobStatus, exitCode)
 
         " upload failed, so restore dbEdit
         call extend(db['dbEdit'], task['dbEdit'], 0)
-
-        call s:cloudAsyncLog(a:groupJobStatus, ZFVimIM_cloud_logInfo(task['cloudOption']) . 'update failed, exitCode: ' . a:exitCode . ', detailed log:')
-        for output in a:groupJobStatus['jobOutput']
-            call s:cloudAsyncLog(a:groupJobStatus, '    ' . output)
-        endfor
         call s:cloudAsyncLog(a:groupJobStatus, ZFVimIM_cloud_logInfo(task['cloudOption']) . 'update failed, exitCode: ' . a:exitCode)
 
         " auto retry if not stopped by user
@@ -597,27 +602,10 @@ function! s:UA_onExit(dbId, groupJobStatus, exitCode)
             call ZFVimIM_rm(task['cachePath'])
         endif
     endif
+    call ZFVimIM_cloud_lockRelease()
 
     if !empty(task) && task['mode'] == 'init' && get(task['cloudOption'], 'mode', '') != 'local'
         call s:uploadAsync(task['cloudOption'], 'download')
-    endif
-endfunction
-
-" ============================================================
-" lock logic
-function! s:UA_lockCleanupJob(groupJobStatus)
-    let lockAcquired = ZFVimIM_cloud_lockAcquired()
-    call ZFVimIM_cloud_lockRelease()
-    if !lockAcquired
-        return {
-                    \   'output' : 'failed: locked by other vim process',
-                    \   'exitCode' : 'ZFVimIM_cloud_lockUnavailable',
-                    \ }
-    else
-        return {
-                    \   'output' : 'success',
-                    \   'exitCode' : '0',
-                    \ }
     endif
 endfunction
 
