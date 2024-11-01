@@ -231,7 +231,6 @@ function! s:uploadAsync(cloudOption, mode)
                 \   'dbEdit' : [],
                 \ }
     silent! call mkdir(task['cachePath'], 'p')
-    let s:UA_taskMap[db['dbId']] = task
     let task['dbEdit'] = db['dbEdit']
     let db['dbEdit'] = []
 
@@ -242,6 +241,7 @@ function! s:uploadAsync(cloudOption, mode)
         return
     endif
 
+    let s:UA_taskMap[db['dbId']] = task
     let groupJobOption = {
                 \   'jobList' : [],
                 \   'onExit' : ZFJobFunc(function('s:UA_onExit'), [db['dbId']]),
@@ -276,17 +276,18 @@ function! s:uploadAsync(cloudOption, mode)
         call s:UATask_dbLoad(a:cloudOption, task, groupJobOption, db)
     endif
 
+    " final lock check and cleanup job
+    call add(groupJobOption['jobList'], [{
+                \   'jobCmd' : ZFJobFunc(function('s:UA_lockCleanupJob')),
+                \ }])
+
     " finally, start the job
-    if empty(groupJobOption['jobList'])
-        return
-    endif
     call s:cloudAsyncLog(ZFGroupJobStatus(task['jobId']), ZFVimIM_cloud_logInfo(a:cloudOption) . 'updating...')
     let task['jobId'] = ZFGroupJobStart(groupJobOption)
     if task['jobId'] == -1
         if exists("s:UA_taskMap[db['dbId']]")
             unlet s:UA_taskMap[db['dbId']]
         endif
-        return
     endif
 endfunction
 
@@ -596,7 +597,6 @@ function! s:UA_onExit(dbId, groupJobStatus, exitCode)
             call ZFVimIM_rm(task['cachePath'])
         endif
     endif
-    call s:UA_lockCleanupJob(a:groupJobStatus)
 
     if !empty(task) && task['mode'] == 'init' && get(task['cloudOption'], 'mode', '') != 'local'
         call s:uploadAsync(task['cloudOption'], 'download')
