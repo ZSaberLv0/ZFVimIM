@@ -46,7 +46,7 @@ vim 上的输入法, 特色:
 # 推荐配置
 
 * 中文帮助只列举推荐配置和基本操作 (足够日常使用),
-    详细配置等请移步 [README](https://github.com/ZSaberLv0/ZFVimIM/blob/master/README.CN.md)
+    详细配置等请移步 [README](https://github.com/ZSaberLv0/ZFVimIM/blob/master/README.md)
     (别问为啥, 问就是懒)
 * 如果你也是个懒人, 只想先快速体验一下,
     可以先试试[纯本地词库](https://github.com/ZSaberLv0/ZFVimIM/blob/master/README.CN.md#%E7%BA%AF%E6%9C%AC%E5%9C%B0%E8%AF%8D%E5%BA%93),
@@ -143,7 +143,7 @@ vim 上的输入法, 特色:
 
     " 国内辣鸡网络, 可以尝试用这个镜像, 与 github 直接互通
     " 或者干脆用 gitee 等国内站点
-    Plugin 'https://hub.fastgit.xyz/YourUserName/ZFVimIM_pinyin_base' " 你的词库
+    Plugin 'https://githubfast.com/YourUserName/ZFVimIM_pinyin_base' " 你的词库
     ```
 
 
