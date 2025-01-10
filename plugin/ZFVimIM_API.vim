@@ -31,7 +31,7 @@ endif
 
 function! ZFVimIM_cachePath()
     if !isdirectory(g:ZFVimIM_cachePath)
-        call mkdir(g:ZFVimIM_cachePath, 'p')
+        silent! call mkdir(g:ZFVimIM_cachePath, 'p')
     endif
     return g:ZFVimIM_cachePath
 endfunction

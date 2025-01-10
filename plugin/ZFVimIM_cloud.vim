@@ -96,7 +96,9 @@ function! ZFVimIM_dbNormalize(dbFile)
         return
     endif
     let cachePath = CygpathFix_absPath(ZFVimIM_cachePath() . '/ZFVimIM_dbNormalize_' . ZFVimIM_randName())
-    call mkdir(cachePath, 'p')
+    if !isdirectory(cachePath)
+        silent! call mkdir(cachePath, 'p')
+    endif
     let result = system(s:py
                 \ . ' "' . CygpathFix_absPath(s:scriptPath . '/dbNormalize.py') . '"'
                 \ . ' "' . CygpathFix_absPath(a:dbFile) . '"'

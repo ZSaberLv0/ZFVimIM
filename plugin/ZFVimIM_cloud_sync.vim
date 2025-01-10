@@ -267,7 +267,9 @@ function! s:uploadSyncWithCmd(cloudOption)
     if empty(dbSaveCmd)
         return 0
     endif
-    call mkdir(cachePath, 'p')
+    if !isdirectory(cachePath)
+        silent! call mkdir(cachePath, 'p')
+    endif
     let db = ZFVimIM_dbForId(a:cloudOption['dbId'])
 
     redraw!
