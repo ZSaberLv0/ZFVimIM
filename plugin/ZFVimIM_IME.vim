@@ -270,6 +270,7 @@ function! ZFVimIME_switchToIndex(dbIndex)
     let g:ZFVimIM_dbIndex = dbIndex
     let b:keymap_name = ZFVimIME_IMEName()
     doautocmd User ZFVimIM_event_OnDbChange
+    redrawstatus
 endfunction
 
 function! ZFVimIME_state()
