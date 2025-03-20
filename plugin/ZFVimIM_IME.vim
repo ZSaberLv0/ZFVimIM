@@ -227,6 +227,7 @@ function! ZFVimIME_start()
     let s:started = 1
     doautocmd User ZFVimIM_event_OnStart
     call s:IME_enableStateUpdate()
+    redrawstatus
 endfunction
 
 function! ZFVimIME_stop()
@@ -236,6 +237,7 @@ function! ZFVimIME_stop()
     let s:started = 0
     call s:IME_enableStateUpdate()
     doautocmd User ZFVimIM_event_OnStop
+    redrawstatus
 endfunction
 
 function! ZFVimIME_next()
