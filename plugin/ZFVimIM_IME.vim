@@ -287,10 +287,10 @@ function! ZFVimIME_keymap_cmdinput()
     let t = getcmdtype()
     if t == ':'
         call histadd('cmd', getcmdline())
-        let cmd = "\<esc>q:k$a"
+        let cmd = "\<c-c>q:k$a"
     elseif t == '/'
         call histadd('search', getcmdline())
-        let cmd = "\<esc>q/k$a"
+        let cmd = "\<c-c>q/k$a"
     else
         return ''
     endif
