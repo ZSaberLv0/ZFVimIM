@@ -257,6 +257,27 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
     * `let g:ZFVimIM_key_pageDown = ['=']`
     * `let g:ZFVimIM_key_chooseL = ['[']`
     * `let g:ZFVimIM_key_chooseR = [']']`
+    * `let g:ZFVimIM_keymap = 1`, whether enable builtin keymaps:
+
+        ```
+        nnoremap <expr><silent> ;; ZFVimIME_keymap_toggle_n()
+        inoremap <expr><silent> ;; ZFVimIME_keymap_toggle_i()
+        vnoremap <expr><silent> ;; ZFVimIME_keymap_toggle_v()
+
+        nnoremap <expr><silent> ;: ZFVimIME_keymap_next_n()
+        inoremap <expr><silent> ;: ZFVimIME_keymap_next_i()
+        vnoremap <expr><silent> ;: ZFVimIME_keymap_next_v()
+
+        nnoremap <expr><silent> ;, ZFVimIME_keymap_add_n()
+        inoremap <expr><silent> ;, ZFVimIME_keymap_add_i()
+        xnoremap <expr><silent> ;, ZFVimIME_keymap_add_v()
+
+        nnoremap <expr><silent> ;. ZFVimIME_keymap_remove_n()
+        inoremap <expr><silent> ;. ZFVimIME_keymap_remove_i()
+        xnoremap <expr><silent> ;. ZFVimIME_keymap_remove_v()
+
+        cnoremap <expr><silent> ;, ZFVimIME_keymap_cmdinput()
+        ```
 
 * `let g:ZFVimIM_showKeyHint = 16`
 

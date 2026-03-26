@@ -77,6 +77,8 @@ if get(g:, 'ZFVimIM_keymap', 1)
     nnoremap <expr><silent> ;. ZFVimIME_keymap_remove_n()
     inoremap <expr><silent> ;. ZFVimIME_keymap_remove_i()
     xnoremap <expr><silent> ;. ZFVimIME_keymap_remove_v()
+
+    cnoremap <expr><silent> ;, ZFVimIME_keymap_cmdinput()
 endif
 
 function! ZFVimIME_keymap_toggle_n()
@@ -271,6 +273,36 @@ function! ZFVimIME_switchToIndex(dbIndex)
     let b:keymap_name = ZFVimIME_IMEName()
     doautocmd User ZFVimIM_event_OnDbChange
     redrawstatus
+endfunction
+
+function! s:ZFVimIME_keymap_cmdinput_cleanup()
+    if !s:ZFVimIME_keymap_cmdinput_startedSaved
+        call ZFVimIME_stop()
+    endif
+    augroup ZFVimIME_keymap_cmdinput_augroup
+        autocmd!
+    augroup END
+endfunction
+function! ZFVimIME_keymap_cmdinput()
+    let t = getcmdtype()
+    if t == ':'
+        call histadd('cmd', getcmdline())
+        let cmd = "\<esc>q:k$a"
+    elseif t == '/'
+        call histadd('search', getcmdline())
+        let cmd = "\<esc>q/k$a"
+    else
+        return ''
+    endif
+    let s:ZFVimIME_keymap_cmdinput_startedSaved = ZFVimIME_started()
+    call ZFVimIME_start()
+
+    augroup ZFVimIME_keymap_cmdinput_augroup
+        autocmd!
+        autocmd CmdwinLeave * call s:ZFVimIME_keymap_cmdinput_cleanup()
+    augroup END
+
+    return cmd
 endfunction
 
 function! ZFVimIME_state()
