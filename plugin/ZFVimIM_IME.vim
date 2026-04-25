@@ -299,7 +299,7 @@ function! ZFVimIME_keymap_cmdinput()
 
     augroup ZFVimIME_keymap_cmdinput_augroup
         autocmd!
-        autocmd CmdwinLeave * silent call s:ZFVimIME_keymap_cmdinput_cleanup()
+        autocmd CmdwinLeave * silent! call s:ZFVimIME_keymap_cmdinput_cleanup()
     augroup END
 
     return cmd
