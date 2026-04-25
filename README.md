@@ -127,7 +127,12 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
     Plugin 'ZSaberLv0/ZFVimJob' " optional, for better db load performance
     Plugin 'ZSaberLv0/ZFVimGitUtil' " optional, cleanup your db commit history when necessary
     Plugin 'YourUserName/ZFVimIM_pinyin_base' " your db repo
-    Plugin 'ZSaberLv0/ZFVimIM_openapi' " optional, 3rd IME using Baidu
+
+    Plugin 'ZSaberLv0/ZFVimIM_openapi' " optional, 3rd IME using openapi
+    " choose impl you like
+    " let g:ZFVimIM_openapi_baidu = 1
+    " let g:ZFVimIM_openapi_baidu_xiaohe = 1
+    " let g:ZFVimIM_openapi_sougou = 1
     ```
 
 

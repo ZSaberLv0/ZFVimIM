@@ -139,7 +139,12 @@ vim 上的输入法, 特色:
     Plugin 'ZSaberLv0/ZFVimJob' " 可选, 用于提升词库加载性能
     Plugin 'ZSaberLv0/ZFVimGitUtil' " 可选, 如果你希望定期自动清理词库 push 历史
     Plugin 'YourUserName/ZFVimIM_pinyin_base' " 你的词库
-    Plugin 'ZSaberLv0/ZFVimIM_openapi' " 可选, 百度云输入法
+
+    Plugin 'ZSaberLv0/ZFVimIM_openapi' " 可选, 第三方云输入法
+    " 选择对应的云输入法
+    " let g:ZFVimIM_openapi_baidu = 1
+    " let g:ZFVimIM_openapi_baidu_xiaohe = 1
+    " let g:ZFVimIM_openapi_sougou = 1
 
     " 国内辣鸡网络, 可以尝试用这个镜像, 与 github 直接互通
     " 或者干脆用 gitee 等国内站点
