@@ -70,15 +70,21 @@ if get(g:, 'ZFVimIM_keymap', 1)
     inoremap <expr><silent> ;: ZFVimIME_keymap_next_i()
     vnoremap <expr><silent> ;: ZFVimIME_keymap_next_v()
 
-    nnoremap <expr><silent> ;, ZFVimIME_keymap_add_n()
-    inoremap <expr><silent> ;, ZFVimIME_keymap_add_i()
-    xnoremap <expr><silent> ;, ZFVimIME_keymap_add_v()
+    nnoremap <expr><silent> ;. ZFVimIME_keymap_add_n()
+    inoremap <expr><silent> ;. ZFVimIME_keymap_add_i()
+    xnoremap <expr><silent> ;. ZFVimIME_keymap_add_v()
 
-    nnoremap <expr><silent> ;. ZFVimIME_keymap_remove_n()
-    inoremap <expr><silent> ;. ZFVimIME_keymap_remove_i()
-    xnoremap <expr><silent> ;. ZFVimIME_keymap_remove_v()
+    nnoremap <expr><silent> ;/ ZFVimIME_keymap_remove_n()
+    inoremap <expr><silent> ;/ ZFVimIME_keymap_remove_i()
+    xnoremap <expr><silent> ;/ ZFVimIME_keymap_remove_v()
 
+    nnoremap <expr><silent> ;, ZFVimIME_keymap_inputOnce_n()
+    inoremap <expr><silent> ;, ZFVimIME_keymap_inputOnce_i()
+    xnoremap <expr><silent> ;, ZFVimIME_keymap_inputOnce_v()
     cnoremap <expr><silent> ;, ZFVimIME_keymap_cmdinput()
+    if has('terminal') || has('nvim')
+        tnoremap <expr><silent> ;, ZFVimIME_keymap_terminalinput()
+    endif
 endif
 
 function! ZFVimIME_keymap_toggle_n()
@@ -114,45 +120,33 @@ function! ZFVimIME_keymap_next_v()
 endfunction
 
 function! ZFVimIME_keymap_add_n()
-    if !ZFVimIME_started()
-        call ZFVimIME_start()
-    endif
+    call ZFVimIME_cmdinput_start()
     call feedkeys(":IMAdd\<space>\<c-c>q:kA", 'nt')
     return ''
 endfunction
 function! ZFVimIME_keymap_add_i()
-    if !ZFVimIME_started()
-        call ZFVimIME_start()
-    endif
+    call ZFVimIME_cmdinput_start()
     call feedkeys("\<esc>:IMAdd\<space>\<c-c>q:kA", 'nt')
     return ''
 endfunction
 function! ZFVimIME_keymap_add_v()
-    if !ZFVimIME_started()
-        call ZFVimIME_start()
-    endif
+    call ZFVimIME_cmdinput_start()
     call feedkeys("\"ty:IMAdd\<space>\<c-r>t\<space>\<c-c>q:kA", 'nt')
     return ''
 endfunction
 
 function! ZFVimIME_keymap_remove_n()
-    if !ZFVimIME_started()
-        call ZFVimIME_start()
-    endif
+    call ZFVimIME_cmdinput_start()
     call feedkeys(":IMRemove\<space>\<c-c>q:kA", 'nt')
     return ''
 endfunction
 function! ZFVimIME_keymap_remove_i()
-    if !ZFVimIME_started()
-        call ZFVimIME_start()
-    endif
+    call ZFVimIME_cmdinput_start()
     call feedkeys("\<esc>:IMRemove\<space>\<c-c>q:kA", 'nt')
     return ''
 endfunction
 function! ZFVimIME_keymap_remove_v()
-    if !ZFVimIME_started()
-        call ZFVimIME_start()
-    endif
+    call ZFVimIME_cmdinput_start()
     call feedkeys("\"tx:IMRemove\<space>\<c-r>t\<cr>", 'nt')
     return ''
 endfunction
@@ -275,8 +269,46 @@ function! ZFVimIME_switchToIndex(dbIndex)
     redrawstatus
 endfunction
 
-function! s:ZFVimIME_keymap_cmdinput_cleanup()
-    if !s:ZFVimIME_keymap_cmdinput_startedSaved
+function! ZFVimIME_inputOnce_start()
+    let s:ZFVimIME_inputOnce_startedSaved = ZFVimIME_started()
+    call ZFVimIME_start()
+    augroup ZFVimIME_keymap_inputOnce_augroup
+        autocmd!
+        autocmd InsertLeave * silent! call s:ZFVimIME_inputOnce_cleanup()
+    augroup END
+endfunction
+function! s:ZFVimIME_inputOnce_cleanup()
+    if !s:ZFVimIME_inputOnce_startedSaved
+        call ZFVimIME_stop()
+    endif
+    augroup ZFVimIME_keymap_inputOnce_augroup
+        autocmd!
+    augroup END
+endfunction
+function! ZFVimIME_keymap_inputOnce_n()
+    call ZFVimIME_inputOnce_start()
+    call feedkeys("i", 'nt')
+    return ''
+endfunction
+function! ZFVimIME_keymap_inputOnce_i()
+    call ZFVimIME_inputOnce_start()
+    return ''
+endfunction
+function! ZFVimIME_keymap_inputOnce_v()
+    call ZFVimIME_inputOnce_start()
+    return ''
+endfunction
+
+function! ZFVimIME_cmdinput_start()
+    let s:ZFVimIME_cmdinput_startedSaved = ZFVimIME_started()
+    call ZFVimIME_start()
+    augroup ZFVimIME_keymap_cmdinput_augroup
+        autocmd!
+        autocmd CmdwinLeave * silent! call s:ZFVimIME_cmdinput_cleanup()
+    augroup END
+endfunction
+function! s:ZFVimIME_cmdinput_cleanup()
+    if !s:ZFVimIME_cmdinput_startedSaved
         call ZFVimIME_stop()
     endif
     augroup ZFVimIME_keymap_cmdinput_augroup
@@ -294,16 +326,26 @@ function! ZFVimIME_keymap_cmdinput()
     else
         return ''
     endif
-    let s:ZFVimIME_keymap_cmdinput_startedSaved = ZFVimIME_started()
-    call ZFVimIME_start()
-
-    augroup ZFVimIME_keymap_cmdinput_augroup
-        autocmd!
-        autocmd CmdwinLeave * silent! call s:ZFVimIME_keymap_cmdinput_cleanup()
-    augroup END
-
+    call ZFVimIME_cmdinput_start()
     return cmd
 endfunction
+
+if has('terminal') || has('nvim')
+    function! PassToTerm(text)
+        let @t = a:text
+        if has('nvim')
+            call feedkeys('"tpa', 'nt')
+        else
+            call feedkeys("a\<c-w>\"t", 'nt')
+        endif
+        redraw!
+    endfunction
+    command! -nargs=* PassToTerm :call PassToTerm(<q-args>)
+    function! ZFVimIME_keymap_terminalinput()
+        call ZFVimIME_cmdinput_start()
+        return "\<c-\>\<c-n>q:a:PassToTerm\<space>"
+    endfunction
+endif
 
 function! ZFVimIME_state()
     return {

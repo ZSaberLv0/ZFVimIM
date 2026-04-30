@@ -139,13 +139,14 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
 ## how to use
 
 * use `;;` to toggle input method, and `;:` to switch db
+* use `;,` to input once, and auto restore input method when done
 * scroll page by `-` or `=`
 * input and choose word by `<space>` or `0~9`
 * choose head or tail word by `[` or `]`
 * your input history would be recorded locally or
     push to github automatically,
-    you may use `;,` or `:IMAdd` to add user word,
-    `;.` or `:IMRemove` to remove user word
+    you may use `;.` or `:IMAdd` to add user word,
+    `;/` or `:IMRemove` to remove user word
 
 
 ## some tips
@@ -273,14 +274,17 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
         inoremap <expr><silent> ;: ZFVimIME_keymap_next_i()
         vnoremap <expr><silent> ;: ZFVimIME_keymap_next_v()
 
-        nnoremap <expr><silent> ;, ZFVimIME_keymap_add_n()
-        inoremap <expr><silent> ;, ZFVimIME_keymap_add_i()
-        xnoremap <expr><silent> ;, ZFVimIME_keymap_add_v()
+        nnoremap <expr><silent> ;. ZFVimIME_keymap_add_n()
+        inoremap <expr><silent> ;. ZFVimIME_keymap_add_i()
+        xnoremap <expr><silent> ;. ZFVimIME_keymap_add_v()
 
-        nnoremap <expr><silent> ;. ZFVimIME_keymap_remove_n()
-        inoremap <expr><silent> ;. ZFVimIME_keymap_remove_i()
-        xnoremap <expr><silent> ;. ZFVimIME_keymap_remove_v()
+        nnoremap <expr><silent> ;/ ZFVimIME_keymap_remove_n()
+        inoremap <expr><silent> ;/ ZFVimIME_keymap_remove_i()
+        xnoremap <expr><silent> ;/ ZFVimIME_keymap_remove_v()
 
+        nnoremap <expr><silent> ;, ZFVimIME_keymap_inputOnce_n()
+        inoremap <expr><silent> ;, ZFVimIME_keymap_inputOnce_i()
+        xnoremap <expr><silent> ;, ZFVimIME_keymap_inputOnce_v()
         cnoremap <expr><silent> ;, ZFVimIME_keymap_cmdinput()
         ```
 
@@ -560,6 +564,8 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
 
         to use it: press `;;` while editing in `Command-line`
 
+    * note: we already bundled a default keymap `;,` to achieve this
+
 * Q: How to use in `:terminal`?
 
     A: since `terminal` does not support `omnifunc`,
@@ -584,6 +590,8 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
     ```
 
     to use it: press `;;` while inside `:terminal` window's `Insert-mode`
+
+    note: we already bundled a default keymap `;,` to achieve this
 
 * Q: external db source?
 
